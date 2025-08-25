@@ -17,9 +17,11 @@ export interface IStorage {
   getAllVehicles(): Promise<Vehicle[]>; // Seulement les annonces actives (site public)
   getAllVehiclesAdmin(): Promise<Vehicle[]>; // Toutes les annonces (admin/propriétaires)
   getVehiclesByUser(userId: string): Promise<Vehicle[]>;
+  getDeletedVehiclesByUser(userId: string): Promise<Vehicle[]>;
   createVehicle(vehicle: InsertVehicle): Promise<Vehicle>;
   updateVehicle(id: string, updates: Partial<InsertVehicle>): Promise<Vehicle | undefined>;
   deleteVehicle(id: string): Promise<boolean>;
+  softDeleteVehicleWithReason(id: string, reason: string, comment?: string): Promise<boolean>;
   searchVehicles(filters: any): Promise<Vehicle[]>;
   updateVehicleActiveStatus(id: string, isActive: boolean): Promise<boolean>;
   
@@ -182,6 +184,7 @@ export class SupabaseStorage implements IStorage {
         users(*)
       `)
       .eq('id', id)
+      .isNull('deleted_at')
       .single();
     
     if (error) {
@@ -260,7 +263,7 @@ export class SupabaseStorage implements IStorage {
     
     try {
       // Requête directe avec JOIN pour récupérer annonces et utilisateurs
-      // FILTRE IMPORTANT: Seulement les annonces approuvées et actives pour le site public
+      // FILTRE IMPORTANT: Seulement les annonces approuvées, actives et non supprimées pour le site public
       let { data, error } = await supabaseServer
         .from('annonces')
         .select(`
@@ -269,6 +272,7 @@ export class SupabaseStorage implements IStorage {
         `)
         .eq('status', 'approved')
         .neq('is_active', false)
+        .isNull('deleted_at')
         .order('created_at', { ascending: false });
       
       if (error) {
@@ -450,6 +454,85 @@ export class SupabaseStorage implements IStorage {
     return transformedData as Vehicle[];
   }
 
+  async getDeletedVehiclesByUser(userId: string): Promise<Vehicle[]> {
+    const { data, error } = await supabaseServer
+      .from('annonces')
+      .select(`
+        *,
+        users (*)
+      `)
+      .eq('user_id', userId)
+      .not('deleted_at', 'is', null)
+      .order('deleted_at', { ascending: false });
+    
+    if (error) {
+      console.error('Error fetching deleted user vehicles:', error);
+      return [];
+    }
+
+    // Transformer les données pour inclure les informations de suppression
+    const transformedData = data.map(annonce => ({
+      id: annonce.id.toString(),
+      userId: annonce.user_id,
+      user: annonce.users ? {
+        id: annonce.users.id,
+        email: annonce.users.email,
+        name: annonce.users.name,
+        phone: annonce.users.phone,
+        whatsapp: annonce.users.whatsapp,
+        type: annonce.users.type,
+        companyName: annonce.users.company_name,
+        companyLogo: annonce.users.company_logo,
+        address: annonce.users.address,
+        city: annonce.users.city,
+        postalCode: annonce.users.postal_code,
+        website: annonce.users.website,
+        siret: annonce.users.siret,
+        bio: annonce.users.bio,
+        avatar: annonce.users.avatar,
+        specialties: annonce.users.specialties ? JSON.parse(annonce.users.specialties) : [],
+        verified: annonce.users.verified,
+        emailVerified: annonce.users.email_verified,
+        contactPreferences: annonce.users.contact_preferences ? JSON.parse(annonce.users.contact_preferences) : [],
+        createdAt: new Date(annonce.users.created_at),
+        lastLoginAt: annonce.users.last_login_at ? new Date(annonce.users.last_login_at) : undefined
+      } : undefined,
+      title: annonce.title,
+      description: annonce.description,
+      category: annonce.category,
+      brand: annonce.brand,
+      model: annonce.model,
+      year: annonce.year,
+      mileage: annonce.mileage,
+      fuelType: annonce.fuel_type,
+      condition: annonce.condition,
+      price: annonce.price,
+      location: annonce.location,
+      images: annonce.images || [],
+      features: annonce.features || [],
+      listingType: annonce.listing_type || 'sale',
+      contactPhone: annonce.contact_phone || null,
+      contactEmail: annonce.contact_email || null,
+      contactWhatsapp: annonce.contact_whatsapp || null,
+      hidePhone: annonce.hide_phone || false,
+      isPremium: annonce.is_premium,
+      premiumType: annonce.premium_type,
+      premiumExpiresAt: annonce.premium_expires_at ? new Date(annonce.premium_expires_at) : undefined,
+      createdAt: new Date(annonce.created_at),
+      updatedAt: new Date(annonce.updated_at),
+      views: annonce.views,
+      favorites: annonce.favorites,
+      status: annonce.status,
+      isActive: annonce.is_active !== false,
+      // Informations de suppression
+      deletedAt: annonce.deleted_at ? new Date(annonce.deleted_at) : undefined,
+      deletionReason: annonce.deletion_reason,
+      deletionComment: annonce.deletion_comment
+    }));
+
+    return transformedData as Vehicle[];
+  }
+
   async createVehicle(vehicle: InsertVehicle): Promise<Vehicle> {
     console.log("🔍 DONNÉES AVANT TRANSFORMATION:", JSON.stringify(vehicle, null, 2));
     
@@ -589,6 +672,26 @@ export class SupabaseStorage implements IStorage {
     return !error;
   }
 
+  async softDeleteVehicleWithReason(id: string, reason: string, comment?: string): Promise<boolean> {
+    const { error } = await supabaseServer
+      .from('annonces')
+      .update({
+        deleted_at: new Date().toISOString(),
+        deletion_reason: reason,
+        deletion_comment: comment || null,
+        is_active: false // Désactiver l'annonce aussi
+      })
+      .eq('id', id);
+    
+    if (error) {
+      console.error('Error soft deleting vehicle:', error);
+      return false;
+    }
+    
+    console.log(`✅ Annonce ${id} supprimée avec raison: ${reason}`);
+    return true;
+  }
+
   async searchVehicles(filters: any): Promise<Vehicle[]> {
     let query = supabaseServer
       .from('annonces')
@@ -597,9 +700,10 @@ export class SupabaseStorage implements IStorage {
         users (*)
       `);
 
-    // FILTRE IMPORTANT: Seulement les annonces approuvées et actives pour les recherches publiques
+    // FILTRE IMPORTANT: Seulement les annonces approuvées, actives et non supprimées pour les recherches publiques
     query = query.eq('status', 'approved')
-                 .neq('is_active', false);
+                 .neq('is_active', false)
+                 .isNull('deleted_at');
 
     // Apply filters
     if (filters.category) {

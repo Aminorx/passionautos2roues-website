@@ -65,13 +65,17 @@ export const annonces = pgTable("annonces", {
   favorites: integer("favorites").default(0),
   status: text("status").default("approved"), // 'pending' | 'approved' | 'rejected'
   isActive: boolean("is_active").default(true), // Allow users to activate/deactivate their listings
+  // Soft delete et questionnaire de suppression
+  deletedAt: timestamp("deleted_at"),
+  deletionReason: text("deletion_reason"), // 'sold_on_site' | 'sold_elsewhere' | 'no_longer_selling' | 'other'
+  deletionComment: text("deletion_comment"), // Commentaire facultatif pour "Autre"
 });
 
 export const messages = pgTable("messages", {
   id: text("id").primaryKey(),
   fromUserId: text("from_user_id").references(() => users.id).notNull(),
   toUserId: text("to_user_id").references(() => users.id).notNull(),
-  vehicleId: text("vehicle_id").references(() => annonces.id).notNull(),
+  vehicleId: text("vehicle_id").notNull(),
   content: text("content").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   read: boolean("read").default(false),
@@ -81,7 +85,7 @@ export const messages = pgTable("messages", {
 export const wishlist = pgTable("wishlist", {
   id: text("id").primaryKey(),
   userId: text("user_id").references(() => users.id).notNull(),
-  vehicleId: text("vehicle_id").references(() => annonces.id).notNull(),
+  vehicleId: text("vehicle_id").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

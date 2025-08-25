@@ -123,6 +123,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get deleted vehicles by specific user
+  app.get("/api/vehicles/user/:userId/deleted", async (req, res) => {
+    try {
+      const deletedVehicles = await storage.getDeletedVehiclesByUser(req.params.userId);
+      res.json(deletedVehicles);
+    } catch (error) {
+      console.error("Error fetching deleted user vehicles:", error);
+      res.status(500).json({ error: "Failed to fetch deleted user vehicles" });
+    }
+  });
+
   app.get("/api/vehicles/:id", async (req, res) => {
     try {
       const vehicle = await storage.getVehicleWithUser(req.params.id);
@@ -264,6 +275,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('❌ Erreur changement statut:', error);
       res.status(500).json({ error: 'Erreur interne du serveur' });
+    }
+  });
+
+  // Soft delete avec questionnaire
+  app.post("/api/vehicles/:id/delete-with-reason", async (req, res) => {
+    try {
+      const { reason, comment } = req.body;
+      
+      if (!reason) {
+        return res.status(400).json({ error: "Reason is required" });
+      }
+
+      // Valider les raisons acceptées
+      const validReasons = ['sold_on_site', 'sold_elsewhere', 'no_longer_selling', 'other'];
+      if (!validReasons.includes(reason)) {
+        return res.status(400).json({ error: "Invalid deletion reason" });
+      }
+
+      const success = await storage.softDeleteVehicleWithReason(req.params.id, reason, comment);
+      if (!success) {
+        return res.status(404).json({ error: "Vehicle not found or could not be deleted" });
+      }
+      
+      res.json({ 
+        success: true, 
+        message: "Vehicle soft deleted successfully",
+        reason,
+        deletedAt: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error("Error soft deleting vehicle:", error);
+      res.status(500).json({ error: "Failed to soft delete vehicle" });
     }
   });
 
