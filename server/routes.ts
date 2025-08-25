@@ -1010,6 +1010,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
+      // Forcer un refresh sans cache pour voir les vraies données
+      res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
       res.json(allUsers);
       
     } catch (error) {
