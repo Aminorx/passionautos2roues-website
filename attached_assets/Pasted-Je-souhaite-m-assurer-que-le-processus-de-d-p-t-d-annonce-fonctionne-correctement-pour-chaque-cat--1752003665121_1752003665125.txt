@@ -1,0 +1,121 @@
+Je souhaite m'assurer que le processus de dépôt d'annonce fonctionne correctement **pour chaque catégorie principale et ses sous-catégories**.
+
+Merci de faire les vérifications suivantes pour chaque combinaison **[catégorie > sous-catégorie]** :
+
+1. ✅ **Les étapes du formulaire** doivent s'afficher dans l'ordre prévu :
+   - Choix de la catégorie
+   - Choix de la sous-catégorie
+   - Informations générales
+   - Détails spécifiques (adaptés selon la sous-catégorie)
+   - Photos
+   - Localisation
+   - Contact
+   - Récapitulatif avant publication
+
+2. ✅ **Les champs affichés dans l'étape "Détails spécifiques"** doivent être adaptés à la sous-catégorie sélectionnée. Voici les exigences :
+
+#### 1. Voitures
+- Type de véhicule (citadine, berline, SUV…)
+- Année
+- Kilométrage
+- Boîte de vitesses
+- Carburant
+- Couleur
+- Puissance (ch)
+- Nombre de portes
+- Sellerie
+- Classe d’émissions
+- Liste d’équipements
+
+#### 2. Utilitaires
+- Type d’utilitaire (camionnette, fourgon, benne…)
+- Année
+- Kilométrage
+- Boîte de vitesses
+- Carburant
+- Charge utile (kg)
+- Volume utile (m³)
+- Nombre de places
+- Couleur
+- Classe d’émissions
+- Équipements
+
+#### 3. Caravanes
+- Type de caravane (pliante, rigide, camping-car, etc.)
+- Marque
+- Année
+- Nombre de couchages
+- Longueur (m)
+- Poids (kg)
+- Équipements (chauffage, eau, WC...)
+
+#### 4. Remorques
+- Type de remorque (bagagère, porte-voiture…)
+- Année
+- Dimensions utiles (L x l)
+- Poids à vide
+- Poids max (PTAC)
+- Équipements
+
+#### 5. Motos / Scooters
+- Type (moto, scooter, 50cc, 125cc, etc.)
+- Marque
+- Modèle
+- Année
+- Kilométrage
+- Cylindrée
+- Couleur
+- Équipements
+
+#### 6. Quads
+- Type de quad (sport, utilitaire, enfant)
+- Marque
+- Année
+- Kilométrage
+- Cylindrée
+- Couleur
+- Transmission
+- Équipements
+
+#### 7. Jetskis
+- Type (jet à bras, assis…)
+- Marque
+- Modèle
+- Année
+- Heures d’utilisation
+- Puissance
+- Nombre de places
+- Équipements
+
+#### 8. Bateaux
+- Type (voilier, semi-rigide, bateau moteur…)
+- Marque
+- Longueur
+- Année
+- Moteur (type, puissance)
+- Nombre de couchages
+- Matériel de navigation
+- Équipements
+
+#### 9. Services
+- Type de service proposé
+- Description
+- Zone d’intervention
+- Certificat / agrément (facultatif)
+
+#### 10. Pièces détachées
+- Type de pièce
+- Véhicule compatible
+- Marque
+- État (neuf, occasion)
+- Référence (si dispo)
+
+---
+
+Merci de vérifier que :
+- Tous les champs attendus sont bien présents
+- Aucun champ inutile ne s’affiche pour une sous-catégorie donnée
+- Les validations fonctionnent
+- Le récapitulatif reprend bien tous les champs saisis
+
+Corrige les incohérences s’il y en a. Ne touche pas aux parties qui fonctionnent déjà bien.

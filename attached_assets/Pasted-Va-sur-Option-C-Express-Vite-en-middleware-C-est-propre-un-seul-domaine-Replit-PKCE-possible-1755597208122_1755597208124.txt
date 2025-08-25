@@ -1,0 +1,87 @@
+Va sur Option C (Express + Vite en middleware) ✅
+C’est propre, un seul domaine Replit, PKCE possible, plus de “Not Found”.
+
+1) Server Express (dev = Vite middleware, prod = statique)
+
+server/index.ts (ou équivalent) :
+
+import express from 'express';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname  = path.dirname(__filename);
+const app = express();
+
+async function boot() {
+  if (process.env.NODE_ENV !== 'production') {
+    // Vite en mode middleware (dev)
+    const vite = await (await import('vite')).createServer({
+      root: path.resolve(__dirname, '../client'),
+      server: { middlewareMode: true },
+      appType: 'custom',
+    });
+    app.use(vite.middlewares);
+  } else {
+    // Build client puis serv statique (prod)
+    const dist = path.resolve(__dirname, '../client/dist');
+    app.use(express.static(dist));
+    app.get('*', (_req, res) => res.sendFile(path.join(dist, 'index.html')));
+  }
+
+  const PORT = process.env.PORT || 5000;
+  app.listen(PORT, () => console.log(`Server on :${PORT}`));
+}
+boot();
+
+2) Scripts
+
+Dans package.json :
+
+{
+  "scripts": {
+    "dev": "cross-env NODE_ENV=development tsx server/index.ts",
+    "build:client": "cd client && vite build",
+    "start": "cross-env NODE_ENV=production node dist/server/index.js"
+  }
+}
+
+3) OAuth côté front (PKCE)
+
+Bouton Google :
+
+await supabase.auth.signInWithOAuth({
+  provider: 'google',
+  options: { redirectTo: `${window.location.origin}/auth/callback` }
+});
+
+
+Page /auth/callback (au mount) :
+
+await supabase.auth.exchangeCodeForSession(window.location.href);
+window.location.replace('/');
+
+4) Supabase (Auth → Settings)
+
+Site URL : https://workspace.amineennoury.replit.app
+
+Additional Redirect URLs :
+https://workspace.amineennoury.replit.app/*
+https://workspace.amineennoury.replit.app/auth/callback
+
+“Skip nonce checks” OFF.
+
+5) Google Cloud (Client OAuth Web)
+
+Authorized JS origins :
+https://workspace.amineennoury.replit.app
+
+Authorized redirect URIs :
+https://<ton-projet>.supabase.co/auth/v1/callback
+https://workspace.amineennoury.replit.app/auth/callback
+
+6) Test
+
+Clique “Se connecter avec Google” → tu reviens sur workspace…/auth/callback (servi par Express via Vite) → exchangeCodeForSession crée la session → redirection /.
+
+(Pense à révoquer les sessions du compte de test vu les tokens exposés.)
