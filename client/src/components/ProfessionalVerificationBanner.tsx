@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Building2, CheckCircle, Clock, X, ArrowRight } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
 
 interface ProfessionalAccount {
   id: number;
@@ -13,7 +12,6 @@ interface ProfessionalAccount {
 
 export const ProfessionalVerificationBanner: React.FC = () => {
   const { profile, user } = useAuth();
-  const navigate = useNavigate();
   const [professionalAccount, setProfessionalAccount] = useState<ProfessionalAccount | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isDismissed, setIsDismissed] = useState(false);
@@ -21,7 +19,7 @@ export const ProfessionalVerificationBanner: React.FC = () => {
   // Vérifier si l'utilisateur est un professionnel et charger son statut de vérification
   useEffect(() => {
     const checkProfessionalStatus = async () => {
-      if (!user || !profile || profile.accountType !== 'professional') {
+      if (!user || !profile || profile.type !== 'professional') {
         setIsLoading(false);
         return;
       }
@@ -56,7 +54,7 @@ export const ProfessionalVerificationBanner: React.FC = () => {
   };
 
   const handleStartVerification = () => {
-    navigate('/professional-verification');
+    window.location.href = '/professional-verification';
   };
 
   // Ne pas afficher le banner si :
@@ -65,7 +63,7 @@ export const ProfessionalVerificationBanner: React.FC = () => {
   // - Banner fermé
   // - Déjà vérifié
   if (!profile || 
-      profile.accountType !== 'professional' || 
+      profile.type !== 'professional' || 
       isLoading || 
       isDismissed || 
       professionalAccount?.is_verified) {
