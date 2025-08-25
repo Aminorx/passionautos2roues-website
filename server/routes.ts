@@ -15,6 +15,15 @@ import { setupWishlistMigration } from "./routes/wishlist-migration.js";
 import { setupWishlistDirect } from "./routes/wishlist-direct.js";
 import { ensureUserExists, createUserFromAuth } from "./auth-hooks";
 import { supabaseServer } from "./supabase";
+import multer from 'multer';
+
+// Configuration multer pour upload en mémoire
+const upload = multer({ 
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB max
+  }
+});
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Users API
@@ -437,6 +446,157 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Routes professionnelles
+  
+  // Route pour créer un compte professionnel
+  app.post('/api/professional-accounts', upload.single('kbisDocument'), async (req, res) => {
+    try {
+      console.log('🏢 Création compte professionnel...');
+      console.log('📄 Données reçues:', req.body);
+      console.log('📎 Fichier reçu:', req.file ? req.file.originalname : 'Aucun');
+      
+      const {
+        companyName,
+        siret,
+        companyAddress,
+        phone,
+        email,
+        website,
+        description
+      } = req.body;
+      
+      // Validation des champs obligatoires
+      if (!companyName || !siret || !companyAddress || !phone || !email) {
+        return res.status(400).json({ error: 'Champs obligatoires manquants' });
+      }
+      
+      // Validation SIRET (14 chiffres)
+      if (!/^\d{14}$/.test(siret)) {
+        return res.status(400).json({ error: 'SIRET invalide (14 chiffres requis)' });
+      }
+      
+      // Récupérer l'utilisateur actuel depuis Supabase Auth
+      const authHeader = req.headers.authorization;
+      if (!authHeader) {
+        return res.status(401).json({ error: 'Token d\'authentification manquant' });
+      }
+      
+      const token = authHeader.replace('Bearer ', '');
+      const { data: { user }, error: authError } = await supabaseServer.auth.getUser(token);
+      
+      if (authError || !user) {
+        return res.status(401).json({ error: 'Token invalide' });
+      }
+      
+      // Vérifier si l'utilisateur a déjà un compte professionnel
+      const { data: existingAccount } = await supabaseServer
+        .from('professional_accounts')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+      
+      if (existingAccount) {
+        return res.status(400).json({ error: 'Vous avez déjà un compte professionnel' });
+      }
+      
+      // Vérifier l'unicité du SIRET
+      const { data: existingSiret } = await supabaseServer
+        .from('professional_accounts')
+        .select('id')
+        .eq('siret', siret)
+        .single();
+      
+      if (existingSiret) {
+        return res.status(400).json({ error: 'Ce numéro SIRET est déjà utilisé' });
+      }
+      
+      // Créer le compte professionnel
+      const { data: proAccount, error: proError } = await supabaseServer
+        .from('professional_accounts')
+        .insert({
+          user_id: user.id,
+          company_name: companyName,
+          siret: siret,
+          company_address: companyAddress,
+          phone: phone,
+          email: email,
+          website: website || null,
+          verification_status: 'pending',
+          is_verified: false
+        })
+        .select()
+        .single();
+      
+      if (proError) {
+        console.error('❌ Erreur création compte pro:', proError);
+        return res.status(500).json({ error: 'Erreur lors de la création du compte professionnel' });
+      }
+      
+      console.log('✅ Compte professionnel créé:', proAccount.id);
+      
+      // Upload du document Kbis si présent
+      if (req.file) {
+        console.log('📤 Upload document Kbis...');
+        
+        const fileName = `kbis-${proAccount.id}-${Date.now()}.${req.file.originalname.split('.').pop()}`;
+        
+        // Upload vers Supabase Storage
+        const { data: uploadData, error: uploadError } = await supabaseServer.storage
+          .from('verification-documents')
+          .upload(fileName, req.file.buffer, {
+            contentType: req.file.mimetype,
+            upsert: false
+          });
+        
+        if (uploadError) {
+          console.error('❌ Erreur upload:', uploadError);
+        } else {
+          // Créer l'enregistrement du document
+          const { data: docData, error: docError } = await supabaseServer
+            .from('verification_documents')
+            .insert({
+              professional_account_id: proAccount.id,
+              document_type: 'kbis',
+              file_url: uploadData.path,
+              file_name: req.file.originalname,
+              file_size: req.file.size,
+              verification_status: 'pending'
+            });
+          
+          if (docError) {
+            console.error('❌ Erreur enregistrement document:', docError);
+          } else {
+            console.log('✅ Document Kbis enregistré');
+          }
+        }
+      }
+      
+      // Créer le profil professionnel initial s'il y a une description
+      if (description) {
+        const { error: profileError } = await supabaseServer
+          .from('professional_profiles')
+          .insert({
+            professional_account_id: proAccount.id,
+            description: description
+          });
+        
+        if (profileError) {
+          console.error('❌ Erreur création profil:', profileError);
+        }
+      }
+      
+      res.json({
+        success: true,
+        professionalAccount: proAccount,
+        message: 'Compte professionnel créé avec succès. En attente de vérification.'
+      });
+      
+    } catch (error) {
+      console.error('❌ Erreur création compte professionnel:', error);
+      res.status(500).json({ error: 'Erreur serveur lors de la création du compte professionnel' });
+    }
+  });
+  
   // Routes admin spécialisées (à placer avant les routes génériques)
   
   // Route pour récupérer les annonces supprimées (admin)

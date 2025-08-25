@@ -69,6 +69,9 @@ export const annonces = pgTable("annonces", {
   deletedAt: timestamp("deleted_at"),
   deletionReason: text("deletion_reason"), // 'sold_on_site' | 'sold_elsewhere' | 'no_longer_selling' | 'other'
   deletionComment: text("deletion_comment"), // Commentaire facultatif pour "Autre"
+  // Colonnes professionnelles
+  priorityScore: integer("priority_score").default(0),
+  professionalAccountId: integer("professional_account_id"),
 });
 
 export const messages = pgTable("messages", {
@@ -157,20 +160,104 @@ export const savedSearches = pgTable("saved_searches", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+// Tables professionnelles
+export const subscriptionPlans = pgTable("subscription_plans", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  priceMonthly: real("price_monthly").notNull(),
+  priceYearly: real("price_yearly"),
+  maxListings: integer("max_listings"),
+  features: json("features").$type<Record<string, boolean>>().default({}),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const professionalAccounts = pgTable("professional_accounts", {
+  id: serial("id").primaryKey(),
+  userId: text("user_id").references(() => users.id).notNull(),
+  companyName: text("company_name").notNull(),
+  siret: text("siret").unique(),
+  companyAddress: text("company_address"),
+  phone: text("phone"),
+  email: text("email"),
+  website: text("website"),
+  isVerified: boolean("is_verified").default(false),
+  verificationStatus: text("verification_status").$type<'pending' | 'approved' | 'rejected'>().default('pending'),
+  verifiedAt: timestamp("verified_at"),
+  rejectedReason: text("rejected_reason"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const subscriptions = pgTable("subscriptions", {
+  id: serial("id").primaryKey(),
+  professionalAccountId: integer("professional_account_id").references(() => professionalAccounts.id).notNull(),
+  planId: integer("plan_id").references(() => subscriptionPlans.id).notNull(),
+  stripeSubscriptionId: text("stripe_subscription_id").unique(),
+  status: text("status").$type<'active' | 'cancelled' | 'expired' | 'pending'>().default('active'),
+  currentPeriodStart: timestamp("current_period_start"),
+  currentPeriodEnd: timestamp("current_period_end"),
+  cancelAtPeriodEnd: boolean("cancel_at_period_end").default(false),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const verificationDocuments = pgTable("verification_documents", {
+  id: serial("id").primaryKey(),
+  professionalAccountId: integer("professional_account_id").references(() => professionalAccounts.id).notNull(),
+  documentType: text("document_type").$type<'kbis' | 'siret' | 'other'>().notNull(),
+  fileUrl: text("file_url"),
+  fileName: text("file_name"),
+  fileSize: integer("file_size"),
+  uploadDate: timestamp("upload_date").defaultNow().notNull(),
+  verificationStatus: text("verification_status").$type<'pending' | 'approved' | 'rejected'>().default('pending'),
+  adminNotes: text("admin_notes"),
+});
+
+export const professionalProfiles = pgTable("professional_profiles", {
+  id: serial("id").primaryKey(),
+  professionalAccountId: integer("professional_account_id").references(() => professionalAccounts.id).notNull(),
+  logoUrl: text("logo_url"),
+  description: text("description"),
+  openingHours: json("opening_hours").$type<Record<string, string>>().default({}),
+  whatsappNumber: text("whatsapp_number"),
+  facebookUrl: text("facebook_url"),
+  instagramUrl: text("instagram_url"),
+  specialties: json("specialties").$type<string[]>().default([]),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Schémas d'insertion
 export const insertUserSchema = createInsertSchema(users);
 export const insertVehicleSchema = createInsertSchema(annonces).omit({ id: true });
 export const insertMessageSchema = createInsertSchema(messages);
 export const insertWishlistSchema = createInsertSchema(wishlist);
 export const insertSavedSearchSchema = createInsertSchema(savedSearches);
+export const insertProfessionalAccountSchema = createInsertSchema(professionalAccounts).omit({ id: true });
+export const insertSubscriptionSchema = createInsertSchema(subscriptions).omit({ id: true });
+export const insertVerificationDocumentSchema = createInsertSchema(verificationDocuments).omit({ id: true });
+export const insertProfessionalProfileSchema = createInsertSchema(professionalProfiles).omit({ id: true });
 
+// Types d'insertion
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type InsertVehicle = z.infer<typeof insertVehicleSchema>;
 export type InsertMessage = z.infer<typeof insertMessageSchema>;
 export type InsertWishlist = z.infer<typeof insertWishlistSchema>;
 export type InsertSavedSearch = z.infer<typeof insertSavedSearchSchema>;
+export type InsertProfessionalAccount = z.infer<typeof insertProfessionalAccountSchema>;
+export type InsertSubscription = z.infer<typeof insertSubscriptionSchema>;
+export type InsertVerificationDocument = z.infer<typeof insertVerificationDocumentSchema>;
+export type InsertProfessionalProfile = z.infer<typeof insertProfessionalProfileSchema>;
 
+// Types de sélection
 export type User = typeof users.$inferSelect;
 export type Vehicle = typeof annonces.$inferSelect;
 export type Message = typeof messages.$inferSelect;
 export type Wishlist = typeof wishlist.$inferSelect;
 export type SavedSearch = typeof savedSearches.$inferSelect;
+export type SubscriptionPlan = typeof subscriptionPlans.$inferSelect;
+export type ProfessionalAccount = typeof professionalAccounts.$inferSelect;
+export type Subscription = typeof subscriptions.$inferSelect;
+export type VerificationDocument = typeof verificationDocuments.$inferSelect;
+export type ProfessionalProfile = typeof professionalProfiles.$inferSelect;

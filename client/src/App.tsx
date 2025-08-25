@@ -25,6 +25,7 @@ import { AdminTest } from './components/AdminTest';
 import { Messages } from './pages/Messages';
 import { SearchPage } from './pages/SearchPage';
 import { AuthCallback } from './pages/AuthCallback';
+// import CreateProAccount from './pages/CreateProAccount';
 
 function AppContent() {
   const [currentView, setCurrentView] = useState('home');
@@ -145,6 +146,11 @@ function AppContent() {
         />;
       case 'admin-test':
         return <AdminTest />;
+      case 'create-pro-account':
+        return <div className="p-8 text-center">
+          <h2 className="text-2xl font-bold">Compte Professionnel</h2>
+          <p className="mt-4">Page de création de compte professionnel en développement...</p>
+        </div>;
       case 'auth-callback':
         return <AuthCallback />;
       default:
