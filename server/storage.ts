@@ -184,7 +184,7 @@ export class SupabaseStorage implements IStorage {
         users(*)
       `)
       .eq('id', id)
-      .isNull('deleted_at')
+      .is('deleted_at', null)
       .single();
     
     if (error) {
@@ -272,7 +272,7 @@ export class SupabaseStorage implements IStorage {
         `)
         .eq('status', 'approved')
         .neq('is_active', false)
-        .isNull('deleted_at')
+        .is('deleted_at', null)
         .order('created_at', { ascending: false });
       
       if (error) {
@@ -366,7 +366,10 @@ export class SupabaseStorage implements IStorage {
           views: vehicle.views,
           favorites: vehicle.favorites,
           status: vehicle.status,
-          isActive: vehicle.is_active !== false
+          isActive: vehicle.is_active !== false,
+          deletedAt: vehicle.deleted_at ? new Date(vehicle.deleted_at) : null,
+          deletionReason: vehicle.deletion_reason,
+          deletionComment: vehicle.deletion_comment
         }));
         return transformedData as Vehicle[];
       } else {
@@ -448,7 +451,10 @@ export class SupabaseStorage implements IStorage {
       views: vehicle.views,
       favorites: vehicle.favorites,
       status: vehicle.status,
-      isActive: vehicle.is_active !== false
+      isActive: vehicle.is_active !== false,
+      deletedAt: vehicle.deleted_at ? new Date(vehicle.deleted_at) : null,
+      deletionReason: vehicle.deletion_reason,
+      deletionComment: vehicle.deletion_comment
     }));
 
     return transformedData as Vehicle[];
@@ -673,23 +679,39 @@ export class SupabaseStorage implements IStorage {
   }
 
   async softDeleteVehicleWithReason(id: string, reason: string, comment?: string): Promise<boolean> {
-    const { error } = await supabaseServer
-      .from('annonces')
-      .update({
-        deleted_at: new Date().toISOString(),
-        deletion_reason: reason,
-        deletion_comment: comment || null,
-        is_active: false // Désactiver l'annonce aussi
-      })
-      .eq('id', id);
-    
-    if (error) {
-      console.error('Error soft deleting vehicle:', error);
+    try {
+      // Utiliser une requête SQL directe pour contourner le problème de cache Supabase
+      const { error } = await supabaseServer.rpc('soft_delete_vehicle', {
+        vehicle_id: parseInt(id),
+        delete_reason: reason,
+        delete_comment: comment || null
+      });
+      
+      if (error) {
+        console.error('Error with RPC soft delete:', error);
+        // Fallback : essayer une requête SQL directe
+        const { error: sqlError } = await supabaseServer
+          .from('annonces')
+          .update({
+            deleted_at: new Date().toISOString(),
+            deletion_reason: reason,
+            deletion_comment: comment || null,
+            is_active: false
+          })
+          .eq('id', parseInt(id));
+        
+        if (sqlError) {
+          console.error('Error soft deleting vehicle:', sqlError);
+          return false;
+        }
+      }
+      
+      console.log(`✅ Annonce ${id} supprimée avec raison: ${reason}`);
+      return true;
+    } catch (error) {
+      console.error('Unexpected error soft deleting vehicle:', error);
       return false;
     }
-    
-    console.log(`✅ Annonce ${id} supprimée avec raison: ${reason}`);
-    return true;
   }
 
   async searchVehicles(filters: any): Promise<Vehicle[]> {
@@ -703,7 +725,7 @@ export class SupabaseStorage implements IStorage {
     // FILTRE IMPORTANT: Seulement les annonces approuvées, actives et non supprimées pour les recherches publiques
     query = query.eq('status', 'approved')
                  .neq('is_active', false)
-                 .isNull('deleted_at');
+                 .is('deleted_at', null);
 
     // Apply filters
     if (filters.category) {
@@ -1339,7 +1361,10 @@ export class SupabaseStorage implements IStorage {
           views: vehicle.views,
           favorites: vehicle.favorites,
           status: vehicle.status,
-          isActive: vehicle.is_active !== false
+          isActive: vehicle.is_active !== false,
+          deletedAt: vehicle.deleted_at ? new Date(vehicle.deleted_at) : null,
+          deletionReason: vehicle.deletion_reason,
+          deletionComment: vehicle.deletion_comment
         }));
         
         return transformedData as Vehicle[];
