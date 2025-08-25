@@ -151,7 +151,7 @@ export const AdminDashboardClean: React.FC<AdminDashboardProps> = ({ onBack }) =
       console.log('🗑️ Annonces supprimées récupérées:', deletedData.length);
       
       // Récupérer TOUS les utilisateurs depuis la base
-      const usersRes = await fetch('/api/admin/all-users');
+      const usersRes = await fetch(`/api/admin/all-users?t=${Date.now()}`);
       const allUsers = usersRes.ok ? await usersRes.json() : [];
       console.log('👥 TOUS les utilisateurs récupérés:', allUsers.length);
       

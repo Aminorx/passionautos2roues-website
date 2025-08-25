@@ -955,6 +955,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Récupérer d'abord tous les utilisateurs auth
       const { data: authUsers, error: authError } = await supabaseServer.auth.admin.listUsers();
       
+      console.log('🔍 RAW AUTH DATA pour connect.now@gmail.com:', 
+        authUsers?.users?.find(u => u.email === 'connect.now@gmail.com') ? {
+          email: authUsers.users.find(u => u.email === 'connect.now@gmail.com')?.email,
+          email_confirmed_at: authUsers.users.find(u => u.email === 'connect.now@gmail.com')?.email_confirmed_at,
+          provider: authUsers.users.find(u => u.email === 'connect.now@gmail.com')?.app_metadata?.provider,
+          last_sign_in_at: authUsers.users.find(u => u.email === 'connect.now@gmail.com')?.last_sign_in_at
+        } : 'USER NOT FOUND'
+      );
+      
       if (authError) {
         console.error('❌ Erreur récupération auth users:', authError);
         return res.status(500).json({ error: 'Erreur auth' });
