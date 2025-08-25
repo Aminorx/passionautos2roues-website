@@ -8,6 +8,7 @@ import { useSavedSearches } from '../hooks/useSavedSearches';
 import { Vehicle } from '../types';
 import brandIcon from '@assets/Brand_1752260033631.png';
 import { DeletionQuestionnaireModal } from './DeletionQuestionnaireModal';
+import { ProfessionalVerificationBanner } from './ProfessionalVerificationBanner';
 
 interface DashboardTab {
   id: string;
@@ -512,6 +513,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'overview', o
           </div>
         </div>
       </div>
+
+      {/* Professional Verification Banner */}
+      <ProfessionalVerificationBanner />
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

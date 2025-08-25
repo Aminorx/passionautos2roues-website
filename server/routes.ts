@@ -915,6 +915,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use("/api/images", imagesRoutes);
   app.use("/api/auth", authSyncRoutes);
 
+  // Route pour vérifier le statut de vérification d'un utilisateur professionnel
+  app.get('/api/professional-accounts/status/:userId', async (req, res) => {
+    try {
+      const { userId } = req.params;
+      console.log(`📊 Vérification statut professionnel pour user ${userId}...`);
+      
+      const { data: proAccount, error } = await supabaseServer
+        .from('professional_accounts')
+        .select('id, verification_status, is_verified, rejected_reason, created_at')
+        .eq('user_id', userId)
+        .single();
+      
+      if (error && error.code !== 'PGRST116') { // PGRST116 = no rows found
+        console.error('❌ Erreur vérification statut:', error);
+        return res.status(500).json({ error: 'Erreur serveur' });
+      }
+      
+      if (!proAccount) {
+        // Aucun compte professionnel trouvé
+        console.log('ℹ️ Aucun compte professionnel trouvé pour cet utilisateur');
+        return res.status(404).json({ error: 'Aucun compte professionnel trouvé' });
+      }
+      
+      console.log(`✅ Statut professionnel récupéré: ${proAccount.verification_status}`);
+      res.json(proAccount);
+      
+    } catch (error) {
+      console.error('❌ Erreur vérification statut professionnel:', error);
+      res.status(500).json({ error: 'Erreur serveur' });
+    }
+  });
+
   // Setup wishlist migration routes
   setupWishlistMigration(app);
   setupWishlistDirect(app);
