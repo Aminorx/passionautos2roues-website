@@ -950,19 +950,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Route pour récupérer TOUS les utilisateurs (y compris non-vérifiés) pour l'admin
   app.get('/api/admin/all-users', async (req, res) => {
     try {
-      console.log('👥 Récupération de TOUS les utilisateurs admin...');
+      console.log('👥 Récupération de TOUS les utilisateurs depuis auth.users...');
       
-      const { data: allUsers, error } = await supabaseServer
-        .from('users')
-        .select('*')
-        .order('created_at', { ascending: false });
+      // Récupérer d'abord tous les utilisateurs auth
+      const { data: authUsers, error: authError } = await supabaseServer.auth.admin.listUsers();
       
-      if (error) {
-        console.error('❌ Erreur récupération utilisateurs:', error);
-        return res.status(500).json({ error: 'Erreur serveur' });
+      if (authError) {
+        console.error('❌ Erreur récupération auth users:', authError);
+        return res.status(500).json({ error: 'Erreur auth' });
       }
       
-      console.log(`✅ ${allUsers.length} utilisateurs récupérés`);
+      // Récupérer aussi les profils utilisateurs publics
+      const { data: publicUsers, error: publicError } = await supabaseServer
+        .from('users')
+        .select('*');
+      
+      if (publicError) {
+        console.error('❌ Erreur récupération users publics:', publicError);
+        // Continuer même si erreur sur les profils publics
+      }
+      
+      // Fusionner les données
+      const allUsers = authUsers.users.map(authUser => {
+        const publicProfile = publicUsers?.find(pu => pu.id === authUser.id);
+        
+        return {
+          id: authUser.id,
+          name: publicProfile?.name || authUser.user_metadata?.name || authUser.email?.split('@')[0] || 'Utilisateur',
+          email: authUser.email,
+          account_type: publicProfile?.account_type || 'individual',
+          verified: publicProfile?.verified || false,
+          email_verified: authUser.email_confirmed_at !== null,
+          created_at: authUser.created_at,
+          last_sign_in_at: authUser.last_sign_in_at,
+          phone: authUser.phone
+        };
+      });
+      
+      console.log(`✅ ${allUsers.length} utilisateurs auth récupérés`);
+      console.log('📧 Emails trouvés:', allUsers.map(u => u.email));
       res.json(allUsers);
       
     } catch (error) {
@@ -985,21 +1011,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         case 'verify_email':
           updateData = { 
             email_verified: true,
-            verified: true,
-            updated_at: new Date().toISOString()
+            verified: true
           };
           break;
         case 'activate':
           updateData = { 
             verified: true,
-            email_verified: true,
-            updated_at: new Date().toISOString()
+            email_verified: true
           };
           break;
         case 'suspend':
           updateData = { 
-            verified: false,
-            updated_at: new Date().toISOString()
+            verified: false
           };
           break;
         default:
