@@ -783,7 +783,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'overview', o
 
                     <div className="flex items-center space-x-3">
                       {/* Afficher les boutons seulement si l'annonce n'est pas supprimée */}
-                      {!vehicle.deletedAt ? (
+                      {!vehicle.deletedAt && (
                         <>
                           {!vehicle.isPremium && (
                             <button className="px-6 py-2 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-xl font-semibold transition-all duration-200 flex items-center space-x-2 shadow-lg hover:shadow-xl">
@@ -810,11 +810,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'overview', o
                             <Trash2 className="h-5 w-5" />
                           </button>
                         </>
-                      ) : (
-                        /* Pour les annonces supprimées, afficher seulement un message informatif */
-                        <div className="px-4 py-2 bg-gray-100 text-gray-600 rounded-xl font-medium">
-                          Annonce supprimée
-                        </div>
                       )}
                     </div>
                   </div>
