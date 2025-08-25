@@ -751,11 +751,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'overview', o
                          vehicle.status === 'pending' ? '⏳ En attente' : '❌ Rejetée'}
                       </span>
                       <span className={`px-4 py-2 rounded-full text-sm font-semibold ${
-                        vehicle.isActive !== false
+                        vehicle.deletedAt
+                          ? 'bg-gray-100 text-gray-800 border border-gray-200'
+                          : vehicle.isActive !== false
                           ? 'bg-green-100 text-green-800 border border-green-200'
                           : 'bg-red-100 text-red-800 border border-red-200'
                       }`}>
-                        {vehicle.isActive !== false ? '✅ Active' : '❌ Inactive'}
+                        {vehicle.deletedAt ? '🗑️ Supprimée' : vehicle.isActive !== false ? '✅ Active' : '❌ Inactive'}
                       </span>
                     </div>
                   </div>
@@ -780,30 +782,40 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'overview', o
                     </div>
 
                     <div className="flex items-center space-x-3">
-                      {!vehicle.isPremium && (
-                        <button className="px-6 py-2 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-xl font-semibold transition-all duration-200 flex items-center space-x-2 shadow-lg hover:shadow-xl">
-                          <Crown className="h-4 w-4" />
-                          <span>Promouvoir</span>
-                        </button>
+                      {/* Afficher les boutons seulement si l'annonce n'est pas supprimée */}
+                      {!vehicle.deletedAt ? (
+                        <>
+                          {!vehicle.isPremium && (
+                            <button className="px-6 py-2 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-xl font-semibold transition-all duration-200 flex items-center space-x-2 shadow-lg hover:shadow-xl">
+                              <Crown className="h-4 w-4" />
+                              <span>Promouvoir</span>
+                            </button>
+                          )}
+                          <button 
+                            onClick={() => handleToggleActiveListing(vehicle.id, vehicle.isActive !== false)}
+                            className={`px-4 py-2 rounded-xl font-semibold transition-all duration-200 flex items-center space-x-2 ${
+                              vehicle.isActive !== false
+                                ? 'bg-red-50 text-red-700 hover:bg-red-100 border border-red-200'
+                                : 'bg-green-50 text-green-700 hover:bg-green-100 border border-green-200'
+                            }`}
+                            title={vehicle.isActive !== false ? 'Désactiver l\'annonce' : 'Activer l\'annonce'}
+                          >
+                            {vehicle.isActive !== false ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+                            <span>{vehicle.isActive !== false ? 'Désactiver' : 'Activer'}</span>
+                          </button>
+                          <button 
+                            onClick={() => openDeletionModal(vehicle.id, vehicle.title)}
+                            className="p-3 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all duration-200"
+                          >
+                            <Trash2 className="h-5 w-5" />
+                          </button>
+                        </>
+                      ) : (
+                        /* Pour les annonces supprimées, afficher seulement un message informatif */
+                        <div className="px-4 py-2 bg-gray-100 text-gray-600 rounded-xl font-medium">
+                          Annonce supprimée
+                        </div>
                       )}
-                      <button 
-                        onClick={() => handleToggleActiveListing(vehicle.id, vehicle.isActive !== false)}
-                        className={`px-4 py-2 rounded-xl font-semibold transition-all duration-200 flex items-center space-x-2 ${
-                          vehicle.isActive !== false
-                            ? 'bg-red-50 text-red-700 hover:bg-red-100 border border-red-200'
-                            : 'bg-green-50 text-green-700 hover:bg-green-100 border border-green-200'
-                        }`}
-                        title={vehicle.isActive !== false ? 'Désactiver l\'annonce' : 'Activer l\'annonce'}
-                      >
-                        {vehicle.isActive !== false ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-                        <span>{vehicle.isActive !== false ? 'Désactiver' : 'Activer'}</span>
-                      </button>
-                      <button 
-                        onClick={() => openDeletionModal(vehicle.id, vehicle.title)}
-                        className="p-3 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all duration-200"
-                      >
-                        <Trash2 className="h-5 w-5" />
-                      </button>
                     </div>
                   </div>
                 </div>
