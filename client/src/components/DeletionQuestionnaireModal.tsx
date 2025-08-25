@@ -123,9 +123,9 @@ export function DeletionQuestionnaireModal({
             Sélectionnez la raison de suppression *
           </label>
           
-          <div className="space-y-3">
+          <div className="space-y-4">
             {DELETION_REASONS.map((reason) => (
-              <div key={reason.value} className="flex items-center space-x-2">
+              <div key={reason.value} className="flex items-center space-x-4 p-3 rounded-lg hover:bg-gray-50 transition-colors">
                 <input
                   type="radio"
                   name="deletionReason"
@@ -133,9 +133,9 @@ export function DeletionQuestionnaireModal({
                   value={reason.value}
                   checked={selectedReason === reason.value}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSelectedReason(e.target.value as DeletionReason)}
-                  className="w-4 h-4 text-blue-600"
+                  className="w-4 h-4 text-primary-bolt-600 focus:ring-primary-bolt-500 focus:ring-2"
                 />
-                <label htmlFor={reason.value} className="font-normal cursor-pointer">
+                <label htmlFor={reason.value} className="font-medium cursor-pointer text-gray-700 flex-1">
                   {reason.label}
                 </label>
               </div>
@@ -170,18 +170,18 @@ export function DeletionQuestionnaireModal({
           </p>
         </div>
 
-        <div className="flex gap-3 pt-4">
+        <div className="flex gap-4 pt-6 px-2">
           <button
             onClick={handleClose}
             disabled={isSubmitting}
-            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50"
+            className="flex-1 px-6 py-3 border-2 border-gray-300 rounded-xl font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-400 disabled:opacity-50 transition-all duration-200"
           >
             Annuler
           </button>
           <button
             onClick={handleSubmit}
             disabled={!selectedReason || isSubmitting}
-            className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50"
+            className="flex-1 px-6 py-3 bg-red-600 text-white rounded-xl font-medium hover:bg-red-700 disabled:opacity-50 transition-all duration-200 shadow-lg hover:shadow-xl"
           >
             {isSubmitting ? 'Suppression...' : 'Confirmer la suppression'}
           </button>
