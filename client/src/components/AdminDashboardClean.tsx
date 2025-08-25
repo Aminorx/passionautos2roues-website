@@ -294,10 +294,14 @@ export const AdminDashboardClean: React.FC<AdminDashboardProps> = ({ onBack }) =
         const result = await response.json();
         console.log('✅ Action réussie:', result.message);
         alert(`✅ ${result.message}`);
-        loadDashboardData(); // Recharger la liste des utilisateurs
+        // Attendre un peu puis recharger pour voir les changements
+        setTimeout(() => {
+          loadDashboardData();
+        }, 1000);
       } else {
-        console.error('❌ Erreur action utilisateur');
-        alert('❌ Erreur lors de l\'action');
+        const errorData = await response.json().catch(() => ({}));
+        console.error('❌ Erreur action utilisateur:', errorData);
+        alert(`❌ Erreur: ${errorData.error || 'Erreur lors de l\'action'}`);
       }
     } catch (error) {
       console.error('Erreur action utilisateur:', error);
@@ -641,25 +645,16 @@ export const AdminDashboardClean: React.FC<AdminDashboardProps> = ({ onBack }) =
                           </td>
                           <td className="py-4 px-6">
                             <div className="flex flex-wrap gap-1">
-                              {!user.emailVerified && (
-                                <button
-                                  onClick={() => handleUserAction(user.id, 'verify_email')}
-                                  className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-medium hover:bg-blue-200 transition-colors"
-                                  title="Vérifier l'email"
-                                >
-                                  📧 Vérifier
-                                </button>
-                              )}
-                              {!user.verified && (
+                              {!user.emailVerified && !user.verified && (
                                 <button
                                   onClick={() => handleUserAction(user.id, 'activate')}
                                   className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-medium hover:bg-green-200 transition-colors"
-                                  title="Activer le compte"
+                                  title="Activer complètement le compte"
                                 >
                                   ✅ Activer
                                 </button>
                               )}
-                              {user.verified && (
+                              {(user.verified || user.emailVerified) && (
                                 <button
                                   onClick={() => handleUserAction(user.id, 'suspend')}
                                   className="px-2 py-1 bg-red-100 text-red-700 rounded text-xs font-medium hover:bg-red-200 transition-colors"

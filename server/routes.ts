@@ -1008,15 +1008,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Mettre à jour le statut auth dans Supabase Auth
       if (action === 'verify_email' || action === 'activate') {
         console.log('📧 Confirmation de l\'email dans Supabase Auth...');
-        const { error: authError } = await supabaseServer.auth.admin.updateUserById(userId, {
+        const { data: authData, error: authError } = await supabaseServer.auth.admin.updateUserById(userId, {
           email_confirm: true
         });
         
         if (authError) {
           console.error('❌ Erreur confirmation email auth:', authError);
-          // Continuer même si erreur auth (profil peut quand même être mis à jour)
+          return res.status(500).json({ error: 'Erreur confirmation email' });
         } else {
-          console.log('✅ Email confirmé dans Supabase Auth');
+          console.log('✅ Email confirmé dans Supabase Auth:', authData.user.email_confirmed_at);
         }
       }
       
