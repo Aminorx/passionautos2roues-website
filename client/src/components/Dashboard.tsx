@@ -39,6 +39,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'overview', o
   const { user, dbUser, isLoading, refreshDbUser } = useAuth();
   const [userVehiclesWithInactive, setUserVehiclesWithInactive] = useState<Vehicle[]>([]);
   const [deletedVehicles, setDeletedVehicles] = useState<Vehicle[]>([]);
+  const [vehicleToDelete, setVehicleToDelete] = useState<{id: string; title: string} | null>(null);
+  const [isDeletionModalOpen, setIsDeletionModalOpen] = useState(false);
   const { unreadCount, refreshUnreadCount } = useUnreadMessages();
   const { favorites, loading: favoritesLoading, toggleFavorite, isFavorite } = useFavorites();
   const { savedSearches, loading: savedSearchesLoading, saveSearch, deleteSearch, toggleAlerts } = useSavedSearches();
@@ -62,9 +64,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'overview', o
   const [savingProfile, setSavingProfile] = useState(false);
   const [profileSuccess, setProfileSuccess] = useState(false);
   
-  // État pour le questionnaire de suppression
-  const [isDeletionModalOpen, setIsDeletionModalOpen] = useState(false);
-  const [vehicleToDelete, setVehicleToDelete] = useState<{ id: string; title: string } | null>(null);
+  // Ces états sont déjà définis plus haut, pas besoin de les redéfinir
 
   // Hook pour la redirection - DOIT être appelé avant tout return conditionnel
   useEffect(() => {
