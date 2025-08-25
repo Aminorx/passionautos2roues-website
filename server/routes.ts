@@ -1008,15 +1008,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Mettre à jour le statut auth dans Supabase Auth
       if (action === 'verify_email' || action === 'activate') {
         console.log('📧 Confirmation de l\'email dans Supabase Auth...');
+        
+        // Récupérer d'abord l'utilisateur
+        const { data: userData, error: getUserError } = await supabaseServer.auth.admin.getUserById(userId);
+        if (getUserError) {
+          console.error('❌ Erreur récupération user:', getUserError);
+          return res.status(500).json({ error: 'Utilisateur non trouvé' });
+        }
+        
+        console.log('👤 User avant confirmation:', {
+          email: userData.user.email,
+          email_confirmed_at: userData.user.email_confirmed_at
+        });
+        
         const { data: authData, error: authError } = await supabaseServer.auth.admin.updateUserById(userId, {
           email_confirm: true
         });
         
         if (authError) {
           console.error('❌ Erreur confirmation email auth:', authError);
-          return res.status(500).json({ error: 'Erreur confirmation email' });
+          return res.status(500).json({ error: `Erreur confirmation: ${authError.message}` });
         } else {
-          console.log('✅ Email confirmé dans Supabase Auth:', authData.user.email_confirmed_at);
+          console.log('✅ Email confirmé dans Supabase Auth:', {
+            email: authData.user.email,
+            email_confirmed_at: authData.user.email_confirmed_at
+          });
         }
       }
       
@@ -1038,7 +1054,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           break;
         case 'suspend':
           updateData = { 
-            verified: false
+            verified: false,
+            email_verified: false
           };
           break;
         default:

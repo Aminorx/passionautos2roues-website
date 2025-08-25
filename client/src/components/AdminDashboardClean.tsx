@@ -645,7 +645,7 @@ export const AdminDashboardClean: React.FC<AdminDashboardProps> = ({ onBack }) =
                           </td>
                           <td className="py-4 px-6">
                             <div className="flex flex-wrap gap-1">
-                              {!user.emailVerified && !user.verified && (
+                              {!user.verified && (
                                 <button
                                   onClick={() => handleUserAction(user.id, 'activate')}
                                   className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-medium hover:bg-green-200 transition-colors"
@@ -654,7 +654,7 @@ export const AdminDashboardClean: React.FC<AdminDashboardProps> = ({ onBack }) =
                                   ✅ Activer
                                 </button>
                               )}
-                              {(user.verified || user.emailVerified) && (
+                              {user.verified && (
                                 <button
                                   onClick={() => handleUserAction(user.id, 'suspend')}
                                   className="px-2 py-1 bg-red-100 text-red-700 rounded text-xs font-medium hover:bg-red-200 transition-colors"
