@@ -75,7 +75,7 @@ export const AdminDashboardClean: React.FC<AdminDashboardProps> = ({ onBack }) =
     if (onBack) onBack();
     return null;
   }
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'users' | 'annonces' | 'reports'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'users' | 'annonces' | 'performance' | 'reports'>('dashboard');
   const [stats, setStats] = useState<AdminStats>({
     totalUsers: 0,
     totalAnnonces: 0,
@@ -86,10 +86,14 @@ export const AdminDashboardClean: React.FC<AdminDashboardProps> = ({ onBack }) =
   const [users, setUsers] = useState<User[]>([]);
   const [annonces, setAnnonces] = useState<Annonce[]>([]);
   const [loading, setLoading] = useState(true);
+  const [performanceData, setPerformanceData] = useState<any>(null);
 
   useEffect(() => {
     loadDashboardData();
-  }, []);
+    if (activeTab === 'performance') {
+      loadPerformanceData();
+    }
+  }, [activeTab]);
 
   const loadDashboardData = async () => {
     try {
@@ -144,14 +148,64 @@ export const AdminDashboardClean: React.FC<AdminDashboardProps> = ({ onBack }) =
     }
   };
 
+  const loadPerformanceData = async () => {
+    try {
+      const response = await fetch('/api/admin/performance-stats');
+      if (response.ok) {
+        const data = await response.json();
+        setPerformanceData(data);
+      }
+    } catch (error) {
+      console.error('Erreur chargement performance:', error);
+    }
+  };
+
+  const handleAnnonceView = (annonceId: string) => {
+    window.open(`/vehicle/${annonceId}`, '_blank');
+  };
+
+  const handleAnnonceDeactivate = async (annonceId: string) => {
+    try {
+      const response = await fetch(`/api/admin/annonces/${annonceId}/deactivate`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      if (response.ok) {
+        loadDashboardData();
+      }
+    } catch (error) {
+      console.error('Erreur désactivation:', error);
+    }
+  };
+
   const handleUserAction = async (userId: string, action: 'activate' | 'suspend') => {
-    console.log(`Action utilisateur: ${action} pour ${userId}`);
-    // Simulation d'action - à implémenter avec l'API admin
+    try {
+      const response = await fetch(`/api/admin/users/${userId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action })
+      });
+      if (response.ok) {
+        loadDashboardData();
+      }
+    } catch (error) {
+      console.error('Erreur action utilisateur:', error);
+    }
   };
 
   const handleAnnonceAction = async (annonceId: string, action: 'approve' | 'reject' | 'suspend') => {
-    console.log(`Action annonce: ${action} pour ${annonceId}`);
-    // Simulation d'action - à implémenter avec l'API admin
+    try {
+      const response = await fetch(`/api/admin/annonces/${annonceId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action })
+      });
+      if (response.ok) {
+        loadDashboardData();
+      }
+    } catch (error) {
+      console.error('Erreur action annonce:', error);
+    }
   };
 
   if (loading) {
@@ -215,6 +269,7 @@ export const AdminDashboardClean: React.FC<AdminDashboardProps> = ({ onBack }) =
                 { id: 'dashboard', label: 'Tableau de bord', icon: BarChart3 },
                 { id: 'users', label: 'Utilisateurs', icon: Users },
                 { id: 'annonces', label: 'Annonces', icon: FileText },
+                { id: 'performance', label: 'Performance', icon: TrendingUp },
                 { id: 'reports', label: 'Signalements', icon: AlertTriangle },
               ].map((item) => (
                 <button
@@ -468,15 +523,16 @@ export const AdminDashboardClean: React.FC<AdminDashboardProps> = ({ onBack }) =
                                 <CheckCircle className="h-4 w-4" />
                               </button>
                               <button
-                                onClick={() => handleAnnonceAction(annonce.id, 'reject')}
+                                onClick={() => handleAnnonceDeactivate(annonce.id)}
                                 className="p-1 text-red-600 hover:text-red-700 transition-colors"
-                                title="Rejeter"
+                                title="Désactiver"
                               >
                                 <XCircle className="h-4 w-4" />
                               </button>
                               <button
+                                onClick={() => handleAnnonceView(annonce.id)}
                                 className="p-1 text-blue-600 hover:text-blue-700 transition-colors"
-                                title="Voir détails"
+                                title="Voir annonce"
                               >
                                 <Eye className="h-4 w-4" />
                               </button>
@@ -488,6 +544,107 @@ export const AdminDashboardClean: React.FC<AdminDashboardProps> = ({ onBack }) =
                   </table>
                 </div>
               </div>
+            </div>
+          )}
+
+          {activeTab === 'performance' && (
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-bold text-gray-900">Performance des annonces</h2>
+                <div className="text-sm text-gray-600">
+                  Statistiques basées sur le questionnaire de suppression
+                </div>
+              </div>
+
+              {performanceData ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-gray-600">Vendues sur le site</p>
+                        <p className="text-3xl font-bold text-green-600">{performanceData.soldOnSite || 0}</p>
+                        <p className="text-sm text-gray-500">{performanceData.soldOnSitePercent || 0}% du total</p>
+                      </div>
+                      <div className="p-3 bg-green-100 rounded-lg">
+                        <TrendingUp className="h-6 w-6 text-green-600" />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-gray-600">Vendues ailleurs</p>
+                        <p className="text-3xl font-bold text-orange-600">{performanceData.soldElsewhere || 0}</p>
+                        <p className="text-sm text-gray-500">{performanceData.soldElsewherePercent || 0}% du total</p>
+                      </div>
+                      <div className="p-3 bg-orange-100 rounded-lg">
+                        <AlertTriangle className="h-6 w-6 text-orange-600" />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-gray-600">Ne souhaite plus vendre</p>
+                        <p className="text-3xl font-bold text-blue-600">{performanceData.noLongerSelling || 0}</p>
+                        <p className="text-sm text-gray-500">{performanceData.noLongerSellingPercent || 0}% du total</p>
+                      </div>
+                      <div className="p-3 bg-blue-100 rounded-lg">
+                        <XCircle className="h-6 w-6 text-blue-600" />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-gray-600">Autres raisons</p>
+                        <p className="text-3xl font-bold text-purple-600">{performanceData.other || 0}</p>
+                        <p className="text-sm text-gray-500">{performanceData.otherPercent || 0}% du total</p>
+                      </div>
+                      <div className="p-3 bg-purple-100 rounded-lg">
+                        <FileText className="h-6 w-6 text-purple-600" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center">
+                  <BarChart3 className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">Chargement des données...</h3>
+                  <p className="text-gray-600">Veuillez patienter</p>
+                </div>
+              )}
+
+              {performanceData && (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div className="bg-white rounded-xl shadow-sm border border-gray-100">
+                    <div className="p-6 border-b border-gray-100">
+                      <h3 className="text-lg font-semibold text-gray-900">Durée moyenne avant suppression</h3>
+                    </div>
+                    <div className="p-6">
+                      <div className="text-center">
+                        <p className="text-4xl font-bold text-indigo-600 mb-2">{performanceData.averageDays || 0}</p>
+                        <p className="text-gray-600">jours en moyenne</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-white rounded-xl shadow-sm border border-gray-100">
+                    <div className="p-6 border-b border-gray-100">
+                      <h3 className="text-lg font-semibold text-gray-900">Total suppressions</h3>
+                    </div>
+                    <div className="p-6">
+                      <div className="text-center">
+                        <p className="text-4xl font-bold text-gray-900 mb-2">{performanceData.totalDeleted || 0}</p>
+                        <p className="text-gray-600">annonces supprimées</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 

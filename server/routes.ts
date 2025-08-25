@@ -437,6 +437,102 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Route pour les statistiques de performance admin
+  app.get('/api/admin/performance-stats', async (req, res) => {
+    try {
+      console.log('📈 Récupération statistiques de performance admin...');
+      
+      // Récupérer toutes les annonces supprimées avec leurs raisons
+      const { data: deletedAnnonces, error } = await supabaseServer
+        .from('annonces')
+        .select('id, title, created_at, deleted_at, deletion_reason, deletion_comment')
+        .not('deleted_at', 'is', null);
+      
+      if (error) {
+        console.error('❌ Erreur récupération annonces supprimées:', error);
+        return res.status(500).json({ error: 'Erreur serveur' });
+      }
+      
+      const total = deletedAnnonces?.length || 0;
+      
+      // Compter les raisons de suppression
+      const soldOnSite = deletedAnnonces?.filter(a => a.deletion_reason === 'sold_on_site').length || 0;
+      const soldElsewhere = deletedAnnonces?.filter(a => a.deletion_reason === 'sold_elsewhere').length || 0;
+      const noLongerSelling = deletedAnnonces?.filter(a => a.deletion_reason === 'no_longer_selling').length || 0;
+      const other = deletedAnnonces?.filter(a => a.deletion_reason === 'other').length || 0;
+      
+      // Calculer les pourcentages
+      const soldOnSitePercent = total > 0 ? Math.round((soldOnSite / total) * 100) : 0;
+      const soldElsewherePercent = total > 0 ? Math.round((soldElsewhere / total) * 100) : 0;
+      const noLongerSellingPercent = total > 0 ? Math.round((noLongerSelling / total) * 100) : 0;
+      const otherPercent = total > 0 ? Math.round((other / total) * 100) : 0;
+      
+      // Calculer la durée moyenne avant suppression
+      let averageDays = 0;
+      if (deletedAnnonces && deletedAnnonces.length > 0) {
+        const totalDays = deletedAnnonces.reduce((sum, annonce) => {
+          if (annonce.created_at && annonce.deleted_at) {
+            const created = new Date(annonce.created_at);
+            const deleted = new Date(annonce.deleted_at);
+            const diffDays = Math.floor((deleted.getTime() - created.getTime()) / (1000 * 60 * 60 * 24));
+            return sum + Math.max(0, diffDays);
+          }
+          return sum;
+        }, 0);
+        averageDays = Math.round(totalDays / deletedAnnonces.length);
+      }
+      
+      const stats = {
+        soldOnSite,
+        soldOnSitePercent,
+        soldElsewhere, 
+        soldElsewherePercent,
+        noLongerSelling,
+        noLongerSellingPercent,
+        other,
+        otherPercent,
+        totalDeleted: total,
+        averageDays
+      };
+      
+      console.log('✨ Statistiques performance générées:', stats);
+      res.json(stats);
+      
+    } catch (error) {
+      console.error('❌ Erreur génération statistiques performance:', error);
+      res.status(500).json({ error: 'Erreur serveur' });
+    }
+  });
+
+  // Route pour désactiver une annonce (admin)
+  app.patch('/api/admin/annonces/:id/deactivate', async (req, res) => {
+    const { id } = req.params;
+    
+    try {
+      console.log(`🔴 Désactivation annonce ${id} par admin...`);
+      
+      const { error } = await supabaseServer
+        .from('annonces')
+        .update({ 
+          status: 'inactive',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', id);
+      
+      if (error) {
+        console.error('❌ Erreur désactivation annonce:', error);
+        return res.status(500).json({ error: 'Erreur lors de la désactivation' });
+      }
+      
+      console.log(`✅ Annonce ${id} désactivée avec succès`);
+      res.json({ success: true, message: 'Annonce désactivée avec succès' });
+      
+    } catch (error) {
+      console.error('❌ Erreur désactivation annonce:', error);
+      res.status(500).json({ error: 'Erreur serveur' });
+    }
+  });
+
   // Mount new route handlers
   app.use("/api/wishlist", wishlistRoutes);
   app.use("/api/saved-searches", savedSearchRoutes);
