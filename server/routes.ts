@@ -540,9 +540,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         const fileName = `kbis-${proAccount.id}-${Date.now()}.${req.file.originalname.split('.').pop()}`;
         
-        // Upload vers Supabase Storage
+        // Upload vers Supabase Storage (bucket verifications-documents)
         const { data: uploadData, error: uploadError } = await supabaseServer.storage
-          .from('verification-documents')
+          .from('verifications-documents')
           .upload(fileName, req.file.buffer, {
             contentType: req.file.mimetype,
             upsert: false
@@ -597,6 +597,175 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Route pour récupérer les comptes professionnels en attente (admin)
+  app.get('/api/admin/professional-accounts', async (req, res) => {
+    try {
+      console.log('🏢 Récupération comptes professionnels pour admin...');
+      
+      const { data: proAccounts, error } = await supabaseServer
+        .from('professional_accounts')
+        .select(`
+          id,
+          company_name,
+          siret,
+          company_address,
+          phone,
+          email,
+          website,
+          is_verified,
+          verification_status,
+          verified_at,
+          rejected_reason,
+          created_at,
+          updated_at,
+          users:user_id (
+            id,
+            name,
+            email
+          )
+        `)
+        .order('created_at', { ascending: false });
+      
+      if (error) {
+        console.error('❌ Erreur récupération comptes pro:', error);
+        return res.status(500).json({ error: 'Erreur serveur' });
+      }
+      
+      console.log(`✅ ${proAccounts?.length || 0} comptes professionnels récupérés`);
+      res.json(proAccounts || []);
+      
+    } catch (error) {
+      console.error('❌ Erreur récupération comptes pro:', error);
+      res.status(500).json({ error: 'Erreur serveur' });
+    }
+  });
+  
+  // Route pour récupérer les documents de vérification d'un compte pro (admin)
+  app.get('/api/admin/professional-accounts/:id/documents', async (req, res) => {
+    try {
+      const { id } = req.params;
+      console.log(`📄 Récupération documents pour compte pro ${id}...`);
+      
+      const { data: documents, error } = await supabaseServer
+        .from('verification_documents')
+        .select('*')
+        .eq('professional_account_id', id)
+        .order('upload_date', { ascending: false });
+      
+      if (error) {
+        console.error('❌ Erreur récupération documents:', error);
+        return res.status(500).json({ error: 'Erreur serveur' });
+      }
+      
+      console.log(`✅ ${documents?.length || 0} documents récupérés`);
+      res.json(documents || []);
+      
+    } catch (error) {
+      console.error('❌ Erreur récupération documents:', error);
+      res.status(500).json({ error: 'Erreur serveur' });
+    }
+  });
+  
+  // Route pour approuver/rejeter un compte professionnel (admin)
+  app.patch('/api/admin/professional-accounts/:id/verify', async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { action, reason } = req.body; // action: 'approve' | 'reject', reason: string pour rejection
+      
+      console.log(`🔍 Vérification compte pro ${id}: ${action}`);
+      
+      if (action === 'approve') {
+        const { data: updatedAccount, error } = await supabaseServer
+          .from('professional_accounts')
+          .update({
+            verification_status: 'approved',
+            is_verified: true,
+            verified_at: new Date().toISOString(),
+            rejected_reason: null
+          })
+          .eq('id', id)
+          .select()
+          .single();
+        
+        if (error) {
+          console.error('❌ Erreur approbation:', error);
+          return res.status(500).json({ error: 'Erreur lors de l\'approbation' });
+        }
+        
+        // Mettre à jour le statut des documents
+        await supabaseServer
+          .from('verification_documents')
+          .update({ verification_status: 'approved' })
+          .eq('professional_account_id', id);
+        
+        console.log('✅ Compte professionnel approuvé');
+        res.json({ success: true, account: updatedAccount, message: 'Compte professionnel approuvé' });
+        
+      } else if (action === 'reject') {
+        if (!reason) {
+          return res.status(400).json({ error: 'Raison du rejet requise' });
+        }
+        
+        const { data: updatedAccount, error } = await supabaseServer
+          .from('professional_accounts')
+          .update({
+            verification_status: 'rejected',
+            is_verified: false,
+            rejected_reason: reason,
+            verified_at: null
+          })
+          .eq('id', id)
+          .select()
+          .single();
+        
+        if (error) {
+          console.error('❌ Erreur rejet:', error);
+          return res.status(500).json({ error: 'Erreur lors du rejet' });
+        }
+        
+        // Mettre à jour le statut des documents
+        await supabaseServer
+          .from('verification_documents')
+          .update({ verification_status: 'rejected' })
+          .eq('professional_account_id', id);
+        
+        console.log('✅ Compte professionnel rejeté');
+        res.json({ success: true, account: updatedAccount, message: 'Compte professionnel rejeté' });
+        
+      } else {
+        return res.status(400).json({ error: 'Action invalide' });
+      }
+      
+    } catch (error) {
+      console.error('❌ Erreur vérification compte pro:', error);
+      res.status(500).json({ error: 'Erreur serveur' });
+    }
+  });
+  
+  // Route pour obtenir l'URL signée d'un document (admin)
+  app.get('/api/admin/documents/:path/signed-url', async (req, res) => {
+    try {
+      const { path } = req.params;
+      console.log(`🔗 Génération URL signée pour: ${path}`);
+      
+      const { data, error } = await supabaseServer.storage
+        .from('verifications-documents')
+        .createSignedUrl(path, 3600); // 1 heure d'expiration
+      
+      if (error) {
+        console.error('❌ Erreur génération URL signée:', error);
+        return res.status(500).json({ error: 'Erreur génération URL' });
+      }
+      
+      console.log('✅ URL signée générée');
+      res.json({ signedUrl: data.signedUrl });
+      
+    } catch (error) {
+      console.error('❌ Erreur URL signée:', error);
+      res.status(500).json({ error: 'Erreur serveur' });
+    }
+  });
+
   // Routes admin spécialisées (à placer avant les routes génériques)
   
   // Route pour récupérer les annonces supprimées (admin)

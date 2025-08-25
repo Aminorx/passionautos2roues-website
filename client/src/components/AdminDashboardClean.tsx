@@ -11,7 +11,12 @@ import {
   CheckCircle,
   XCircle,
   Clock,
-  ArrowLeft
+  ArrowLeft,
+  Building2,
+  Download,
+  Check,
+  X,
+  ExternalLink
 } from 'lucide-react';
 
 interface AdminStats {
@@ -40,6 +45,39 @@ interface Annonce {
   status: string;
   price: number;
   createdAt: string;
+}
+
+interface ProfessionalAccount {
+  id: number;
+  company_name: string;
+  siret: string;
+  company_address: string;
+  phone: string;
+  email: string;
+  website?: string;
+  is_verified: boolean;
+  verification_status: 'pending' | 'approved' | 'rejected';
+  verified_at?: string;
+  rejected_reason?: string;
+  created_at: string;
+  updated_at: string;
+  users?: {
+    id: string;
+    name: string;
+    email: string;
+  };
+}
+
+interface VerificationDocument {
+  id: number;
+  professional_account_id: number;
+  document_type: 'kbis' | 'siret' | 'other';
+  file_url: string;
+  file_name: string;
+  file_size: number;
+  upload_date: string;
+  verification_status: 'pending' | 'approved' | 'rejected';
+  admin_notes?: string;
 }
 
 interface AdminDashboardProps {
@@ -75,7 +113,7 @@ export const AdminDashboardClean: React.FC<AdminDashboardProps> = ({ onBack }) =
     if (onBack) onBack();
     return null;
   }
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'users' | 'annonces' | 'performance' | 'reports'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'users' | 'annonces' | 'performance' | 'reports' | 'pro-accounts'>('dashboard');
   const [stats, setStats] = useState<AdminStats>({
     totalUsers: 0,
     totalAnnonces: 0,
@@ -87,6 +125,10 @@ export const AdminDashboardClean: React.FC<AdminDashboardProps> = ({ onBack }) =
   const [annonces, setAnnonces] = useState<Annonce[]>([]);
   const [loading, setLoading] = useState(true);
   const [performanceData, setPerformanceData] = useState<any>(null);
+  const [professionalAccounts, setProfessionalAccounts] = useState<ProfessionalAccount[]>([]);
+  const [selectedProAccount, setSelectedProAccount] = useState<ProfessionalAccount | null>(null);
+  const [proAccountDocuments, setProAccountDocuments] = useState<VerificationDocument[]>([]);
+  const [verificationAction, setVerificationAction] = useState<{accountId: number, action: 'approve' | 'reject', reason?: string} | null>(null);
 
   useEffect(() => {
     loadDashboardData();
@@ -152,6 +194,11 @@ export const AdminDashboardClean: React.FC<AdminDashboardProps> = ({ onBack }) =
 
       setUsers(uniqueUsers);
       setAnnonces(allAnnonces);
+      
+      // Charger aussi les comptes professionnels si c'est l'onglet actif
+      if (activeTab === 'pro-accounts') {
+        loadProfessionalAccounts();
+      }
 
       setStats({
         totalUsers: uniqueUsers.length,
@@ -258,6 +305,80 @@ export const AdminDashboardClean: React.FC<AdminDashboardProps> = ({ onBack }) =
     }
   };
 
+  const loadProfessionalAccounts = async () => {
+    try {
+      console.log('🏢 Chargement comptes professionnels...');
+      const response = await fetch('/api/admin/professional-accounts');
+      if (response.ok) {
+        const data = await response.json();
+        console.log(`📊 ${data.length} comptes professionnels reçus`);
+        setProfessionalAccounts(data);
+      }
+    } catch (error) {
+      console.error('Erreur chargement comptes pro:', error);
+    }
+  };
+
+  const loadProAccountDocuments = async (accountId: number) => {
+    try {
+      console.log(`📄 Chargement documents pour compte ${accountId}...`);
+      const response = await fetch(`/api/admin/professional-accounts/${accountId}/documents`);
+      if (response.ok) {
+        const data = await response.json();
+        console.log(`📄 ${data.length} documents reçus`);
+        setProAccountDocuments(data);
+      }
+    } catch (error) {
+      console.error('Erreur chargement documents:', error);
+    }
+  };
+
+  const handleVerifyProAccount = async (accountId: number, action: 'approve' | 'reject', reason?: string) => {
+    try {
+      console.log(`🔍 ${action} compte pro ${accountId}...`);
+      const response = await fetch(`/api/admin/professional-accounts/${accountId}/verify`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ action, reason }),
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        console.log('✅ Vérification réussie:', result.message);
+        alert(`✅ ${result.message}`);
+        loadProfessionalAccounts(); // Recharger la liste
+        setVerificationAction(null);
+        if (selectedProAccount?.id === accountId) {
+          setSelectedProAccount(null); // Fermer le détail
+        }
+      } else {
+        console.error('❌ Erreur vérification');
+        alert('❌ Erreur lors de la vérification');
+      }
+    } catch (error) {
+      console.error('Erreur vérification:', error);
+      alert('❌ Erreur lors de la vérification');
+    }
+  };
+
+  const handleViewDocument = async (document: VerificationDocument) => {
+    try {
+      console.log(`🔗 Génération URL signée pour: ${document.file_url}`);
+      const response = await fetch(`/api/admin/documents/${encodeURIComponent(document.file_url)}/signed-url`);
+      if (response.ok) {
+        const data = await response.json();
+        window.open(data.signedUrl, '_blank');
+      } else {
+        alert('❌ Impossible d\'ouvrir le document');
+      }
+    } catch (error) {
+      console.error('Erreur ouverture document:', error);
+      alert('❌ Erreur lors de l\'ouverture du document');
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -320,11 +441,17 @@ export const AdminDashboardClean: React.FC<AdminDashboardProps> = ({ onBack }) =
                 { id: 'users', label: 'Utilisateurs', icon: Users },
                 { id: 'annonces', label: 'Annonces', icon: FileText },
                 { id: 'performance', label: 'Performance', icon: TrendingUp },
+                { id: 'pro-accounts', label: 'Comptes Pro', icon: Building2 },
                 { id: 'reports', label: 'Signalements', icon: AlertTriangle },
               ].map((item) => (
                 <button
                   key={item.id}
-                  onClick={() => setActiveTab(item.id as any)}
+                  onClick={() => {
+                    setActiveTab(item.id as any);
+                    if (item.id === 'pro-accounts') {
+                      loadProfessionalAccounts();
+                    }
+                  }}
                   className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-colors ${
                     activeTab === item.id
                       ? 'bg-purple-50 text-purple-700 border-purple-200'
@@ -333,6 +460,11 @@ export const AdminDashboardClean: React.FC<AdminDashboardProps> = ({ onBack }) =
                 >
                   <item.icon className="h-5 w-5" />
                   <span className="font-medium">{item.label}</span>
+                  {item.id === 'pro-accounts' && professionalAccounts.filter(acc => acc.verification_status === 'pending').length > 0 && (
+                    <span className="bg-red-500 text-white text-xs rounded-full px-2 py-1 ml-auto">
+                      {professionalAccounts.filter(acc => acc.verification_status === 'pending').length}
+                    </span>
+                  )}
                 </button>
               ))}
             </div>
@@ -729,6 +861,359 @@ export const AdminDashboardClean: React.FC<AdminDashboardProps> = ({ onBack }) =
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">Aucun signalement</h3>
                 <p className="text-gray-600">Tous les signalements ont été traités</p>
               </div>
+            </div>
+          )}
+
+          {activeTab === 'pro-accounts' && (
+            <div className="space-y-8">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-3xl font-bold text-gray-900 mb-2">Comptes Professionnels</h2>
+                  <p className="text-gray-600">Gestion et validation des comptes professionnels</p>
+                </div>
+                <div className="text-sm text-gray-500">
+                  {professionalAccounts.length} comptes • {professionalAccounts.filter(acc => acc.verification_status === 'pending').length} en attente
+                </div>
+              </div>
+
+              {/* Statistiques */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">En attente</p>
+                      <p className="text-3xl font-bold text-orange-600">
+                        {professionalAccounts.filter(acc => acc.verification_status === 'pending').length}
+                      </p>
+                    </div>
+                    <div className="p-3 bg-orange-100 rounded-lg">
+                      <Clock className="h-6 w-6 text-orange-600" />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">Approuvés</p>
+                      <p className="text-3xl font-bold text-green-600">
+                        {professionalAccounts.filter(acc => acc.verification_status === 'approved').length}
+                      </p>
+                    </div>
+                    <div className="p-3 bg-green-100 rounded-lg">
+                      <CheckCircle className="h-6 w-6 text-green-600" />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">Rejetés</p>
+                      <p className="text-3xl font-bold text-red-600">
+                        {professionalAccounts.filter(acc => acc.verification_status === 'rejected').length}
+                      </p>
+                    </div>
+                    <div className="p-3 bg-red-100 rounded-lg">
+                      <XCircle className="h-6 w-6 text-red-600" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Liste des comptes */}
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100">
+                <div className="p-6 border-b border-gray-100">
+                  <h3 className="text-lg font-semibold text-gray-900">Demandes de comptes professionnels</h3>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Entreprise
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          SIRET
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Contact
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Statut
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Date
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Actions
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {professionalAccounts.map((account) => (
+                        <tr key={account.id} className="hover:bg-gray-50">
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div>
+                              <div className="text-sm font-medium text-gray-900">{account.company_name}</div>
+                              <div className="text-sm text-gray-500 truncate max-w-xs">{account.company_address}</div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm text-gray-900 font-mono">{account.siret}</div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div>
+                              <div className="text-sm text-gray-900">{account.email}</div>
+                              <div className="text-sm text-gray-500">{account.phone}</div>
+                              {account.users && (
+                                <div className="text-xs text-gray-400">👤 {account.users.name}</div>
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                              account.verification_status === 'pending'
+                                ? 'bg-orange-100 text-orange-800'
+                                : account.verification_status === 'approved'
+                                ? 'bg-green-100 text-green-800'
+                                : 'bg-red-100 text-red-800'
+                            }`}>
+                              {account.verification_status === 'pending' && '⏳ En attente'}
+                              {account.verification_status === 'approved' && '✅ Approuvé'}
+                              {account.verification_status === 'rejected' && '❌ Rejeté'}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {new Date(account.created_at).toLocaleDateString('fr-FR')}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm space-x-2">
+                            <button
+                              onClick={() => {
+                                setSelectedProAccount(account);
+                                loadProAccountDocuments(account.id);
+                              }}
+                              className="inline-flex items-center px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+                            >
+                              <Eye className="h-4 w-4 mr-1" />
+                              Voir
+                            </button>
+                            {account.verification_status === 'pending' && (
+                              <div className="inline-flex space-x-1">
+                                <button
+                                  onClick={() => handleVerifyProAccount(account.id, 'approve')}
+                                  className="inline-flex items-center px-3 py-1 border border-green-300 rounded-md text-sm text-green-700 bg-green-50 hover:bg-green-100 transition-colors"
+                                >
+                                  <Check className="h-4 w-4 mr-1" />
+                                  Approuver
+                                </button>
+                                <button
+                                  onClick={() => setVerificationAction({ accountId: account.id, action: 'reject' })}
+                                  className="inline-flex items-center px-3 py-1 border border-red-300 rounded-md text-sm text-red-700 bg-red-50 hover:bg-red-100 transition-colors"
+                                >
+                                  <X className="h-4 w-4 mr-1" />
+                                  Rejeter
+                                </button>
+                              </div>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  {professionalAccounts.length === 0 && (
+                    <div className="text-center py-12">
+                      <Building2 className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                      <p className="text-gray-500">Aucun compte professionnel pour le moment</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Modal de détail de compte */}
+              {selectedProAccount && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                  <div className="bg-white rounded-lg p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+                    <div className="flex items-center justify-between mb-6">
+                      <h3 className="text-xl font-semibold text-gray-900">
+                        Détails du compte professionnel
+                      </h3>
+                      <button
+                        onClick={() => {
+                          setSelectedProAccount(null);
+                          setProAccountDocuments([]);
+                        }}
+                        className="text-gray-400 hover:text-gray-600"
+                      >
+                        <X className="h-6 w-6" />
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                      <div className="space-y-4">
+                        <h4 className="text-lg font-medium text-gray-900">Informations de l'entreprise</h4>
+                        <div>
+                          <label className="text-sm text-gray-600">Nom de l'entreprise</label>
+                          <p className="font-medium">{selectedProAccount.company_name}</p>
+                        </div>
+                        <div>
+                          <label className="text-sm text-gray-600">SIRET</label>
+                          <p className="font-mono">{selectedProAccount.siret}</p>
+                        </div>
+                        <div>
+                          <label className="text-sm text-gray-600">Adresse</label>
+                          <p>{selectedProAccount.company_address}</p>
+                        </div>
+                        <div>
+                          <label className="text-sm text-gray-600">Site web</label>
+                          <p>{selectedProAccount.website || 'Non renseigné'}</p>
+                        </div>
+                      </div>
+
+                      <div className="space-y-4">
+                        <h4 className="text-lg font-medium text-gray-900">Contact</h4>
+                        <div>
+                          <label className="text-sm text-gray-600">Email</label>
+                          <p>{selectedProAccount.email}</p>
+                        </div>
+                        <div>
+                          <label className="text-sm text-gray-600">Téléphone</label>
+                          <p>{selectedProAccount.phone}</p>
+                        </div>
+                        <div>
+                          <label className="text-sm text-gray-600">Utilisateur associé</label>
+                          <p>{selectedProAccount.users?.name || 'Non trouvé'}</p>
+                        </div>
+                        <div>
+                          <label className="text-sm text-gray-600">Statut</label>
+                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                            selectedProAccount.verification_status === 'pending'
+                              ? 'bg-orange-100 text-orange-800'
+                              : selectedProAccount.verification_status === 'approved'
+                              ? 'bg-green-100 text-green-800'
+                              : 'bg-red-100 text-red-800'
+                          }`}>
+                            {selectedProAccount.verification_status === 'pending' && '⏳ En attente'}
+                            {selectedProAccount.verification_status === 'approved' && '✅ Approuvé'}
+                            {selectedProAccount.verification_status === 'rejected' && '❌ Rejeté'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Documents de vérification */}
+                    <div className="mb-6">
+                      <h4 className="text-lg font-medium text-gray-900 mb-4">Documents de vérification</h4>
+                      {proAccountDocuments.length > 0 ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {proAccountDocuments.map((doc) => (
+                            <div key={doc.id} className="border border-gray-200 rounded-lg p-4">
+                              <div className="flex items-center justify-between mb-2">
+                                <h5 className="font-medium text-gray-900">
+                                  {doc.document_type === 'kbis' ? 'K-bis' : 
+                                   doc.document_type === 'siret' ? 'SIRET' : 'Autre'}
+                                </h5>
+                                <button
+                                  onClick={() => handleViewDocument(doc)}
+                                  className="inline-flex items-center px-2 py-1 text-sm text-blue-600 hover:text-blue-800"
+                                >
+                                  <ExternalLink className="h-4 w-4 mr-1" />
+                                  Ouvrir
+                                </button>
+                              </div>
+                              <p className="text-sm text-gray-600 mb-1">{doc.file_name}</p>
+                              <p className="text-xs text-gray-500">
+                                {(doc.file_size / 1024 / 1024).toFixed(2)} MB • 
+                                {new Date(doc.upload_date).toLocaleDateString('fr-FR')}
+                              </p>
+                              <span className={`inline-flex px-2 py-1 text-xs rounded-full mt-2 ${
+                                doc.verification_status === 'pending'
+                                  ? 'bg-orange-100 text-orange-800'
+                                  : doc.verification_status === 'approved'
+                                  ? 'bg-green-100 text-green-800'
+                                  : 'bg-red-100 text-red-800'
+                              }`}>
+                                {doc.verification_status}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-gray-500">Aucun document trouvé</p>
+                      )}
+                    </div>
+
+                    {/* Actions pour compte en attente */}
+                    {selectedProAccount.verification_status === 'pending' && (
+                      <div className="flex space-x-4 pt-4 border-t border-gray-200">
+                        <button
+                          onClick={() => handleVerifyProAccount(selectedProAccount.id, 'approve')}
+                          className="flex-1 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
+                        >
+                          ✅ Approuver le compte
+                        </button>
+                        <button
+                          onClick={() => setVerificationAction({ accountId: selectedProAccount.id, action: 'reject' })}
+                          className="flex-1 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
+                        >
+                          ❌ Rejeter le compte
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Détails du rejet si rejeté */}
+                    {selectedProAccount.verification_status === 'rejected' && selectedProAccount.rejected_reason && (
+                      <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                        <h5 className="font-medium text-red-800 mb-2">Raison du rejet</h5>
+                        <p className="text-red-700">{selectedProAccount.rejected_reason}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Modal de rejet */}
+              {verificationAction?.action === 'reject' && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                  <div className="bg-white rounded-lg p-6 max-w-md w-full">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                      Rejeter le compte professionnel
+                    </h3>
+                    <p className="text-gray-600 mb-4">
+                      Veuillez indiquer la raison du rejet :
+                    </p>
+                    <textarea
+                      className="w-full p-3 border border-gray-300 rounded-lg resize-none"
+                      rows={4}
+                      placeholder="Raison du rejet..."
+                      onChange={(e) => setVerificationAction({
+                        ...verificationAction,
+                        reason: e.target.value
+                      })}
+                    />
+                    <div className="flex space-x-4 mt-4">
+                      <button
+                        onClick={() => setVerificationAction(null)}
+                        className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                      >
+                        Annuler
+                      </button>
+                      <button
+                        onClick={() => {
+                          if (verificationAction.reason?.trim()) {
+                            handleVerifyProAccount(verificationAction.accountId, 'reject', verificationAction.reason);
+                          } else {
+                            alert('Veuillez indiquer une raison');
+                          }
+                        }}
+                        className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                      >
+                        Confirmer le rejet
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </main>
