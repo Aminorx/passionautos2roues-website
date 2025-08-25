@@ -970,20 +970,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Continuer même si erreur sur les profils publics
       }
       
-      // Fusionner les données
+      // Fusionner les données avec une logique correcte
       const allUsers = authUsers.users.map(authUser => {
         const publicProfile = publicUsers?.find(pu => pu.id === authUser.id);
+        
+        // Un utilisateur est considéré "vérifié" si :
+        // 1. Son email est confirmé dans Supabase Auth ET
+        // 2. Il peut se connecter (last_sign_in_at existe) OU il a un profil public vérifié
+        const isEmailVerified = authUser.email_confirmed_at !== null;
+        const hasSignedIn = authUser.last_sign_in_at !== null;
+        const isAccountVerified = isEmailVerified && (hasSignedIn || publicProfile?.verified === true);
         
         return {
           id: authUser.id,
           name: publicProfile?.name || authUser.user_metadata?.name || authUser.email?.split('@')[0] || 'Utilisateur',
           email: authUser.email,
           account_type: publicProfile?.account_type || 'individual',
-          verified: publicProfile?.verified || false,
-          email_verified: authUser.email_confirmed_at !== null,
+          verified: isAccountVerified,
+          email_verified: isEmailVerified,
           created_at: authUser.created_at,
           last_sign_in_at: authUser.last_sign_in_at,
-          phone: authUser.phone
+          phone: authUser.phone,
+          // Debug info
+          auth_confirmed_at: authUser.email_confirmed_at,
+          public_verified: publicProfile?.verified
         };
       });
       

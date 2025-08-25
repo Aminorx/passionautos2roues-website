@@ -629,14 +629,14 @@ export const AdminDashboardClean: React.FC<AdminDashboardProps> = ({ onBack }) =
                                   ? 'bg-green-100 text-green-700' 
                                   : 'bg-red-100 text-red-700'
                               }`}>
-                                {user.verified ? '✅ Vérifié' : '❌ Non vérifié'}
+                                {user.verified ? '✅ Actif' : '❌ Inactif'}
                               </span>
                               <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                                 user.emailVerified 
                                   ? 'bg-blue-100 text-blue-700' 
                                   : 'bg-orange-100 text-orange-700'
                               }`}>
-                                {user.emailVerified ? '📧 Email OK' : '📧 Email non vérifié'}
+                                {user.emailVerified ? '📧 Email confirmé' : '📧 Non confirmé'}
                               </span>
                             </div>
                           </td>
@@ -645,13 +645,13 @@ export const AdminDashboardClean: React.FC<AdminDashboardProps> = ({ onBack }) =
                           </td>
                           <td className="py-4 px-6">
                             <div className="flex flex-wrap gap-1">
-                              {!user.verified && (
+                              {!user.emailVerified && (
                                 <button
                                   onClick={() => handleUserAction(user.id, 'activate')}
                                   className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-medium hover:bg-green-200 transition-colors"
-                                  title="Activer complètement le compte"
+                                  title="Confirmer l'email et activer"
                                 >
-                                  ✅ Activer
+                                  ✅ Confirmer email
                                 </button>
                               )}
                               {user.verified && (
