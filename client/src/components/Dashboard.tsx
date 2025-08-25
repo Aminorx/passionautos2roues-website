@@ -792,18 +792,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'overview', o
                             </button>
                           )}
                           <button 
-                            onClick={() => handleToggleActiveListing(vehicle.id, vehicle.isActive !== false)}
-                            className={`px-4 py-2 rounded-xl font-semibold transition-all duration-200 flex items-center space-x-2 ${
-                              vehicle.isActive !== false
-                                ? 'bg-red-50 text-red-700 hover:bg-red-100 border border-red-200'
-                                : 'bg-green-50 text-green-700 hover:bg-green-100 border border-green-200'
-                            }`}
-                            title={vehicle.isActive !== false ? 'Désactiver l\'annonce' : 'Activer l\'annonce'}
-                          >
-                            {vehicle.isActive !== false ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-                            <span>{vehicle.isActive !== false ? 'Désactiver' : 'Activer'}</span>
-                          </button>
-                          <button 
                             onClick={() => openDeletionModal(vehicle.id, vehicle.title)}
                             className="p-3 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all duration-200"
                           >
