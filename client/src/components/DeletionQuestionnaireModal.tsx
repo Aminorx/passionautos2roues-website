@@ -112,20 +112,20 @@ export function DeletionQuestionnaireModal({
       title="Pourquoi supprimez-vous cette annonce ?"
       className="max-w-lg"
     >
-      <div className="space-y-6">
+      <div className="space-y-4">
         <div className="bg-gray-50 p-4 rounded-lg">
           <p className="text-sm text-gray-600 mb-1">Annonce concernée :</p>
           <p className="font-medium">{vehicleTitle}</p>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-3">
           <label className="text-base font-medium block">
             Sélectionnez la raison de suppression *
           </label>
           
-          <div className="space-y-2">
+          <div className="space-y-1">
             {DELETION_REASONS.map((reason) => (
-              <div key={reason.value} className="flex items-center space-x-4 p-3 rounded-lg hover:bg-gray-50 transition-colors">
+              <div key={reason.value} className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50 transition-colors">
                 <input
                   type="radio"
                   name="deletionReason"
