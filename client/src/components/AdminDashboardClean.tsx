@@ -631,12 +631,8 @@ export const AdminDashboardClean: React.FC<AdminDashboardProps> = ({ onBack }) =
                               }`}>
                                 {user.verified ? '✅ Actif' : '❌ Inactif'}
                               </span>
-                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                user.emailVerified 
-                                  ? 'bg-blue-100 text-blue-700' 
-                                  : 'bg-orange-100 text-orange-700'
-                              }`}>
-                                {user.emailVerified ? '📧 Email confirmé' : '📧 Non confirmé'}
+                              <span className="px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                                {(user as any).provider === 'google' ? '🌐 OAuth' : '📧 Email'}
                               </span>
                             </div>
                           </td>
@@ -645,20 +641,20 @@ export const AdminDashboardClean: React.FC<AdminDashboardProps> = ({ onBack }) =
                           </td>
                           <td className="py-4 px-6">
                             <div className="flex flex-wrap gap-1">
-                              {!user.emailVerified && (
+                              {!user.verified && (
                                 <button
                                   onClick={() => handleUserAction(user.id, 'activate')}
                                   className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-medium hover:bg-green-200 transition-colors"
-                                  title="Confirmer l'email et activer"
+                                  title="Confirmer l'email et activer le compte"
                                 >
-                                  ✅ Confirmer email
+                                  ✅ Activer
                                 </button>
                               )}
                               {user.verified && (
                                 <button
                                   onClick={() => handleUserAction(user.id, 'suspend')}
                                   className="px-2 py-1 bg-red-100 text-red-700 rounded text-xs font-medium hover:bg-red-200 transition-colors"
-                                  title="Suspendre le compte"
+                                  title="Suspendre le compte (email non confirmé)"
                                 >
                                   ❌ Suspendre
                                 </button>
