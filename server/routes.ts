@@ -997,6 +997,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log(`✅ ${allUsers.length} utilisateurs auth récupérés`);
       console.log('📧 Emails trouvés:', allUsers.map(u => u.email));
+      
+      // Debug spécifique pour le nouveau compte
+      const debugUser = allUsers.find(u => u.email === 'connect.now@gmail.com');
+      if (debugUser) {
+        console.log('🔍 DEBUG connect.now@gmail.com:', {
+          email: debugUser.email,
+          verified: debugUser.verified,
+          email_verified: debugUser.email_verified,
+          auth_confirmed_at: debugUser.auth_confirmed_at,
+          provider: debugUser.provider
+        });
+      }
+      
       res.json(allUsers);
       
     } catch (error) {
