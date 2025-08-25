@@ -437,8 +437,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Routes admin spécialisées (à placer avant les routes génériques)
+  
+  // Route pour récupérer les annonces supprimées (admin)
+  app.get('/api/admin/deleted-annonces', async (req, res) => {
+    try {
+      console.log('🗑️ Récupération annonces supprimées...');
+      
+      const { data: deletedAnnonces, error } = await supabaseServer
+        .from('annonces')
+        .select(`
+          id, 
+          title, 
+          price, 
+          created_at, 
+          deleted_at, 
+          deletion_reason, 
+          deletion_comment,
+          users:user_id (
+            id,
+            name,
+            email
+          )
+        `)
+        .not('deleted_at', 'is', null)
+        .order('deleted_at', { ascending: false });
+      
+      if (error) {
+        console.error('❌ Erreur récupération annonces supprimées:', error);
+        return res.status(500).json({ error: 'Erreur serveur' });
+      }
+      
+      console.log(`✅ ${deletedAnnonces?.length || 0} annonces supprimées récupérées`);
+      res.json(deletedAnnonces || []);
+      
+    } catch (error) {
+      console.error('❌ Erreur récupération annonces supprimées:', error);
+      res.status(500).json({ error: 'Erreur serveur' });
+    }
+  });
+
   // Route pour les statistiques de performance admin
   app.get('/api/admin/performance-stats', async (req, res) => {
+    console.log('📈 Route performance-stats appelée');
     try {
       console.log('📈 Récupération statistiques de performance admin...');
       

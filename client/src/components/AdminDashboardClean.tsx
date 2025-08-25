@@ -102,6 +102,11 @@ export const AdminDashboardClean: React.FC<AdminDashboardProps> = ({ onBack }) =
       const vehiclesData = await vehiclesRes.json();
       console.log('📊 Données véhicules reçues:', vehiclesData.length);
       
+      // Récupérer aussi les annonces supprimées depuis Supabase
+      const deletedRes = await fetch('/api/admin/deleted-annonces');
+      const deletedData = deletedRes.ok ? await deletedRes.json() : [];
+      console.log('🗑️ Annonces supprimées récupérées:', deletedData.length);
+      
       // Extraire les utilisateurs uniques des véhicules
       const uniqueUsers = vehiclesData.reduce((acc: User[], vehicle: any) => {
         if (vehicle.user && !acc.find(u => u.id === vehicle.user.id)) {
@@ -126,16 +131,31 @@ export const AdminDashboardClean: React.FC<AdminDashboardProps> = ({ onBack }) =
         price: vehicle.price || 0,
         createdAt: vehicle.created_at || vehicle.createdAt || new Date().toISOString()
       }));
+      
+      // Ajouter les annonces supprimées
+      const deletedAnnoncesData = deletedData.map((annonce: any) => ({
+        id: annonce.id,
+        title: annonce.title,
+        user: annonce.users || { name: 'Utilisateur supprimé' },
+        status: 'deleted',
+        price: annonce.price || 0,
+        createdAt: annonce.created_at,
+        deletedAt: annonce.deleted_at,
+        deletionReason: annonce.deletion_reason
+      }));
+      
+      // Combiner toutes les annonces
+      const allAnnonces = [...annoncesData, ...deletedAnnoncesData];
 
       console.log('👥 Utilisateurs uniques:', uniqueUsers.length);
       console.log('📄 Annonces:', annoncesData.length);
 
       setUsers(uniqueUsers);
-      setAnnonces(annoncesData);
+      setAnnonces(allAnnonces);
 
       setStats({
         totalUsers: uniqueUsers.length,
-        totalAnnonces: annoncesData.length,
+        totalAnnonces: allAnnonces.length,
         pendingReports: 0,
         recentActivity: 2,
         monthlyGrowth: 15
@@ -532,11 +552,14 @@ export const AdminDashboardClean: React.FC<AdminDashboardProps> = ({ onBack }) =
                             <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                               annonce.status === 'active' 
                                 ? 'bg-green-100 text-green-700' 
+                                : annonce.status === 'deleted'
+                                ? 'bg-gray-100 text-gray-700'
                                 : annonce.status === 'pending'
                                 ? 'bg-yellow-100 text-yellow-700'
                                 : 'bg-red-100 text-red-700'
                             }`}>
                               {annonce.status === 'active' ? 'Active' : 
+                               annonce.status === 'deleted' ? '🗑️ Supprimée' :
                                annonce.status === 'pending' ? 'En attente' : 'Suspendue'}
                             </span>
                           </td>
@@ -545,27 +568,41 @@ export const AdminDashboardClean: React.FC<AdminDashboardProps> = ({ onBack }) =
                           </td>
                           <td className="py-4 px-6">
                             <div className="flex space-x-2">
-                              <button
-                                onClick={() => handleAnnonceAction(annonce.id, 'approve')}
-                                className="p-1 text-green-600 hover:text-green-700 transition-colors"
-                                title="Approuver"
-                              >
-                                <CheckCircle className="h-4 w-4" />
-                              </button>
-                              <button
-                                onClick={() => handleAnnonceDeactivate(annonce.id)}
-                                className="p-1 text-red-600 hover:text-red-700 transition-colors"
-                                title="Désactiver"
-                              >
-                                <XCircle className="h-4 w-4" />
-                              </button>
-                              <button
-                                onClick={() => handleAnnonceView(annonce.id)}
-                                className="p-1 text-blue-600 hover:text-blue-700 transition-colors"
-                                title="Voir annonce"
-                              >
-                                <Eye className="h-4 w-4" />
-                              </button>
+                              {annonce.status === 'deleted' ? (
+                                // Annonces supprimées : seulement voir
+                                <button
+                                  onClick={() => handleAnnonceView(annonce.id)}
+                                  className="p-1 text-blue-600 hover:text-blue-700 transition-colors"
+                                  title="Voir annonce"
+                                >
+                                  <Eye className="h-4 w-4" />
+                                </button>
+                              ) : (
+                                // Annonces actives : toutes les actions
+                                <>
+                                  <button
+                                    onClick={() => handleAnnonceAction(annonce.id, 'approve')}
+                                    className="p-1 text-green-600 hover:text-green-700 transition-colors"
+                                    title="Approuver"
+                                  >
+                                    <CheckCircle className="h-4 w-4" />
+                                  </button>
+                                  <button
+                                    onClick={() => handleAnnonceDeactivate(annonce.id)}
+                                    className="p-1 text-red-600 hover:text-red-700 transition-colors"
+                                    title="Désactiver"
+                                  >
+                                    <XCircle className="h-4 w-4" />
+                                  </button>
+                                  <button
+                                    onClick={() => handleAnnonceView(annonce.id)}
+                                    className="p-1 text-blue-600 hover:text-blue-700 transition-colors"
+                                    title="Voir annonce"
+                                  >
+                                    <Eye className="h-4 w-4" />
+                                  </button>
+                                </>
+                              )}
                             </div>
                           </td>
                         </tr>
