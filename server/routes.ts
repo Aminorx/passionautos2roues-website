@@ -955,14 +955,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Récupérer d'abord tous les utilisateurs auth
       const { data: authUsers, error: authError } = await supabaseServer.auth.admin.listUsers();
       
-      console.log('🔍 RAW AUTH DATA pour connect.now@gmail.com:', 
-        authUsers?.users?.find(u => u.email === 'connect.now@gmail.com') ? {
-          email: authUsers.users.find(u => u.email === 'connect.now@gmail.com')?.email,
-          email_confirmed_at: authUsers.users.find(u => u.email === 'connect.now@gmail.com')?.email_confirmed_at,
-          provider: authUsers.users.find(u => u.email === 'connect.now@gmail.com')?.app_metadata?.provider,
-          last_sign_in_at: authUsers.users.find(u => u.email === 'connect.now@gmail.com')?.last_sign_in_at
-        } : 'USER NOT FOUND'
-      );
       
       if (authError) {
         console.error('❌ Erreur récupération auth users:', authError);
@@ -1007,20 +999,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`✅ ${allUsers.length} utilisateurs auth récupérés`);
       console.log('📧 Emails trouvés:', allUsers.map(u => u.email));
       
-      // Debug spécifique pour le nouveau compte
-      const debugUser = allUsers.find(u => u.email === 'connect.now@gmail.com');
-      if (debugUser) {
-        console.log('🔍 DEBUG connect.now@gmail.com:', {
-          email: debugUser.email,
-          verified: debugUser.verified,
-          email_verified: debugUser.email_verified,
-          auth_confirmed_at: debugUser.auth_confirmed_at,
-          provider: debugUser.provider
-        });
-      }
       
-      // Forcer un refresh sans cache pour voir les vraies données
-      res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
       res.json(allUsers);
       
     } catch (error) {
