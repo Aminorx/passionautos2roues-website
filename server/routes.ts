@@ -986,7 +986,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Logique simplifiée :
         // - OAuth Gmail = email automatiquement confirmé = actif immédiatement
         // - Inscription email = email non confirmé = inactif jusqu'à validation admin
-        const isEmailConfirmed = authUser.email_confirmed_at !== null;
+        const isEmailConfirmed = authUser.email_confirmed_at != null; // != null vérifie null ET undefined
         
         return {
           id: authUser.id,
