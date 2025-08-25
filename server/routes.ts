@@ -947,6 +947,87 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Route pour récupérer TOUS les utilisateurs (y compris non-vérifiés) pour l'admin
+  app.get('/api/admin/all-users', async (req, res) => {
+    try {
+      console.log('👥 Récupération de TOUS les utilisateurs admin...');
+      
+      const { data: allUsers, error } = await supabaseServer
+        .from('users')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) {
+        console.error('❌ Erreur récupération utilisateurs:', error);
+        return res.status(500).json({ error: 'Erreur serveur' });
+      }
+      
+      console.log(`✅ ${allUsers.length} utilisateurs récupérés`);
+      res.json(allUsers);
+      
+    } catch (error) {
+      console.error('❌ Erreur admin users:', error);
+      res.status(500).json({ error: 'Erreur serveur' });
+    }
+  });
+
+  // Route pour activer/vérifier manuellement un utilisateur (admin)
+  app.patch('/api/admin/users/:userId/verify', async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const { action } = req.body; // 'verify_email' | 'activate' | 'suspend'
+      
+      console.log(`🔐 Admin action ${action} pour user ${userId}...`);
+      
+      let updateData: any = {};
+      
+      switch (action) {
+        case 'verify_email':
+          updateData = { 
+            email_verified: true,
+            verified: true,
+            updated_at: new Date().toISOString()
+          };
+          break;
+        case 'activate':
+          updateData = { 
+            verified: true,
+            email_verified: true,
+            updated_at: new Date().toISOString()
+          };
+          break;
+        case 'suspend':
+          updateData = { 
+            verified: false,
+            updated_at: new Date().toISOString()
+          };
+          break;
+        default:
+          return res.status(400).json({ error: 'Action invalide' });
+      }
+      
+      const { error } = await supabaseServer
+        .from('users')
+        .update(updateData)
+        .eq('id', userId);
+      
+      if (error) {
+        console.error('❌ Erreur mise à jour utilisateur:', error);
+        return res.status(500).json({ error: 'Erreur mise à jour' });
+      }
+      
+      console.log(`✅ Utilisateur ${userId} mis à jour avec succès`);
+      res.json({ 
+        success: true, 
+        message: `Utilisateur ${action === 'verify_email' ? 'vérifié' : action === 'activate' ? 'activé' : 'suspendu'} avec succès` 
+      });
+      
+    } catch (error) {
+      console.error('❌ Erreur vérification utilisateur:', error);
+      res.status(500).json({ error: 'Erreur serveur' });
+    }
+  });
+
   // Setup wishlist migration routes
   setupWishlistMigration(app);
   setupWishlistDirect(app);

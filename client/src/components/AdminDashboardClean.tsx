@@ -33,6 +33,7 @@ interface User {
   email: string;
   type: string;
   verified: boolean;
+  emailVerified?: boolean;
   createdAt: string;
 }
 
@@ -149,20 +150,21 @@ export const AdminDashboardClean: React.FC<AdminDashboardProps> = ({ onBack }) =
       const deletedData = deletedRes.ok ? await deletedRes.json() : [];
       console.log('🗑️ Annonces supprimées récupérées:', deletedData.length);
       
-      // Extraire les utilisateurs uniques des véhicules
-      const uniqueUsers = vehiclesData.reduce((acc: User[], vehicle: any) => {
-        if (vehicle.user && !acc.find(u => u.id === vehicle.user.id)) {
-          acc.push({
-            id: vehicle.user.id,
-            name: vehicle.user.name || 'Utilisateur',
-            email: vehicle.user.email || `${vehicle.user.id}@auto2roues.com`,
-            type: vehicle.user.type || 'individual',
-            verified: true,
-            createdAt: vehicle.user.createdAt || vehicle.created_at || new Date().toISOString()
-          });
-        }
-        return acc;
-      }, []);
+      // Récupérer TOUS les utilisateurs depuis la base
+      const usersRes = await fetch('/api/admin/all-users');
+      const allUsers = usersRes.ok ? await usersRes.json() : [];
+      console.log('👥 TOUS les utilisateurs récupérés:', allUsers.length);
+      
+      // Formater les utilisateurs
+      const formattedUsers = allUsers.map((user: any) => ({
+        id: user.id,
+        name: user.name || 'Utilisateur',
+        email: user.email || `${user.id}@auto2roues.com`,
+        type: user.account_type || 'individual',
+        verified: user.verified || false,
+        emailVerified: user.email_verified || false,
+        createdAt: user.created_at || new Date().toISOString()
+      }));
 
       // Convertir les véhicules en format annonces
       const annoncesData = vehiclesData.map((vehicle: any) => ({
@@ -189,10 +191,10 @@ export const AdminDashboardClean: React.FC<AdminDashboardProps> = ({ onBack }) =
       // Combiner toutes les annonces
       const allAnnonces = [...annoncesData, ...deletedAnnoncesData];
 
-      console.log('👥 Utilisateurs uniques:', uniqueUsers.length);
+      console.log('👥 Utilisateurs totaux:', formattedUsers.length);
       console.log('📄 Annonces:', annoncesData.length);
 
-      setUsers(uniqueUsers);
+      setUsers(formattedUsers);
       setAnnonces(allAnnonces);
       
       // Charger aussi les comptes professionnels si c'est l'onglet actif
@@ -201,7 +203,7 @@ export const AdminDashboardClean: React.FC<AdminDashboardProps> = ({ onBack }) =
       }
 
       setStats({
-        totalUsers: uniqueUsers.length,
+        totalUsers: formattedUsers.length,
         totalAnnonces: allAnnonces.length,
         pendingReports: 0,
         recentActivity: 2,
@@ -275,18 +277,31 @@ export const AdminDashboardClean: React.FC<AdminDashboardProps> = ({ onBack }) =
     }
   };
 
-  const handleUserAction = async (userId: string, action: 'activate' | 'suspend') => {
+
+
+  const handleUserAction = async (userId: string, action: 'verify_email' | 'activate' | 'suspend') => {
     try {
-      const response = await fetch(`/api/admin/users/${userId}`, {
+      console.log(`🔐 Action ${action} pour utilisateur ${userId}...`);
+      const response = await fetch(`/api/admin/users/${userId}/verify`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action })
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ action }),
       });
+      
       if (response.ok) {
-        loadDashboardData();
+        const result = await response.json();
+        console.log('✅ Action réussie:', result.message);
+        alert(`✅ ${result.message}`);
+        loadDashboardData(); // Recharger la liste des utilisateurs
+      } else {
+        console.error('❌ Erreur action utilisateur');
+        alert('❌ Erreur lors de l\'action');
       }
     } catch (error) {
       console.error('Erreur action utilisateur:', error);
+      alert('❌ Erreur lors de l\'action');
     }
   };
 
@@ -362,6 +377,8 @@ export const AdminDashboardClean: React.FC<AdminDashboardProps> = ({ onBack }) =
       alert('❌ Erreur lors de la vérification');
     }
   };
+
+
 
   const handleViewDocument = async (document: VerificationDocument) => {
     try {
@@ -602,38 +619,60 @@ export const AdminDashboardClean: React.FC<AdminDashboardProps> = ({ onBack }) =
                             </span>
                           </td>
                           <td className="py-4 px-6">
-                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                              user.verified 
-                                ? 'bg-green-100 text-green-700' 
-                                : 'bg-yellow-100 text-yellow-700'
-                            }`}>
-                              {user.verified ? 'Vérifié' : 'En attente'}
-                            </span>
+                            <div className="flex flex-col gap-1">
+                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                user.verified 
+                                  ? 'bg-green-100 text-green-700' 
+                                  : 'bg-red-100 text-red-700'
+                              }`}>
+                                {user.verified ? '✅ Vérifié' : '❌ Non vérifié'}
+                              </span>
+                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                user.emailVerified 
+                                  ? 'bg-blue-100 text-blue-700' 
+                                  : 'bg-orange-100 text-orange-700'
+                              }`}>
+                                {user.emailVerified ? '📧 Email OK' : '📧 Email non vérifié'}
+                              </span>
+                            </div>
                           </td>
                           <td className="py-4 px-6 text-sm text-gray-600">
                             {new Date(user.createdAt).toLocaleDateString('fr-FR')}
                           </td>
                           <td className="py-4 px-6">
-                            <div className="flex space-x-2">
+                            <div className="flex flex-wrap gap-1">
+                              {!user.emailVerified && (
+                                <button
+                                  onClick={() => handleUserAction(user.id, 'verify_email')}
+                                  className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-medium hover:bg-blue-200 transition-colors"
+                                  title="Vérifier l'email"
+                                >
+                                  📧 Vérifier
+                                </button>
+                              )}
+                              {!user.verified && (
+                                <button
+                                  onClick={() => handleUserAction(user.id, 'activate')}
+                                  className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-medium hover:bg-green-200 transition-colors"
+                                  title="Activer le compte"
+                                >
+                                  ✅ Activer
+                                </button>
+                              )}
+                              {user.verified && (
+                                <button
+                                  onClick={() => handleUserAction(user.id, 'suspend')}
+                                  className="px-2 py-1 bg-red-100 text-red-700 rounded text-xs font-medium hover:bg-red-200 transition-colors"
+                                  title="Suspendre le compte"
+                                >
+                                  ❌ Suspendre
+                                </button>
+                              )}
                               <button
-                                onClick={() => handleUserAction(user.id, 'activate')}
-                                className="p-1 text-green-600 hover:text-green-700 transition-colors"
-                                title="Activer"
-                              >
-                                <CheckCircle className="h-4 w-4" />
-                              </button>
-                              <button
-                                onClick={() => handleUserAction(user.id, 'suspend')}
-                                className="p-1 text-red-600 hover:text-red-700 transition-colors"
-                                title="Suspendre"
-                              >
-                                <XCircle className="h-4 w-4" />
-                              </button>
-                              <button
-                                className="p-1 text-blue-600 hover:text-blue-700 transition-colors"
+                                className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs font-medium hover:bg-gray-200 transition-colors"
                                 title="Voir détails"
                               >
-                                <Eye className="h-4 w-4" />
+                                👁️ Détails
                               </button>
                             </div>
                           </td>
