@@ -114,15 +114,13 @@ export function DeletionQuestionnaireModal({
     >
       <div className="space-y-4">
         <div className="bg-gray-50 p-4 rounded-lg">
-          <p className="text-sm text-gray-600 mb-1">Annonce concernée :</p>
-          <p className="font-medium">{vehicleTitle}</p>
+          <p className="text-sm text-gray-600">
+            <span>Annonce concernée : </span>
+            <span className="font-medium text-gray-900">{vehicleTitle}</span>
+          </p>
         </div>
 
         <div className="space-y-3">
-          <label className="text-base font-medium block">
-            Sélectionnez la raison de suppression *
-          </label>
-          
           <div className="space-y-1">
             {DELETION_REASONS.map((reason) => (
               <div key={reason.value} className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50 transition-colors">
@@ -152,12 +150,12 @@ export function DeletionQuestionnaireModal({
                 value={comment}
                 onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setComment(e.target.value)}
                 placeholder="Décrivez brièvement la raison..."
-                maxLength={500}
+                maxLength={50}
                 rows={3}
                 className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
               <p className="text-xs text-gray-500">
-                {comment.length}/500 caractères
+                {comment.length}/50 caractères
               </p>
             </div>
           )}
@@ -169,7 +167,7 @@ export function DeletionQuestionnaireModal({
           </p>
         </div>
 
-        <div className="flex gap-4 pt-6 px-2">
+        <div className="flex gap-4 pt-6 px-4">
           <button
             onClick={handleClose}
             disabled={isSubmitting}
