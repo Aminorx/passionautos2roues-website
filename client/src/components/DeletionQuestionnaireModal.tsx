@@ -123,7 +123,7 @@ export function DeletionQuestionnaireModal({
             Sélectionnez la raison de suppression *
           </label>
           
-          <div className="space-y-4">
+          <div className="space-y-2">
             {DELETION_REASONS.map((reason) => (
               <div key={reason.value} className="flex items-center space-x-4 p-3 rounded-lg hover:bg-gray-50 transition-colors">
                 <input
@@ -165,8 +165,7 @@ export function DeletionQuestionnaireModal({
 
         <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
           <p className="text-sm text-amber-800">
-            <strong>Important :</strong> Cette action supprimera définitivement votre annonce de la plateforme. 
-            Elle ne pourra pas être réactivée.
+            <strong>Important :</strong> Cette action supprimera définitivement votre annonce.
           </p>
         </div>
 
