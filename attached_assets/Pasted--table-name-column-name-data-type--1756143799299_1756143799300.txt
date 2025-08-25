@@ -1,0 +1,54 @@
+| table_name             | column_name             | data_type                   |
+| ---------------------- | ----------------------- | --------------------------- |
+| professional_accounts  | id                      | integer                     |
+| professional_accounts  | user_id                 | text                        |
+| professional_accounts  | company_name            | character varying           |
+| professional_accounts  | siret                   | character varying           |
+| professional_accounts  | company_address         | text                        |
+| professional_accounts  | phone                   | character varying           |
+| professional_accounts  | email                   | character varying           |
+| professional_accounts  | website                 | character varying           |
+| professional_accounts  | is_verified             | boolean                     |
+| professional_accounts  | verification_status     | character varying           |
+| professional_accounts  | verified_at             | timestamp without time zone |
+| professional_accounts  | rejected_reason         | text                        |
+| professional_accounts  | created_at              | timestamp without time zone |
+| professional_accounts  | updated_at              | timestamp without time zone |
+| professional_profiles  | id                      | integer                     |
+| professional_profiles  | professional_account_id | integer                     |
+| professional_profiles  | logo_url                | character varying           |
+| professional_profiles  | description             | text                        |
+| professional_profiles  | opening_hours           | jsonb                       |
+| professional_profiles  | whatsapp_number         | character varying           |
+| professional_profiles  | facebook_url            | character varying           |
+| professional_profiles  | instagram_url           | character varying           |
+| professional_profiles  | specialties             | ARRAY                       |
+| professional_profiles  | created_at              | timestamp without time zone |
+| professional_profiles  | updated_at              | timestamp without time zone |
+| subscription_plans     | id                      | integer                     |
+| subscription_plans     | name                    | character varying           |
+| subscription_plans     | price_monthly           | numeric                     |
+| subscription_plans     | price_yearly            | numeric                     |
+| subscription_plans     | max_listings            | integer                     |
+| subscription_plans     | features                | jsonb                       |
+| subscription_plans     | is_active               | boolean                     |
+| subscription_plans     | created_at              | timestamp without time zone |
+| subscriptions          | id                      | integer                     |
+| subscriptions          | professional_account_id | integer                     |
+| subscriptions          | plan_id                 | integer                     |
+| subscriptions          | stripe_subscription_id  | character varying           |
+| subscriptions          | status                  | character varying           |
+| subscriptions          | current_period_start    | timestamp without time zone |
+| subscriptions          | current_period_end      | timestamp without time zone |
+| subscriptions          | cancel_at_period_end    | boolean                     |
+| subscriptions          | created_at              | timestamp without time zone |
+| subscriptions          | updated_at              | timestamp without time zone |
+| verification_documents | id                      | integer                     |
+| verification_documents | professional_account_id | integer                     |
+| verification_documents | document_type           | character varying           |
+| verification_documents | file_url                | character varying           |
+| verification_documents | file_name               | character varying           |
+| verification_documents | file_size               | integer                     |
+| verification_documents | upload_date             | timestamp without time zone |
+| verification_documents | verification_status     | character varying           |
+| verification_documents | admin_notes             | text                        |
