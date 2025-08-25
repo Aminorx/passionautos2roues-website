@@ -150,13 +150,43 @@ export const AdminDashboardClean: React.FC<AdminDashboardProps> = ({ onBack }) =
 
   const loadPerformanceData = async () => {
     try {
+      console.log('🔄 Chargement données performance...');
       const response = await fetch('/api/admin/performance-stats');
       if (response.ok) {
         const data = await response.json();
+        console.log('📊 Données performance reçues:', data);
         setPerformanceData(data);
+      } else {
+        console.error('❌ Erreur HTTP:', response.status);
+        // Mettre des données par défaut
+        setPerformanceData({
+          soldOnSite: 0,
+          soldOnSitePercent: 0,
+          soldElsewhere: 0, 
+          soldElsewherePercent: 0,
+          noLongerSelling: 0,
+          noLongerSellingPercent: 0,
+          other: 0,
+          otherPercent: 0,
+          totalDeleted: 0,
+          averageDays: 0
+        });
       }
     } catch (error) {
       console.error('Erreur chargement performance:', error);
+      // Mettre des données par défaut même en cas d'erreur
+      setPerformanceData({
+        soldOnSite: 0,
+        soldOnSitePercent: 0,
+        soldElsewhere: 0, 
+        soldElsewherePercent: 0,
+        noLongerSelling: 0,
+        noLongerSellingPercent: 0,
+        other: 0,
+        otherPercent: 0,
+        totalDeleted: 0,
+        averageDays: 0
+      });
     }
   };
 
