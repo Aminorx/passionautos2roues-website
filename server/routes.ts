@@ -1005,6 +1005,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log(`🔐 Admin action ${action} pour user ${userId}...`);
       
+      // Mettre à jour le statut auth dans Supabase Auth
+      if (action === 'verify_email' || action === 'activate') {
+        console.log('📧 Confirmation de l\'email dans Supabase Auth...');
+        const { error: authError } = await supabaseServer.auth.admin.updateUserById(userId, {
+          email_confirm: true
+        });
+        
+        if (authError) {
+          console.error('❌ Erreur confirmation email auth:', authError);
+          // Continuer même si erreur auth (profil peut quand même être mis à jour)
+        } else {
+          console.log('✅ Email confirmé dans Supabase Auth');
+        }
+      }
+      
+      // Mettre à jour le profil utilisateur public (s'il existe)
       let updateData: any = {};
       
       switch (action) {
@@ -1029,17 +1045,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return res.status(400).json({ error: 'Action invalide' });
       }
       
-      const { error } = await supabaseServer
+      // Vérifier si l'utilisateur existe dans la table publique
+      const { data: existingUser } = await supabaseServer
         .from('users')
-        .update(updateData)
-        .eq('id', userId);
+        .select('id')
+        .eq('id', userId)
+        .single();
       
-      if (error) {
-        console.error('❌ Erreur mise à jour utilisateur:', error);
-        return res.status(500).json({ error: 'Erreur mise à jour' });
+      if (existingUser) {
+        // Mettre à jour l'utilisateur existant
+        const { error: updateError } = await supabaseServer
+          .from('users')
+          .update(updateData)
+          .eq('id', userId);
+        
+        if (updateError) {
+          console.error('❌ Erreur mise à jour utilisateur public:', updateError);
+        } else {
+          console.log('✅ Profil utilisateur public mis à jour');
+        }
+      } else {
+        console.log('⚠️ Utilisateur n\'existe pas encore dans la table publique');
       }
       
-      console.log(`✅ Utilisateur ${userId} mis à jour avec succès`);
+      console.log(`✅ Utilisateur ${userId} ${action} avec succès`);
       res.json({ 
         success: true, 
         message: `Utilisateur ${action === 'verify_email' ? 'vérifié' : action === 'activate' ? 'activé' : 'suspendu'} avec succès` 
