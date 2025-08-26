@@ -28,6 +28,7 @@ export const users = pgTable("users", {
   contactPreferences: json("contact_preferences").$type<string[]>(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   lastLoginAt: timestamp("last_login_at"),
+  stripeCustomerId: text("stripe_customer_id"),
 });
 
 export const annonces = pgTable("annonces", {
@@ -176,21 +177,38 @@ export const professionalAccounts = pgTable("professional_accounts", {
   verificationStatus: text("verification_status").$type<'pending' | 'approved' | 'rejected'>().default('pending'),
   verifiedAt: timestamp("verified_at"),
   rejectedReason: text("rejected_reason"),
+  // Champs de personnalisation pour la boutique
+  companyLogo: text("company_logo"),
+  bannerImage: text("banner_image"),
+  brandColors: json("brand_colors").$type<{primary: string; secondary: string}>(),
+  description: text("description"),
+  specialties: json("specialties").$type<string[]>().default([]),
+  certifications: json("certifications").$type<string[]>().default([]),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
 export const subscriptions = pgTable("subscriptions", {
   id: serial("id").primaryKey(),
-  professionalAccountId: integer("professional_account_id").references(() => professionalAccounts.id).notNull(),
-  planId: integer("plan_id").references(() => subscriptionPlans.id).notNull(),
+  userId: text("user_id").references(() => users.id).notNull(),
+  planId: text("plan_id").notNull(),
+  planName: text("plan_name").notNull(),
+  price: real("price").notNull(),
+  maxListings: integer("max_listings"),
   stripeSubscriptionId: text("stripe_subscription_id").unique(),
-  status: text("status").$type<'active' | 'cancelled' | 'expired' | 'pending'>().default('active'),
+  status: text("status").$type<'active' | 'cancelled' | 'expired' | 'pending'>().default('pending'),
   currentPeriodStart: timestamp("current_period_start"),
   currentPeriodEnd: timestamp("current_period_end"),
-  cancelAtPeriodEnd: boolean("cancel_at_period_end").default(false),
+  activatedAt: timestamp("activated_at"),
+  cancelledAt: timestamp("cancelled_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const stripeEventsProcessed = pgTable("stripe_events_processed", {
+  id: serial("id").primaryKey(),
+  stripeEventId: text("stripe_event_id").notNull().unique(),
+  processedAt: timestamp("processed_at").defaultNow().notNull(),
 });
 
 export const verificationDocuments = pgTable("verification_documents", {

@@ -26,6 +26,9 @@ import { AdminLogin } from './components/AdminLogin';
 import { AdminTest } from './components/AdminTest';
 import { Messages } from './pages/Messages';
 import { SearchPage } from './pages/SearchPage';
+import ProShop from './pages/ProShop';
+import ProCustomization from './pages/ProCustomization';
+import SubscriptionPurchase from './pages/SubscriptionPurchase';
 import { AuthCallback } from './pages/AuthCallback';
 import { AccountConversion } from './pages/AccountConversion';
 // import CreateProAccount from './pages/CreateProAccount';
@@ -159,6 +162,12 @@ function AppContent() {
         return <AuthCallback />;
       case 'account-conversion':
         return <AccountConversion onBack={() => setCurrentView('dashboard')} />;
+      case 'pro-shop':
+        return <ProShop />;
+      case 'pro-customization':
+        return <ProCustomization onBack={() => setCurrentView('dashboard')} />;
+      case 'subscription-purchase':
+        return <SubscriptionPurchase onBack={() => setCurrentView('dashboard')} />;
       default:
         return <Hero setCurrentView={setCurrentView} />;
     }
