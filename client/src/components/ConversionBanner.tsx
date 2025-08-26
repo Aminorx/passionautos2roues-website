@@ -98,8 +98,11 @@ export const ConversionBanner: React.FC<ConversionBannerProps> = ({ onConvert, c
     );
   }
 
-  // Bannière standard pour inviter à la conversion (seulement pour les utilisateurs individuels)
-  if (conversionStatus?.currentType !== 'individual') {
+  // Bannière standard pour inviter à la conversion (seulement pour les utilisateurs individuels sans demande)
+  if (conversionStatus?.currentType !== 'individual' || 
+      conversionStatus?.conversionInProgress || 
+      conversionStatus?.conversionRejected ||
+      conversionStatus?.professionalAccount) {
     return null;
   }
 

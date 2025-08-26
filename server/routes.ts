@@ -723,6 +723,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return res.status(500).json({ error: 'Erreur lors de l\'approbation' });
         }
         
+        // Mettre à jour le type d'utilisateur à 'professional'
+        const userUpdateResponse = await supabaseServer
+          .from('users')
+          .update({ type: 'professional' })
+          .eq('id', updatedAccount.user_id);
+
+        if (userUpdateResponse.error) {
+          console.error('❌ Erreur mise à jour type utilisateur:', userUpdateResponse.error);
+        } else {
+          console.log('✅ Type utilisateur mis à jour vers professional pour user:', updatedAccount.user_id);
+        }
+        
         // Mettre à jour le statut des documents
         await supabaseServer
           .from('verification_documents')

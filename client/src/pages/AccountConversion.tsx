@@ -149,7 +149,7 @@ export const AccountConversion: React.FC<{ onBack: () => void }> = ({ onBack }) 
       return;
     }
     
-    // Sinon, soumettre les données
+    // Sinon, soumettre les données (cela fonctionne aussi pour les rejets - l'API update le statut à 'pending')
     submitConversionMutation.mutate(formData);
   };
 
@@ -246,15 +246,24 @@ export const AccountConversion: React.FC<{ onBack: () => void }> = ({ onBack }) 
             <div className="space-y-4">
               <button
                 onClick={() => {
-                  console.log('🔄 Démarrage nouvelle conversion...');
-                  queryClient.invalidateQueries({ queryKey: ['/api/account/conversion/status'] });
-                  startConversionMutation.mutate();
-                  setStep(1);
+                  console.log('🔄 Modification de la demande...');
+                  // Pré-remplir le formulaire avec les données existantes si disponibles
+                  const existingData = (conversionStatus as ConversionStatus).professionalAccount;
+                  if (existingData) {
+                    setFormData({
+                      companyName: existingData.company_name || '',
+                      siret: existingData.siret || '',
+                      companyAddress: existingData.company_address || '',
+                      phone: existingData.phone || '',
+                      email: existingData.email || '',
+                      website: existingData.website || '',
+                    });
+                  }
+                  setStep(1); // Commencer au formulaire
                 }}
-                disabled={startConversionMutation.isPending}
-                className="w-full bg-primary-bolt-600 hover:bg-primary-bolt-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors disabled:opacity-50"
+                className="w-full bg-primary-bolt-600 hover:bg-primary-bolt-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
               >
-                {startConversionMutation.isPending ? 'Démarrage...' : 'Soumettre une nouvelle demande'}
+                Modifier ma demande
               </button>
               <button
                 onClick={onBack}
