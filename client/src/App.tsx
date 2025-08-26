@@ -42,6 +42,11 @@ function AppContent() {
   const [searchQuery, setSearchQuery] = useState('');
   const { selectedVehicle, setSelectedVehicle, setSearchFilters } = useApp();
   
+  const handleSearch = useCallback((query: string) => {
+    setSearchQuery(query);
+    setCurrentView('search');
+  }, []);
+
   // Check if we're on a pro shop route
   const [match] = useRoute('/pro/:shopId');
   if (match) {
@@ -107,11 +112,6 @@ function AppContent() {
       }
     }
   }, [setSelectedVehicle, setCurrentView, setSearchFilters]);
-
-  const handleSearch = useCallback((query: string) => {
-    setSearchQuery(query);
-    setCurrentView('search');
-  }, []);
 
   const renderContent = () => {
     switch (currentView) {

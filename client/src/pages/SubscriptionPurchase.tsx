@@ -115,32 +115,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ selectedPlan, onSuccess, onCa
     setError(null);
 
     try {
-      // Récupérer le token d'authentification depuis Supabase
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) {
-        throw new Error('Token d\'authentification manquant');
-      }
-
-      // Créer la subscription
-      const response = await fetch('/api/subscriptions/create', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`
-        },
-        body: JSON.stringify({
-          planId: selectedPlan.id
-        })
-      });
-
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.error || 'Erreur de création d\'abonnement');
-      }
-
-      const { clientSecret } = data;
-
-      // Confirmer le paiement avec PaymentElement
+      // Confirmer le paiement avec PaymentElement (le clientSecret est déjà dans les Elements)
       const { error: stripeError } = await stripe.confirmPayment({
         elements,
         confirmParams: {
@@ -252,12 +227,49 @@ interface SubscriptionPurchaseProps {
 
 export default function SubscriptionPurchase({ onBack }: SubscriptionPurchaseProps) {
   const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlan | null>(null);
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
+  const [preparingPayment, setPreparingPayment] = useState(false);
   const [showPayment, setShowPayment] = useState(false);
   const [success, setSuccess] = useState(false);
 
-  const handleSelectPlan = (plan: SubscriptionPlan) => {
+  const handleSelectPlan = async (plan: SubscriptionPlan) => {
     setSelectedPlan(plan);
-    setShowPayment(true);
+    setPreparingPayment(true);
+    setClientSecret(null);
+    
+    try {
+      // Récupérer le token d'authentification depuis Supabase
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        throw new Error('Token d\'authentification manquant');
+      }
+
+      // Créer la subscription pour obtenir le clientSecret
+      const response = await fetch('/api/subscriptions/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify({
+          planId: plan.id
+        })
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || 'Erreur de création d\'abonnement');
+      }
+
+      setClientSecret(data.clientSecret);
+      setShowPayment(true);
+    } catch (error) {
+      console.error('Erreur lors de la préparation du paiement:', error);
+      // Retour à la sélection des plans en cas d'erreur
+      setSelectedPlan(null);
+    } finally {
+      setPreparingPayment(false);
+    }
   };
 
   const handlePaymentSuccess = () => {
@@ -295,17 +307,29 @@ export default function SubscriptionPurchase({ onBack }: SubscriptionPurchasePro
     );
   }
 
-  if (showPayment && selectedPlan) {
+  if (showPayment && selectedPlan && clientSecret) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
         <div className="max-w-md w-full">
-          <Elements stripe={stripePromise}>
+          <Elements stripe={stripePromise} options={{ clientSecret }}>
             <PaymentForm
               selectedPlan={selectedPlan}
               onSuccess={handlePaymentSuccess}
               onCancel={handlePaymentCancel}
             />
           </Elements>
+        </div>
+      </div>
+    );
+  }
+
+  if (preparingPayment) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin w-12 h-12 border-4 border-primary-bolt-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+          <h2 className="text-xl font-bold text-gray-900 mb-2">Préparation du paiement...</h2>
+          <p className="text-gray-600">Veuillez patienter</p>
         </div>
       </div>
     );

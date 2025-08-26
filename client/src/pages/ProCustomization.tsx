@@ -10,8 +10,8 @@ interface CustomizationData {
   company_logo?: string;
   banner_image?: string;
   brand_colors?: {
-    primary: string;
-    secondary: string;
+    primary?: string;
+    secondary?: string;
   };
   description?: string;
   specialties?: string[];
@@ -34,6 +34,10 @@ export default function ProCustomization({ onBack }: ProCustomizationProps) {
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [uploadingBanner, setUploadingBanner] = useState(false);
+  const [uploadMessage, setUploadMessage] = useState('');
+  const [uploadError, setUploadError] = useState('');
   const [savedMessage, setSavedMessage] = useState('');
   const [activeTab, setActiveTab] = useState('branding');
 
@@ -46,7 +50,7 @@ export default function ProCustomization({ onBack }: ProCustomizationProps) {
 
   const loadCustomizationData = async () => {
     try {
-      const response = await fetch(`/api/professional-accounts/customization/${user.id}`);
+      const response = await fetch(`/api/professional-accounts/customization/${user?.id}`);
       if (response.ok) {
         const data = await response.json();
         setCustomization({
@@ -66,6 +70,22 @@ export default function ProCustomization({ onBack }: ProCustomizationProps) {
   };
 
   const handleImageUpload = async (file: File, type: 'logo' | 'banner') => {
+    if (!user?.id) {
+      setUploadError('Utilisateur non connecté');
+      return;
+    }
+
+    // Clear previous messages
+    setUploadMessage('');
+    setUploadError('');
+    
+    // Set loading state
+    if (type === 'logo') {
+      setUploadingLogo(true);
+    } else {
+      setUploadingBanner(true);
+    }
+
     const formData = new FormData();
     formData.append('image', file);
     formData.append('type', type);
@@ -75,7 +95,7 @@ export default function ProCustomization({ onBack }: ProCustomizationProps) {
         method: 'POST',
         body: formData,
         headers: {
-          'X-User-ID': user.id
+          'X-User-ID': user?.id || ''
         }
       });
 
@@ -85,9 +105,22 @@ export default function ProCustomization({ onBack }: ProCustomizationProps) {
           ...prev,
           [type === 'logo' ? 'company_logo' : 'banner_image']: imageUrl
         }));
+        setUploadMessage(`${type === 'logo' ? 'Logo' : 'Bannière'} uploadé(e) avec succès !`);
+        setTimeout(() => setUploadMessage(''), 3000);
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Erreur lors de l\'upload');
       }
     } catch (error) {
       console.error('Erreur upload image:', error);
+      setUploadError(error instanceof Error ? error.message : 'Erreur lors de l\'upload de l\'image');
+      setTimeout(() => setUploadError(''), 5000);
+    } finally {
+      if (type === 'logo') {
+        setUploadingLogo(false);
+      } else {
+        setUploadingBanner(false);
+      }
     }
   };
 
@@ -98,7 +131,7 @@ export default function ProCustomization({ onBack }: ProCustomizationProps) {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'X-User-ID': user.id
+          'X-User-ID': user?.id || ''
         },
         body: JSON.stringify(customization)
       });
@@ -177,6 +210,18 @@ export default function ProCustomization({ onBack }: ProCustomizationProps) {
             </div>
             
             <div className="flex items-center space-x-4">
+              {uploadMessage && (
+                <div className="flex items-center space-x-2 text-green-600">
+                  <Check className="h-5 w-5" />
+                  <span>{uploadMessage}</span>
+                </div>
+              )}
+              {uploadError && (
+                <div className="flex items-center space-x-2 text-red-600">
+                  <AlertCircle className="h-5 w-5" />
+                  <span>{uploadError}</span>
+                </div>
+              )}
               {savedMessage && (
                 <div className="flex items-center space-x-2 text-green-600">
                   <Check className="h-5 w-5" />
@@ -280,9 +325,13 @@ export default function ProCustomization({ onBack }: ProCustomizationProps) {
                           }}
                           className="hidden"
                         />
-                        <div className="bg-primary-bolt-500 hover:bg-primary-bolt-600 text-white px-4 py-2 rounded-xl cursor-pointer inline-flex items-center space-x-2">
-                          <Upload className="h-4 w-4" />
-                          <span>Télécharger un logo</span>
+                        <div className={`${uploadingLogo ? 'bg-gray-400 cursor-not-allowed' : 'bg-primary-bolt-500 hover:bg-primary-bolt-600 cursor-pointer'} text-white px-4 py-2 rounded-xl inline-flex items-center space-x-2 transition-colors`}>
+                          {uploadingLogo ? (
+                            <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
+                          ) : (
+                            <Upload className="h-4 w-4" />
+                          )}
+                          <span>{uploadingLogo ? 'Téléchargement...' : 'Télécharger un logo'}</span>
                         </div>
                       </label>
                       <p className="text-sm text-gray-500 mt-2">PNG, JPG jusqu'à 2MB</p>
@@ -319,9 +368,13 @@ export default function ProCustomization({ onBack }: ProCustomizationProps) {
                         }}
                         className="hidden"
                       />
-                      <div className="bg-primary-bolt-500 hover:bg-primary-bolt-600 text-white px-4 py-2 rounded-xl cursor-pointer inline-flex items-center space-x-2">
-                        <Camera className="h-4 w-4" />
-                        <span>Télécharger une bannière</span>
+                      <div className={`${uploadingBanner ? 'bg-gray-400 cursor-not-allowed' : 'bg-primary-bolt-500 hover:bg-primary-bolt-600 cursor-pointer'} text-white px-4 py-2 rounded-xl inline-flex items-center space-x-2 transition-colors`}>
+                        {uploadingBanner ? (
+                          <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
+                        ) : (
+                          <Camera className="h-4 w-4" />
+                        )}
+                        <span>{uploadingBanner ? 'Téléchargement...' : 'Télécharger une bannière'}</span>
                       </div>
                     </label>
                   </div>
