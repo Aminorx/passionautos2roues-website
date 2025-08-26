@@ -36,8 +36,6 @@ export async function createUserFromAuth(authUserId: string, email: string, meta
       city: metadata?.city || null,
       postalCode: metadata?.postal_code || null,
       emailVerified: true, // Car vient de Supabase Auth
-      onboardingCompleted: false, // Sera complété lors du premier accès
-      marketingConsent: false, // Par défaut, pas de consentement marketing
       avatar: metadata?.avatar_url || metadata?.picture || null,
     };
 
