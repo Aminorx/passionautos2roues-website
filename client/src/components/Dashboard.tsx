@@ -89,6 +89,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'overview', o
   });
   const [savingProfile, setSavingProfile] = useState(false);
   const [profileSuccess, setProfileSuccess] = useState(false);
+  const [conversionBannerDismissed, setConversionBannerDismissed] = useState(false);
   
   // Ces états sont déjà définis plus haut, pas besoin de les redéfinir
 
@@ -500,11 +501,18 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'overview', o
 
   const renderOverview = () => (
     <div className="space-y-8">
-      {/* Conversion Banner - Affiché pour tous les utilisateurs avec statut approprié */}
-      <ConversionBanner 
-        onConvert={handleConversionClick} 
-        conversionStatus={conversionStatus}
-      />
+      {/* Conversion Banner - Affiché uniquement pour les utilisateurs individuels sans demande */}
+      {conversionStatus && conversionStatus.currentType === 'individual' && 
+       !conversionStatus.conversionInProgress && 
+       !conversionStatus.conversionRejected && 
+       !conversionStatus.professionalAccount && 
+       !conversionBannerDismissed && (
+        <ConversionBanner 
+          onConvert={handleConversionClick} 
+          conversionStatus={conversionStatus}
+          onDismiss={() => setConversionBannerDismissed(true)}
+        />
+      )}
       
       {/* Welcome Section */}
       <div className="relative bg-gradient-to-r from-primary-bolt-500 via-primary-bolt-600 to-primary-bolt-700 rounded-2xl p-8 text-white overflow-hidden">

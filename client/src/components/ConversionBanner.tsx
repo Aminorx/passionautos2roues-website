@@ -1,5 +1,5 @@
 import React from 'react';
-import { Building, ArrowRight, Star, Crown, TrendingUp, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { Building, ArrowRight, Star, Crown, TrendingUp, CheckCircle, XCircle, Clock, X } from 'lucide-react';
 
 interface ConversionStatus {
   currentType: string;
@@ -12,9 +12,10 @@ interface ConversionStatus {
 interface ConversionBannerProps {
   onConvert: () => void;
   conversionStatus?: ConversionStatus;
+  onDismiss?: () => void;
 }
 
-export const ConversionBanner: React.FC<ConversionBannerProps> = ({ onConvert, conversionStatus }) => {
+export const ConversionBanner: React.FC<ConversionBannerProps> = ({ onConvert, conversionStatus, onDismiss }) => {
   // Ne rien afficher si pas de statut de conversion
   if (!conversionStatus) {
     return null;
@@ -107,11 +108,22 @@ export const ConversionBanner: React.FC<ConversionBannerProps> = ({ onConvert, c
   }
 
   return (
-    <div className="bg-gradient-to-r from-blue-600 via-blue-700 to-purple-700 rounded-2xl p-6 text-white shadow-xl border border-blue-200 mb-6">
+    <div className="relative bg-gradient-to-r from-blue-600 via-blue-700 to-purple-700 rounded-2xl p-6 text-white shadow-xl border border-blue-200 mb-6">
       {/* Background decorations */}
       <div className="absolute inset-0 bg-black/10 rounded-2xl"></div>
       <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16"></div>
       <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-12 -translate-x-12"></div>
+      
+      {/* Bouton de fermeture optionnel */}
+      {onDismiss && (
+        <button
+          onClick={onDismiss}
+          className="absolute top-4 right-4 text-white/60 hover:text-white transition-colors z-20"
+          title="Masquer cette bannière"
+        >
+          <X className="h-5 w-5" />
+        </button>
+      )}
       
       <div className="relative z-10">
         <div className="flex items-start justify-between">
