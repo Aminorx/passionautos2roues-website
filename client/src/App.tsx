@@ -2,6 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from './lib/queryClient';
 import { AppProvider, useApp } from './contexts/AppContext';
+import { Router, Route, useRoute } from 'wouter';
 import { AuthProvider } from './contexts/AuthContext';
 import { Header } from './components/Header';
 import { Hero } from './components/Hero';
@@ -40,6 +41,24 @@ function AppContent() {
   const [dashboardTab, setDashboardTab] = useState('overview');
   const [searchQuery, setSearchQuery] = useState('');
   const { selectedVehicle, setSelectedVehicle, setSearchFilters } = useApp();
+  
+  // Check if we're on a pro shop route
+  const [match] = useRoute('/pro/:shopId');
+  if (match) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
+        <Header
+          currentView="pro-shop"
+          setCurrentView={setCurrentView}
+          mobileMenuOpen={mobileMenuOpen}
+          setMobileMenuOpen={setMobileMenuOpen}
+          setDashboardTab={setDashboardTab}
+          onSearch={handleSearch}
+        />
+        <ProShop />
+      </div>
+    );
+  }
 
   // Scroll to top when view changes
   React.useEffect(() => {
@@ -223,7 +242,10 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <AppProvider>
-          <AppContent />
+          <Router>
+            <Route path="/pro/:shopId" component={AppContent} />
+            <Route component={AppContent} />
+          </Router>
         </AppProvider>
       </AuthProvider>
     </QueryClientProvider>

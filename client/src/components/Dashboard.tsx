@@ -1302,6 +1302,43 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'overview', o
         </div>
         <h1 className="text-4xl font-bold text-gray-900 mb-4">Abonnement Professionnel</h1>
         <p className="text-gray-600 mt-2 text-lg">Gérez votre abonnement et découvrez tous les avantages</p>
+        
+        {/* Boutons d'actions professionnelles */}
+        <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8 max-w-4xl mx-auto">
+          <button
+            onClick={() => {
+              if (setCurrentView) setCurrentView('pro-customization');
+            }}
+            className="flex items-center justify-center space-x-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-6 py-4 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-1"
+          >
+            <Settings className="h-5 w-5" />
+            <span>Personnaliser ma boutique</span>
+          </button>
+          
+          <button
+            onClick={() => {
+              // Récupérer l'ID du compte professionnel pour rediriger vers la boutique publique
+              if (conversionStatus?.professionalAccount?.id) {
+                // Utiliser window.location pour naviguer vers la route Wouter
+                window.location.href = `/pro/${conversionStatus.professionalAccount.id}`;
+              }
+            }}
+            className="flex items-center justify-center space-x-3 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-6 py-4 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-1"
+          >
+            <Eye className="h-5 w-5" />
+            <span>Voir ma boutique publique</span>
+          </button>
+          
+          <button
+            onClick={() => {
+              if (setCurrentView) setCurrentView('subscription-purchase');
+            }}
+            className="flex items-center justify-center space-x-3 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white px-6 py-4 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-1"
+          >
+            <Crown className="h-5 w-5" />
+            <span>Gérer mon abonnement</span>
+          </button>
+        </div>
       </div>
 
       {/* Avantages de l'abonnement Pro */}
