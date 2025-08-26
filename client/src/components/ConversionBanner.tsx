@@ -15,6 +15,11 @@ interface ConversionBannerProps {
 }
 
 export const ConversionBanner: React.FC<ConversionBannerProps> = ({ onConvert, conversionStatus }) => {
+  // Ne rien afficher si pas de statut de conversion
+  if (!conversionStatus) {
+    return null;
+  }
+
   // Affichage prioritaire pour les comptes approuvés
   if (conversionStatus?.currentType === 'professional') {
     return (
@@ -93,7 +98,11 @@ export const ConversionBanner: React.FC<ConversionBannerProps> = ({ onConvert, c
     );
   }
 
-  // Bannière standard pour inviter à la conversion
+  // Bannière standard pour inviter à la conversion (seulement pour les utilisateurs individuels)
+  if (conversionStatus?.currentType !== 'individual') {
+    return null;
+  }
+
   return (
     <div className="bg-gradient-to-r from-blue-600 via-blue-700 to-purple-700 rounded-2xl p-6 text-white shadow-xl border border-blue-200 mb-6">
       {/* Background decorations */}

@@ -29,4 +29,10 @@ export const queryClient = new QueryClient({
   },
 });
 
+// Fonction utilitaire pour vider le cache lors de la déconnexion
+export const clearUserCache = () => {
+  console.log('🧹 Vidage du cache React Query...');
+  queryClient.clear();
+};
+
 export { apiRequest };

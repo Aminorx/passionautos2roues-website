@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { User, Session } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
+import { clearUserCache } from '@/lib/queryClient'
 // import { User as DbUser } from '@shared/schema'
 interface DbUser {
   id: string;
@@ -269,16 +270,21 @@ export function useAuth(): AuthState {
   const signOut = async () => {
     try {
       const { error } = await supabase.auth.signOut()
+      
+      // Vider immédiatement le cache et les états
+      userCacheRef.current.clear()
+      lastFetchTimeRef.current.clear()
+      clearUserCache() // Vider le cache React Query
+      setUser(null)
+      setDbUser(null)
+      setSession(null)
+      
       if (error) {
         console.error('SignOut error:', error)
         return
       }
       
-      // Clear cache
-      userCacheRef.current.clear()
-      lastFetchTimeRef.current.clear()
-      
-      console.log('✅ Déconnexion réussie')
+      console.log('✅ Déconnexion réussie et cache vidé')
     } catch (error) {
       console.error('SignOut exception:', error)
     }

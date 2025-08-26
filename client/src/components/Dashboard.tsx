@@ -42,21 +42,25 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'overview', o
   const { vehicles, setVehicles, setSelectedVehicle, setSearchFilters: contextSetSearchFilters } = useApp();
   const { user, dbUser, isLoading, refreshDbUser } = useAuth();
 
-  // Récupérer le statut de conversion pour tous les utilisateurs (permet d'afficher les notifications appropriées)
+  // Récupérer le statut de conversion seulement pour l'utilisateur connecté
   const { data: conversionStatus } = useQuery({
-    queryKey: ['/api/account/conversion/status'],
-    enabled: !!user?.id,
+    queryKey: ['/api/account/conversion/status', user?.id],
+    enabled: !!user?.id && !!dbUser?.id,
     retry: 1,
     queryFn: async () => {
+      console.log('🔍 Récupération statut conversion pour utilisateur:', user?.id);
       const response = await fetch('/api/account/conversion/status', {
         headers: {
           'x-user-id': user?.id || '',
         },
       });
       if (!response.ok) {
+        console.error('❌ Erreur API statut conversion:', response.status);
         throw new Error('Erreur lors de la récupération du statut');
       }
-      return response.json();
+      const result = await response.json();
+      console.log('✅ Statut conversion récupéré:', result);
+      return result;
     },
   });
   const [userVehiclesWithInactive, setUserVehiclesWithInactive] = useState<Vehicle[]>([]);
