@@ -2,26 +2,14 @@ import { pgTable, text, serial, integer, boolean, timestamp, real, json, uuid } 
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-// Table profiles minimaliste selon les specs utilisateur
-export const profiles = pgTable("profiles", {
-  id: uuid("id").primaryKey(), // References auth.users(id)
-  avatarUrl: text("avatar_url"),
-  accountType: text("account_type").$type<'individual' | 'professional'>().default('individual'),
-  phone: text("phone"),
-  onboardingCompleted: boolean("onboarding_completed").default(false),
-  marketingConsent: boolean("marketing_consent").default(false),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
-
-// Table users existante (à migrer progressivement vers profiles)
+// Table users unifiée - tous les profils utilisateurs
 export const users = pgTable("users", {
   id: text("id").primaryKey(),
   email: text("email").notNull().unique(),
   name: text("name").notNull(),
   phone: text("phone"),
   whatsapp: text("whatsapp"),
-  type: text("type").notNull(), // 'individual' | 'professional'
+  type: text("type").notNull().default('individual'), // 'individual' | 'professional' - tous les comptes par défaut en particulier
   companyName: text("company_name"),
   companyLogo: text("company_logo"),
   address: text("address"),
@@ -31,6 +19,9 @@ export const users = pgTable("users", {
   siret: text("siret"),
   bio: text("bio"),
   avatar: text("avatar"),
+  // Champs additionnels pour les profils
+  onboardingCompleted: boolean("onboarding_completed").default(false),
+  marketingConsent: boolean("marketing_consent").default(false),
   specialties: json("specialties").$type<string[]>(),
   verified: boolean("verified").default(false),
   emailVerified: boolean("email_verified").default(false),
@@ -71,7 +62,7 @@ export const annonces = pgTable("annonces", {
   deletionComment: text("deletion_comment"), // Commentaire facultatif pour "Autre"
   // Colonnes professionnelles
   priorityScore: integer("priority_score").default(0),
-  professionalAccountId: integer("professional_account_id"),
+  professionalAccountId: integer("professional_account_id").references(() => professionalAccounts.id), // FK vers professional_accounts
 });
 
 export const messages = pgTable("messages", {
@@ -102,13 +93,13 @@ export const admins = pgTable("admins", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
-// Types pour la nouvelle table profiles
-export type Profile = typeof profiles.$inferSelect;
-export type InsertProfile = typeof profiles.$inferInsert;
+// Types pour la table users unifiée
+export type UserProfile = typeof users.$inferSelect;
+export type InsertUserProfile = typeof users.$inferInsert;
 
-// Schémas Zod pour profiles
-export const insertProfileSchema = createInsertSchema(profiles);
-export const updateProfileSchema = insertProfileSchema.partial();
+// Schémas Zod pour users (remplace les anciens schémas profiles)
+export const insertUserProfileSchema = createInsertSchema(users);
+export const updateUserProfileSchema = insertUserProfileSchema.partial();
 
 export const reports = pgTable("reports", {
   id: serial("id").primaryKey(),
@@ -174,7 +165,7 @@ export const subscriptionPlans = pgTable("subscription_plans", {
 
 export const professionalAccounts = pgTable("professional_accounts", {
   id: serial("id").primaryKey(),
-  userId: text("user_id").references(() => users.id).notNull(),
+  userId: text("user_id").references(() => users.id).notNull().unique(), // Contrainte unique : 1 compte pro par utilisateur
   companyName: text("company_name").notNull(),
   siret: text("siret").unique(),
   companyAddress: text("company_address"),

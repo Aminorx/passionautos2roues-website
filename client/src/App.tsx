@@ -5,7 +5,7 @@ import { Header } from './components/Header';
 import { Hero } from './components/Hero';
 import { VehicleListings } from './components/VehicleListings';
 import { VehicleDetail } from './components/VehicleDetail';
-import { AuthModal } from './components/AuthModal';
+import { UnifiedAuthModal } from './components/UnifiedAuthModal';
 import { Dashboard } from './components/Dashboard';
 import { CreateListingForm } from './components/CreateListingForm';
 import { DraggableModal } from './components/DraggableModal';
@@ -25,6 +25,7 @@ import { AdminTest } from './components/AdminTest';
 import { Messages } from './pages/Messages';
 import { SearchPage } from './pages/SearchPage';
 import { AuthCallback } from './pages/AuthCallback';
+import { AccountConversion } from './pages/AccountConversion';
 // import CreateProAccount from './pages/CreateProAccount';
 
 function AppContent() {
@@ -99,6 +100,7 @@ function AppContent() {
           onRedirectHome={() => setCurrentView('home')}
           onRedirectToSearch={() => setCurrentView('search')}
           setSearchFilters={setSearchFilters}
+          setCurrentView={setCurrentView}
         />;
       case 'create-listing':
         setShowCreateListingModal(true);
@@ -153,6 +155,8 @@ function AppContent() {
         </div>;
       case 'auth-callback':
         return <AuthCallback />;
+      case 'account-conversion':
+        return <AccountConversion onBack={() => setCurrentView('dashboard')} />;
       default:
         return <Hero setCurrentView={setCurrentView} />;
     }
@@ -183,7 +187,7 @@ function AppContent() {
           <Footer setCurrentView={setCurrentView} />
         </>
       )}
-      <AuthModal />
+      <UnifiedAuthModal />
       
       {/* Modal de création d'annonce déplaçable */}
       <DraggableModal

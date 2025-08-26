@@ -25,19 +25,21 @@ async function syncGoogleUser() {
     console.log('   Avatar:', metadata.avatar_url);
     console.log('   Provider:', metadata.provider);
     
-    // 2. Synchroniser dans public.users
+    // 2. Synchroniser dans public.users (table unifiée)
     const { data: syncedUser, error: userError } = await supabaseServer
       .from('users')
       .upsert({
         id: user.id,
         email: user.email || '',
         name: metadata.full_name || metadata.name || user.email?.split('@')[0] || 'Utilisateur Google',
-        type: 'individual', // Par défaut pour Google OAuth
+        type: 'individual', // Par défaut pour Google OAuth - tous les comptes démarrent en particulier
         phone: null,
-        company_name: null,
-        created_at: user.created_at,
-        email_verified: user.email_confirmed_at ? true : false,
-        // avatar_url: metadata.avatar_url || metadata.picture || null // Colonne n'existe pas
+        companyName: null,
+        avatar: metadata.avatar_url || metadata.picture || null,
+        emailVerified: user.email_confirmed_at ? true : false,
+        onboardingCompleted: true, // Google OAuth considéré comme onboarding complet
+        marketingConsent: false,
+        createdAt: user.created_at,
       })
       .select()
       .single();
@@ -47,34 +49,14 @@ async function syncGoogleUser() {
       return;
     }
     
-    // 3. Synchroniser dans profiles
-    const { data: profile, error: profileError } = await supabaseServer
-      .from('profiles')
-      .upsert({
-        id: user.id,
-        account_type: 'individual',
-        phone: null,
-        onboarding_completed: true, // Google OAuth considéré comme onboarding complet
-        marketing_consent: false,
-        created_at: user.created_at,
-        // oauth_provider: 'google' // Colonne n'existe pas encore
-      })
-      .select()
-      .single();
-      
-    if (profileError) {
-      console.error('❌ Erreur sync profiles:', profileError);
-      return;
-    }
-    
-    console.log('✅ Utilisateur Google synchronisé avec succès !');
+    console.log('✅ Utilisateur Google synchronisé dans table users unifiée:');
     console.log('👤 Utilisateur:', syncedUser.name);
     console.log('📧 Email:', syncedUser.email);
-    console.log('🔗 Profil:', profile.account_type);
+    console.log('🔗 Type:', syncedUser.type);
     
   } catch (error) {
     console.error('❌ Erreur synchronisation:', error);
   }
 }
 
-syncGoogleUser();
+// syncGoogleUser();

@@ -9,6 +9,7 @@ import { Vehicle } from '../types';
 import brandIcon from '@assets/Brand_1752260033631.png';
 import { DeletionQuestionnaireModal } from './DeletionQuestionnaireModal';
 import { ProfessionalVerificationBanner } from './ProfessionalVerificationBanner';
+import { ConversionBanner } from './ConversionBanner';
 
 interface DashboardTab {
   id: string;
@@ -33,9 +34,10 @@ interface DashboardProps {
   onRedirectHome?: () => void;
   onRedirectToSearch?: () => void;
   setSearchFilters?: (filters: any) => void;
+  setCurrentView?: (view: string) => void;
 }
 
-export const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'overview', onCreateListing, onRedirectHome, onRedirectToSearch, setSearchFilters }) => {
+export const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'overview', onCreateListing, onRedirectHome, onRedirectToSearch, setSearchFilters, setCurrentView }) => {
   const { vehicles, setVehicles, setSelectedVehicle, setSearchFilters: contextSetSearchFilters } = useApp();
   const { user, dbUser, isLoading, refreshDbUser } = useAuth();
   const [userVehiclesWithInactive, setUserVehiclesWithInactive] = useState<Vehicle[]>([]);
@@ -467,8 +469,19 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'overview', o
     }).format(price);
   };
 
+  const handleConversionClick = () => {
+    if (setCurrentView) {
+      setCurrentView('account-conversion');
+    }
+  };
+
   const renderOverview = () => (
     <div className="space-y-8">
+      {/* Conversion Banner for Individual Users */}
+      {dbUser?.type === 'individual' && (
+        <ConversionBanner onConvert={handleConversionClick} />
+      )}
+      
       {/* Welcome Section */}
       <div className="relative bg-gradient-to-r from-primary-bolt-500 via-primary-bolt-600 to-primary-bolt-700 rounded-2xl p-8 text-white overflow-hidden">
         <div className="absolute inset-0 bg-black/10"></div>

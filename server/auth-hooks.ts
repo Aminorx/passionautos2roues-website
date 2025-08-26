@@ -30,12 +30,15 @@ export async function createUserFromAuth(authUserId: string, email: string, meta
       id: authUserId,
       email: email,
       name: extractNameFromEmail(email, metadata),
-      type: 'individual' as const,
+      type: 'individual' as const, // TOUS les comptes démarrent en particulier
       phone: metadata?.phone || null,
       whatsapp: metadata?.phone || null,
       city: metadata?.city || null,
-      postal_code: metadata?.postal_code ? parseInt(metadata.postal_code) : null,
-      email_verified: true, // Car vient de Supabase Auth
+      postalCode: metadata?.postal_code || null,
+      emailVerified: true, // Car vient de Supabase Auth
+      onboardingCompleted: false, // Sera complété lors du premier accès
+      marketingConsent: false, // Par défaut, pas de consentement marketing
+      avatar: metadata?.avatar_url || metadata?.picture || null,
     };
 
     const createdUser = await storage.createUser(newUser);

@@ -6,7 +6,6 @@ import { WhatsAppContact } from './WhatsAppContact';
 import { VehicleCard } from './VehicleCard';
 import { Breadcrumb } from './Breadcrumb';
 import { useApp } from '../contexts/AppContext';
-import { AuthModal } from './AuthModal';
 import { Footer } from './Footer';
 import { ContactSellerModal } from './ContactSellerModal';
 import { useAuth } from '../contexts/AuthContext';

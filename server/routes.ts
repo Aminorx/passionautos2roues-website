@@ -11,6 +11,7 @@ import profileRoutes from "./routes/profile";
 import favoritesRoutes from "./routes/favorites";
 import imagesRoutes from "./routes/images";
 import authSyncRoutes from "./routes/auth-sync";
+import accountConversionRoutes from "./routes/account-conversion";
 import { setupWishlistMigration } from "./routes/wishlist-migration.js";
 import { setupWishlistDirect } from "./routes/wishlist-direct.js";
 import { ensureUserExists, createUserFromAuth } from "./auth-hooks";
@@ -914,6 +915,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use("/api/profile", profileRoutes);
   app.use("/api/images", imagesRoutes);
   app.use("/api/auth", authSyncRoutes);
+  app.use("/api/account/conversion", accountConversionRoutes);
 
   // Route pour vérifier le statut de vérification d'un utilisateur professionnel
   app.get('/api/professional-accounts/status/:userId', async (req, res) => {
