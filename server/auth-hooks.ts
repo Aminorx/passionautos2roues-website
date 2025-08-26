@@ -34,8 +34,8 @@ export async function createUserFromAuth(authUserId: string, email: string, meta
       phone: metadata?.phone || null,
       whatsapp: metadata?.phone || null,
       city: metadata?.city || null,
-      postalCode: metadata?.postal_code || null,
-      emailVerified: true, // Car vient de Supabase Auth
+      postal_code: metadata?.postal_code || null,
+      email_verified: true, // Car vient de Supabase Auth (nom correct colonne DB)
       avatar: metadata?.avatar_url || metadata?.picture || null,
     };
 

@@ -106,6 +106,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Endpoint temporaire pour synchroniser manuellement un utilisateur (DEVELOPMENT ONLY)
+  app.post('/api/users/manual-sync', async (req, res) => {
+    try {
+      const { email } = req.body;
+      if (!email) {
+        return res.status(400).json({ error: 'Email required' });
+      }
+
+      // Récupérer l'utilisateur depuis Supabase Auth par email
+      const { data: authUsers, error: listError } = await supabaseServer.auth.admin.listUsers();
+      
+      if (listError) {
+        console.error('Error listing auth users:', listError);
+        return res.status(500).json({ error: 'Failed to list auth users' });
+      }
+
+      const authUser = authUsers.users.find(u => u.email === email);
+      if (!authUser) {
+        return res.status(404).json({ error: 'User not found in Supabase Auth' });
+      }
+
+      // Utiliser le hook intelligent pour créer/synchroniser
+      const syncedUser = await createUserFromAuth(authUser.id, authUser.email || '', authUser.user_metadata);
+      res.status(200).json({ message: 'User manually synchronized successfully', user: syncedUser });
+    } catch (error) {
+      console.error("Error manually syncing user:", error);
+      res.status(500).json({ error: "Failed to manually sync user" });
+    }
+  });
+
   // Vehicles API - only active vehicles for public site
   app.get("/api/vehicles", async (req, res) => {
     try {
