@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { signIn, signUp, signInWithOAuth } from '@/lib/supabase'
-import { Eye, EyeOff, Mail, Lock, User } from 'lucide-react'
+import { Eye, EyeOff, Mail, Lock, User, Building, CheckCircle } from 'lucide-react'
 // Import du service d'authentification centralisé (à décommenter quand il sera complètement implémenté)
 // import { useAuthService } from '@/services/AuthService'
 
@@ -40,7 +40,8 @@ export function AuthModal({ isOpen, onClose, defaultTab = 'signin' }: AuthModalP
     email: '',
     password: '',
     confirmPassword: '',
-    name: ''
+    name: '',
+    type: 'individual' as 'individual' | 'professional'
   })
 
   const handleSignIn = async (e: React.FormEvent) => {
@@ -92,7 +93,7 @@ export function AuthModal({ isOpen, onClose, defaultTab = 'signin' }: AuthModalP
       const { data, error } = await signUp(
         signupForm.email, 
         signupForm.password,
-        { name: signupForm.name }
+        { name: signupForm.name, type: signupForm.type }
       )
       
       if (error) {
@@ -275,6 +276,56 @@ export function AuthModal({ isOpen, onClose, defaultTab = 'signin' }: AuthModalP
                     className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-bolt-500 focus:border-primary-bolt-500"
                     required
                   />
+                </div>
+              </div>
+
+              {/* Account Type Selection */}
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">Type de compte</label>
+                <div className="grid grid-cols-2 gap-3">
+                  <label className={`relative flex items-center p-3 border-2 rounded-lg cursor-pointer transition-all ${
+                    signupForm.type === 'individual' 
+                      ? 'border-primary-bolt-500 bg-blue-50' 
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}>
+                    <input
+                      type="radio"
+                      name="type"
+                      value="individual"
+                      checked={signupForm.type === 'individual'}
+                      onChange={(e) => setSignupForm(prev => ({ ...prev, type: e.target.value as 'individual' | 'professional' }))}
+                      className="sr-only"
+                    />
+                    <div className="flex flex-col items-center text-center w-full">
+                      <User className="h-5 w-5 mb-1 text-gray-600" />
+                      <span className="text-sm font-medium">Particulier</span>
+                    </div>
+                    {signupForm.type === 'individual' && (
+                      <CheckCircle className="absolute top-1 right-1 h-4 w-4 text-primary-bolt-500" />
+                    )}
+                  </label>
+                  
+                  <label className={`relative flex items-center p-3 border-2 rounded-lg cursor-pointer transition-all ${
+                    signupForm.type === 'professional' 
+                      ? 'border-primary-bolt-500 bg-blue-50' 
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}>
+                    <input
+                      type="radio"
+                      name="type"
+                      value="professional"
+                      checked={signupForm.type === 'professional'}
+                      onChange={(e) => setSignupForm(prev => ({ ...prev, type: e.target.value as 'individual' | 'professional' }))}
+                      className="sr-only"
+                    />
+                    <div className="flex flex-col items-center text-center w-full">
+                      <Building className="h-5 w-5 mb-1 text-gray-600" />
+                      <span className="text-sm font-medium">Professionnel</span>
+                    </div>
+                    {signupForm.type === 'professional' && (
+                      <CheckCircle className="absolute top-1 right-1 h-4 w-4 text-primary-bolt-500" />
+                    )}
+                  </label>
                 </div>
               </div>
 
