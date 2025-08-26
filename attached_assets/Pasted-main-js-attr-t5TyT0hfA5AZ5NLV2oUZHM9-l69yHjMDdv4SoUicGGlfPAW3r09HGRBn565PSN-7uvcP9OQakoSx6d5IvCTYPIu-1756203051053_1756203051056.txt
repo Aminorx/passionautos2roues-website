@@ -1,0 +1,28 @@
+main.js?attr=t5TyT0hfA5AZ5NLV2oUZHM9_l69yHjMDdv4SoUicGGlfPAW3r09HGRBn565PSN-7uvcP9OQakoSx6d5IvCTYPIuuvmmU1-CEEPsKc_VuJRREGGLChM-u9aaB_AE8eCuEsNw_7kpuBstvl2pwqCrFrA:3372  POST https://6f9af126-b95e-4c91-b1e1-8df95f92a721-00-2sdkrgbvyo7l5.picard.replit.dev/api/account/conversion/submit 404 (Not Found)
+fetchCallImpl @ main.js?attr=t5TyT0hfA5AZ5NLV2oUZHM9_l69yHjMDdv4SoUicGGlfPAW3r09HGRBn565PSN-7uvcP9OQakoSx6d5IvCTYPIuuvmmU1-CEEPsKc_VuJRREGGLChM-u9aaB_AE8eCuEsNw_7kpuBstvl2pwqCrFrA:3372
+fetch @ main.js?attr=t5TyT0hfA5AZ5NLV2oUZHM9_l69yHjMDdv4SoUicGGlfPAW3r09HGRBn565PSN-7uvcP9OQakoSx6d5IvCTYPIuuvmmU1-CEEPsKc_VuJRREGGLChM-u9aaB_AE8eCuEsNw_7kpuBstvl2pwqCrFrA:3378
+mutationFn @ AccountConversion.tsx:86
+fn @ @tanstack_react-query.js?v=f9bcb135:1189
+run @ @tanstack_react-query.js?v=f9bcb135:494
+start @ @tanstack_react-query.js?v=f9bcb135:536
+execute @ @tanstack_react-query.js?v=f9bcb135:1225
+await in execute
+mutate @ @tanstack_react-query.js?v=f9bcb135:2630
+(anonymous) @ @tanstack_react-query.js?v=f9bcb135:3295
+handleSubmit @ AccountConversion.tsx:124
+callCallback2 @ chunk-UPELNCPK.js?v=f9bcb135:3674
+invokeGuardedCallbackDev @ chunk-UPELNCPK.js?v=f9bcb135:3699
+invokeGuardedCallback @ chunk-UPELNCPK.js?v=f9bcb135:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-UPELNCPK.js?v=f9bcb135:3736
+executeDispatch @ chunk-UPELNCPK.js?v=f9bcb135:7014
+processDispatchQueueItemsInOrder @ chunk-UPELNCPK.js?v=f9bcb135:7034
+processDispatchQueue @ chunk-UPELNCPK.js?v=f9bcb135:7043
+dispatchEventsForPlugins @ chunk-UPELNCPK.js?v=f9bcb135:7051
+(anonymous) @ chunk-UPELNCPK.js?v=f9bcb135:7174
+batchedUpdates$1 @ chunk-UPELNCPK.js?v=f9bcb135:18913
+batchedUpdates @ chunk-UPELNCPK.js?v=f9bcb135:3579
+dispatchEventForPluginEventSystem @ chunk-UPELNCPK.js?v=f9bcb135:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-UPELNCPK.js?v=f9bcb135:5478
+dispatchEvent @ chunk-UPELNCPK.js?v=f9bcb135:5472
+dispatchDiscreteEvent @ chunk-UPELNCPK.js?v=f9bcb135:5449Understand this error
+AccountConversion.tsx:30 Toast: Erreur Aucune conversion en cours. Veuillez démarrer la conversion d'abord.

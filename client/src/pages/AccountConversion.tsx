@@ -25,6 +25,11 @@ interface ConversionData {
 
 export const AccountConversion: React.FC<{ onBack: () => void }> = ({ onBack }) => {
   const { user, isAuthenticated } = useAuth();
+  
+  // Debug: afficher les informations de l'utilisateur
+  console.log('🔍 Debug AccountConversion - User:', user);
+  console.log('🔍 Debug AccountConversion - isAuthenticated:', isAuthenticated);
+  
   // const { toast } = useToast();
   const toast = (options: any) => {
     console.log('Toast:', options.title, options.description);
@@ -46,6 +51,17 @@ export const AccountConversion: React.FC<{ onBack: () => void }> = ({ onBack }) 
     queryKey: ['/api/account/conversion/status'],
     enabled: !!user?.id,
     retry: 1,
+    queryFn: async () => {
+      const response = await fetch('/api/account/conversion/status', {
+        headers: {
+          'x-user-id': user?.id || '',
+        },
+      });
+      if (!response.ok) {
+        throw new Error('Erreur lors de la récupération du statut');
+      }
+      return response.json();
+    },
   });
 
   // Mutation pour démarrer la conversion
@@ -70,6 +86,10 @@ export const AccountConversion: React.FC<{ onBack: () => void }> = ({ onBack }) 
         title: 'Conversion initiée',
         description: 'Votre demande de conversion a été initiée avec succès.',
       });
+      // Maintenant soumettre les données automatiquement
+      setTimeout(() => {
+        submitConversionMutation.mutate(formData);
+      }, 1000);
     },
     onError: (error: Error) => {
       toast({
@@ -121,6 +141,15 @@ export const AccountConversion: React.FC<{ onBack: () => void }> = ({ onBack }) 
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Si aucune conversion n'est en cours, la démarrer d'abord
+    if (!(conversionStatus as ConversionStatus)?.conversionInProgress && 
+        !(conversionStatus as ConversionStatus)?.professionalAccount) {
+      startConversionMutation.mutate();
+      return;
+    }
+    
+    // Sinon, soumettre les données
     submitConversionMutation.mutate(formData);
   };
 
