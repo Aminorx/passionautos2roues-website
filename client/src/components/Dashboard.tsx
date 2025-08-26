@@ -26,6 +26,7 @@ const dashboardTabs: DashboardTab[] = [
   { id: 'favorites', label: 'Mes favoris', icon: <Heart className="h-5 w-5" /> },
   { id: 'messages', label: 'Messages', icon: <MessageCircle className="h-5 w-5" /> },
   { id: 'profile', label: 'Mon profil', icon: <User className="h-5 w-5" /> },
+  { id: 'subscription', label: 'Abonnement Pro', icon: <Building2 className="h-5 w-5" /> },
   { id: 'premium', label: 'Premium', icon: <Crown className="h-5 w-5" /> },
 ];
 
@@ -544,13 +545,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'overview', o
             <div className="bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2">
               <span className="text-sm font-medium">Membre depuis</span>
               <p className="text-lg font-bold">
-                {dbUser?.createdAt ? new Date(dbUser.createdAt).toLocaleDateString('fr-FR', { 
+                {dbUser?.created_at ? new Date(dbUser.created_at).toLocaleDateString('fr-FR', { 
                   month: 'long', 
                   year: 'numeric' 
                 }) : 'Récemment'}
               </p>
             </div>
-            {dbUser?.verified && (
+            {(dbUser as any)?.verified && (
               <div className="bg-green-500/20 backdrop-blur-sm rounded-lg px-4 py-2 border border-green-400/30">
                 <span className="text-sm font-medium text-green-100">✓ Compte vérifié</span>
               </div>
@@ -800,13 +801,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'overview', o
                          vehicle.status === 'pending' ? '⏳ En attente' : '❌ Rejetée'}
                       </span>
                       <span className={`px-4 py-2 rounded-full text-sm font-semibold ${
-                        vehicle.deletedAt
+                        (vehicle as any).deletedAt
                           ? 'bg-gray-100 text-gray-800 border border-gray-200'
                           : vehicle.isActive !== false
                           ? 'bg-green-100 text-green-800 border border-green-200'
                           : 'bg-red-100 text-red-800 border border-red-200'
                       }`}>
-                        {vehicle.deletedAt ? '🗑️ Supprimée' : vehicle.isActive !== false ? '✅ Active' : '❌ Inactive'}
+                        {(vehicle as any).deletedAt ? '🗑️ Supprimée' : vehicle.isActive !== false ? '✅ Active' : '❌ Inactive'}
                       </span>
                     </div>
                   </div>
@@ -832,7 +833,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'overview', o
 
                     <div className="flex items-center space-x-3">
                       {/* Afficher les boutons seulement si l'annonce n'est pas supprimée */}
-                      {!vehicle.deletedAt && (
+                      {!(vehicle as any).deletedAt && (
                         <>
                           {!vehicle.isPremium && (
                             <button className="px-6 py-2 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-xl font-semibold transition-all duration-200 flex items-center space-x-2 shadow-lg hover:shadow-xl">
@@ -1106,11 +1107,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'overview', o
             <p className="text-gray-600 text-lg mt-1">{user?.email || dbUser?.email}</p>
             <div className="flex items-center space-x-3 mt-4">
               <span className={`px-4 py-2 rounded-full text-sm font-semibold ${
-                dbUser?.verified
+                (dbUser as any)?.verified
                   ? 'bg-green-100 text-green-800 border border-green-200'
                   : 'bg-yellow-100 text-yellow-800 border border-yellow-200'
               }`}>
-                {dbUser?.verified ? '✓ Compte vérifié' : '⏳ En attente de vérification'}
+                {(dbUser as any)?.verified ? '✓ Compte vérifié' : '⏳ En attente de vérification'}
               </span>
               <span className="px-4 py-2 bg-primary-bolt-100 text-primary-bolt-500 rounded-full text-sm font-semibold border border-primary-bolt-200">
                 {dbUser?.type === 'professional' ? '🏢 Professionnel' : '👤 Particulier'}
@@ -1146,7 +1147,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'overview', o
             <label className="block text-sm font-semibold text-gray-700 mb-3">Téléphone</label>
             <input
               type="tel"
-              value={editingProfile ? profileForm.phone : (dbUser?.phone || '')}
+              value={editingProfile ? profileForm.phone : ((dbUser as any)?.phone || '')}
               onChange={(e) => setProfileForm({...profileForm, phone: e.target.value})}
               disabled={!editingProfile}
               className="w-full px-4 py-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-bolt-500 focus:border-primary-bolt-500 disabled:bg-gray-50 text-lg"
@@ -1157,7 +1158,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'overview', o
             <label className="block text-sm font-semibold text-gray-700 mb-3">WhatsApp</label>
             <input
               type="tel"
-              value={editingProfile ? profileForm.whatsapp : (dbUser?.whatsapp || '')}
+              value={editingProfile ? profileForm.whatsapp : ((dbUser as any)?.whatsapp || '')}
               onChange={(e) => setProfileForm({...profileForm, whatsapp: e.target.value})}
               disabled={!editingProfile}
               className="w-full px-4 py-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-bolt-500 focus:border-primary-bolt-500 disabled:bg-gray-50 text-lg"
@@ -1179,7 +1180,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'overview', o
             <label className="block text-sm font-semibold text-gray-700 mb-3">Ville</label>
             <input
               type="text"
-              value={editingProfile ? profileForm.city : (dbUser?.city || '')}
+              value={editingProfile ? profileForm.city : ((dbUser as any)?.city || '')}
               onChange={(e) => setProfileForm({...profileForm, city: e.target.value})}
               disabled={!editingProfile}
               className="w-full px-4 py-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-bolt-500 focus:border-primary-bolt-500 disabled:bg-gray-50 text-lg"
@@ -1190,26 +1191,71 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'overview', o
 
           {dbUser?.type === 'professional' && (
             <div className="md:col-span-2 space-y-6">
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-3">Nom de l'entreprise</label>
-                <input
-                  type="text"
-                  value={editingProfile ? profileForm.companyName : ((dbUser as any)?.company_name || '')}
-                  onChange={(e) => setProfileForm({...profileForm, companyName: e.target.value})}
-                  disabled={!editingProfile}
-                  className="w-full px-4 py-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-bolt-500 focus:border-primary-bolt-500 disabled:bg-gray-50 text-lg"
-                />
+              <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 mb-6">
+                <h3 className="text-lg font-semibold text-blue-800 mb-3">🏢 Informations professionnelles</h3>
+                <p className="text-blue-700 text-sm">Ces informations sont issues de votre demande de conversion professionnelle et ne sont pas modifiables depuis cette page.</p>
               </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-3">Nom de l'entreprise</label>
+                  <input
+                    type="text"
+                    value={(conversionStatus as any)?.professionalAccount?.company_name || ''}
+                    disabled={true}
+                    className="w-full px-4 py-4 border border-gray-300 rounded-xl bg-gray-100 text-gray-700 text-lg cursor-not-allowed"
+                  />
+                </div>
 
-              <div className="md:col-span-2">
-                <label className="block text-sm font-semibold text-gray-700 mb-3">Adresse</label>
-                <textarea
-                  value={editingProfile ? profileForm.address : (dbUser?.address || '')}
-                  onChange={(e) => setProfileForm({...profileForm, address: e.target.value})}
-                  disabled={!editingProfile}
-                  rows={4}
-                  className="w-full px-4 py-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-bolt-500 focus:border-primary-bolt-500 disabled:bg-gray-50 text-lg"
-                />
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-3">Email professionnel</label>
+                  <input
+                    type="email"
+                    value={(conversionStatus as any)?.professionalAccount?.email || ''}
+                    disabled={true}
+                    className="w-full px-4 py-4 border border-gray-300 rounded-xl bg-gray-100 text-gray-700 text-lg cursor-not-allowed"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-3">Téléphone professionnel</label>
+                  <input
+                    type="tel"
+                    value={(conversionStatus as any)?.professionalAccount?.phone || ''}
+                    disabled={true}
+                    className="w-full px-4 py-4 border border-gray-300 rounded-xl bg-gray-100 text-gray-700 text-lg cursor-not-allowed"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-3">Site web</label>
+                  <input
+                    type="url"
+                    value={(conversionStatus as any)?.professionalAccount?.website || ''}
+                    disabled={true}
+                    className="w-full px-4 py-4 border border-gray-300 rounded-xl bg-gray-100 text-gray-700 text-lg cursor-not-allowed"
+                  />
+                </div>
+
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-semibold text-gray-700 mb-3">Adresse de l'entreprise</label>
+                  <textarea
+                    value={(conversionStatus as any)?.professionalAccount?.company_address || ''}
+                    disabled={true}
+                    rows={3}
+                    className="w-full px-4 py-4 border border-gray-300 rounded-xl bg-gray-100 text-gray-700 text-lg cursor-not-allowed"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-3">SIRET</label>
+                  <input
+                    type="text"
+                    value={(conversionStatus as any)?.professionalAccount?.siret || ''}
+                    disabled={true}
+                    className="w-full px-4 py-4 border border-gray-300 rounded-xl bg-gray-100 text-gray-700 text-lg cursor-not-allowed"
+                  />
+                </div>
               </div>
             </div>
           )}
@@ -1244,6 +1290,210 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'overview', o
             </button>
           </div>
         )}
+      </div>
+    </div>
+  );
+
+  const renderSubscription = () => (
+    <div className="space-y-8">
+      <div className="text-center mb-12">
+        <div className="w-24 h-24 bg-gradient-to-r from-blue-600 to-purple-700 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+          <Building2 className="h-12 w-12 text-white" />
+        </div>
+        <h1 className="text-4xl font-bold text-gray-900 mb-4">Abonnement Professionnel</h1>
+        <p className="text-gray-600 mt-2 text-lg">Gérez votre abonnement et découvrez tous les avantages</p>
+      </div>
+
+      {/* Avantages de l'abonnement Pro */}
+      <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl border border-blue-200 p-8 mb-8">
+        <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+          <Crown className="h-6 w-6 text-yellow-500 mr-3" />
+          Vos avantages Pro actuels
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="bg-white rounded-xl p-6 shadow-sm">
+            <div className="flex items-center mb-4">
+              <div className="bg-green-100 p-2 rounded-lg">
+                <Star className="h-5 w-5 text-green-600" />
+              </div>
+              <h3 className="ml-3 font-semibold text-gray-900">Boutique personnalisée</h3>
+            </div>
+            <p className="text-gray-600">Votre propre page boutique avec tous vos véhicules</p>
+          </div>
+          
+          <div className="bg-white rounded-xl p-6 shadow-sm">
+            <div className="flex items-center mb-4">
+              <div className="bg-blue-100 p-2 rounded-lg">
+                <TrendingUp className="h-5 w-5 text-blue-600" />
+              </div>
+              <h3 className="ml-3 font-semibold text-gray-900">Visibilité premium</h3>
+            </div>
+            <p className="text-gray-600">Vos annonces remontent automatiquement dans les résultats</p>
+          </div>
+          
+          <div className="bg-white rounded-xl p-6 shadow-sm">
+            <div className="flex items-center mb-4">
+              <div className="bg-purple-100 p-2 rounded-lg">
+                <Award className="h-5 w-5 text-purple-600" />
+              </div>
+              <h3 className="ml-3 font-semibold text-gray-900">Badge vérifié</h3>
+            </div>
+            <p className="text-gray-600">Affichez votre statut de professionnel vérifié</p>
+          </div>
+          
+          <div className="bg-white rounded-xl p-6 shadow-sm">
+            <div className="flex items-center mb-4">
+              <div className="bg-orange-100 p-2 rounded-lg">
+                <Calendar className="h-5 w-5 text-orange-600" />
+              </div>
+              <h3 className="ml-3 font-semibold text-gray-900">Annonces illimitées</h3>
+            </div>
+            <p className="text-gray-600">Publiez autant d'annonces que vous le souhaitez</p>
+          </div>
+          
+          <div className="bg-white rounded-xl p-6 shadow-sm">
+            <div className="flex items-center mb-4">
+              <div className="bg-red-100 p-2 rounded-lg">
+                <MessageCircle className="h-5 w-5 text-red-600" />
+              </div>
+              <h3 className="ml-3 font-semibold text-gray-900">Support prioritaire</h3>
+            </div>
+            <p className="text-gray-600">Assistance dédiée pour les professionnels</p>
+          </div>
+          
+          <div className="bg-white rounded-xl p-6 shadow-sm">
+            <div className="flex items-center mb-4">
+              <div className="bg-yellow-100 p-2 rounded-lg">
+                <Euro className="h-5 w-5 text-yellow-600" />
+              </div>
+              <h3 className="ml-3 font-semibold text-gray-900">Tarifs préférentiels</h3>
+            </div>
+            <p className="text-gray-600">Réductions sur les options premium</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Plans d'abonnement disponibles */}
+      <div>
+        <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center">Choisissez votre plan d'abonnement</h2>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Starter Pro */}
+          <div className="bg-white rounded-2xl border border-gray-200 p-8 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2">
+            <div className="text-center mb-8">
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">Starter Pro</h3>
+              <div className="text-4xl font-bold text-blue-600 mb-2">19,90€</div>
+              <p className="text-gray-600">par mois</p>
+            </div>
+            <ul className="space-y-4 mb-8">
+              <li className="flex items-center space-x-3">
+                <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
+                  <span className="text-white text-xs">✓</span>
+                </div>
+                <span>Jusqu'à 20 annonces simultanées</span>
+              </li>
+              <li className="flex items-center space-x-3">
+                <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
+                  <span className="text-white text-xs">✓</span>
+                </div>
+                <span>Page boutique personnalisée</span>
+              </li>
+              <li className="flex items-center space-x-3">
+                <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
+                  <span className="text-white text-xs">✓</span>
+                </div>
+                <span>Badge professionnel vérifié</span>
+              </li>
+              <li className="flex items-center space-x-3">
+                <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
+                  <span className="text-white text-xs">✓</span>
+                </div>
+                <span>Support par email</span>
+              </li>
+            </ul>
+            <button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 px-6 rounded-xl font-semibold transition-colors">
+              Choisir ce plan
+            </button>
+          </div>
+
+          {/* Business Pro */}
+          <div className="bg-white rounded-2xl border-2 border-orange-300 p-8 relative hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2">
+            <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+              <span className="bg-orange-500 text-white px-4 py-2 rounded-full text-sm font-semibold">Plus populaire</span>
+            </div>
+            <div className="text-center mb-8">
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">Business Pro</h3>
+              <div className="text-4xl font-bold text-orange-600 mb-2">39,90€</div>
+              <p className="text-gray-600">par mois</p>
+            </div>
+            <ul className="space-y-4 mb-8">
+              <li className="flex items-center space-x-3">
+                <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
+                  <span className="text-white text-xs">✓</span>
+                </div>
+                <span>Jusqu'à 50 annonces simultanées</span>
+              </li>
+              <li className="flex items-center space-x-3">
+                <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
+                  <span className="text-white text-xs">✓</span>
+                </div>
+                <span>Remontée automatique hebdomadaire</span>
+              </li>
+              <li className="flex items-center space-x-3">
+                <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
+                  <span className="text-white text-xs">✓</span>
+                </div>
+                <span>Statistiques détaillées</span>
+              </li>
+              <li className="flex items-center space-x-3">
+                <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
+                  <span className="text-white text-xs">✓</span>
+                </div>
+                <span>Support téléphonique</span>
+              </li>
+            </ul>
+            <button className="w-full bg-orange-600 hover:bg-orange-700 text-white py-4 px-6 rounded-xl font-semibold transition-colors">
+              Choisir ce plan
+            </button>
+          </div>
+
+          {/* Premium Pro */}
+          <div className="bg-white rounded-2xl border border-gray-200 p-8 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2">
+            <div className="text-center mb-8">
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">Premium Pro</h3>
+              <div className="text-4xl font-bold text-purple-600 mb-2">79,90€</div>
+              <p className="text-gray-600">par mois</p>
+            </div>
+            <ul className="space-y-4 mb-8">
+              <li className="flex items-center space-x-3">
+                <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
+                  <span className="text-white text-xs">✓</span>
+                </div>
+                <span>Annonces illimitées</span>
+              </li>
+              <li className="flex items-center space-x-3">
+                <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
+                  <span className="text-white text-xs">✓</span>
+                </div>
+                <span>Remontée quotidienne automatique</span>
+              </li>
+              <li className="flex items-center space-x-3">
+                <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
+                  <span className="text-white text-xs">✓</span>
+                </div>
+                <span>Analytics avancés</span>
+              </li>
+              <li className="flex items-center space-x-3">
+                <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
+                  <span className="text-white text-xs">✓</span>
+                </div>
+                <span>Gestionnaire de compte dédié</span>
+              </li>
+            </ul>
+            <button className="w-full bg-purple-600 hover:bg-purple-700 text-white py-4 px-6 rounded-xl font-semibold transition-colors">
+              Choisir ce plan
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -1760,7 +2010,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'overview', o
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-600 dark:text-gray-400">Supprimée le :</span>
                   <span className="text-sm text-gray-900 dark:text-white">
-                    {vehicle.deletedAt ? new Date(vehicle.deletedAt).toLocaleDateString('fr-FR') : 'N/A'}
+                    {(vehicle as any).deletedAt ? new Date((vehicle as any).deletedAt).toLocaleDateString('fr-FR') : 'N/A'}
                   </span>
                 </div>
               </div>
@@ -1860,7 +2110,15 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'overview', o
               </div>
               
               <nav className="p-4">
-                {dashboardTabs.map((tab) => {
+                {dashboardTabs
+                  .filter(tab => {
+                    // Masquer l'onglet "Abonnement Pro" pour les utilisateurs individuels
+                    if (tab.id === 'subscription' && dbUser?.type !== 'professional') {
+                      return false;
+                    }
+                    return true;
+                  })
+                  .map((tab) => {
                   const badgeCount = tab.id === 'messages' ? unreadCount : (tab.badge || 0);
                   
                   return (
@@ -1901,6 +2159,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'overview', o
             {activeTab === 'favorites' && renderFavorites()}
             {activeTab === 'messages' && renderMessages()}
             {activeTab === 'profile' && renderProfile()}
+            {activeTab === 'subscription' && renderSubscription()}
             {activeTab === 'premium' && (
               <div className="space-y-8">
                 {/* Header Section */}

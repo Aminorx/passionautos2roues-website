@@ -61,25 +61,23 @@ export const AdminDashboard: React.FC = () => {
 
   const loadDashboardData = async () => {
     try {
-      // Pour le moment, utiliser les données publiques disponibles
-      // TODO: Implémenter l'authentification admin complète
+      // Récupérer tous les utilisateurs directement de l'API admin
+      const usersRes = await fetch('/api/admin/all-users');
+      const allUsersData = await usersRes.json();
+      
+      // Formatter les utilisateurs avec les vraies données de la base
+      const formattedUsers = allUsersData.map((user: any) => ({
+        id: user.id,
+        name: user.name || user.email?.split('@')[0] || 'Utilisateur',
+        email: user.email,
+        type: user.type || 'individual', // Utiliser le type réel de la base
+        verified: user.verified || true,
+        createdAt: user.createdAt || user.created_at || new Date().toISOString()
+      }));
+
+      // Récupérer les véhicules pour les annonces
       const vehiclesRes = await fetch('/api/vehicles');
       const vehiclesData = await vehiclesRes.json();
-      
-      // Extraire les utilisateurs uniques des véhicules
-      const uniqueUsers = vehiclesData.reduce((acc: any[], vehicle: any) => {
-        if (vehicle.user && !acc.find(u => u.id === vehicle.user.id)) {
-          acc.push({
-            id: vehicle.user.id,
-            name: vehicle.user.name,
-            email: vehicle.user.email || `${vehicle.user.id}@auto2roues.com`,
-            type: vehicle.user.type || 'individual',
-            verified: true,
-            createdAt: vehicle.user.createdAt || vehicle.created_at || new Date().toISOString()
-          });
-        }
-        return acc;
-      }, []);
 
       // Convertir les véhicules en format annonces
       const annoncesData = vehiclesData.map((vehicle: any) => ({
@@ -91,15 +89,15 @@ export const AdminDashboard: React.FC = () => {
         createdAt: vehicle.created_at || vehicle.createdAt || new Date().toISOString()
       }));
 
-      setUsers(uniqueUsers);
+      setUsers(formattedUsers); // Utiliser les utilisateurs formatés
       setAnnonces(annoncesData);
 
       // Calculer les statistiques
       setStats({
-        totalUsers: uniqueUsers.length,
+        totalUsers: formattedUsers.length,
         totalAnnonces: annoncesData.length,
         pendingReports: 0, // À implémenter
-        recentActivity: uniqueUsers.filter((u: User) => 
+        recentActivity: formattedUsers.filter((u: User) => 
           new Date(u.createdAt) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
         ).length,
         monthlyGrowth: 12 // Placeholder

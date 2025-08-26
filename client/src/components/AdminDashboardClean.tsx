@@ -961,6 +961,9 @@ export const AdminDashboardClean: React.FC<AdminDashboardProps> = ({ onBack }) =
                     <thead className="bg-gray-50">
                       <tr>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Compte
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Entreprise
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -985,6 +988,16 @@ export const AdminDashboardClean: React.FC<AdminDashboardProps> = ({ onBack }) =
                         <tr key={account.id} className="hover:bg-gray-50">
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div>
+                              {account.users && (
+                                <>
+                                  <div className="text-sm font-medium text-gray-900">{account.users.email}</div>
+                                  <div className="text-xs text-gray-400">👤 {account.users.name}</div>
+                                </>
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div>
                               <div className="text-sm font-medium text-gray-900">{account.company_name}</div>
                               <div className="text-sm text-gray-500 truncate max-w-xs">{account.company_address}</div>
                             </div>
@@ -996,9 +1009,6 @@ export const AdminDashboardClean: React.FC<AdminDashboardProps> = ({ onBack }) =
                             <div>
                               <div className="text-sm text-gray-900">{account.email}</div>
                               <div className="text-sm text-gray-500">{account.phone}</div>
-                              {account.users && (
-                                <div className="text-xs text-gray-400">👤 {account.users.name}</div>
-                              )}
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
