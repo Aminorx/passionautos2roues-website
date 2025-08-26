@@ -42,13 +42,22 @@ function AppContent() {
   const [searchQuery, setSearchQuery] = useState('');
   const { selectedVehicle, setSelectedVehicle, setSearchFilters } = useApp();
   
+  // Check if we're on a pro shop route - ALWAYS call the hook
+  const [match] = useRoute('/pro/:shopId');
+  
   const handleSearch = useCallback((query: string) => {
     setSearchQuery(query);
     setCurrentView('search');
   }, []);
 
-  // Check if we're on a pro shop route
-  const [match] = useRoute('/pro/:shopId');
+  // Scroll to top when view changes
+  React.useEffect(() => {
+    if (!selectedVehicle) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [currentView, selectedVehicle]);
+
+  // If we're on a pro shop route, render the pro shop layout
   if (match) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
@@ -64,13 +73,6 @@ function AppContent() {
       </div>
     );
   }
-
-  // Scroll to top when view changes
-  React.useEffect(() => {
-    if (!selectedVehicle) {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  }, [currentView, selectedVehicle]);
 
   const handleBack = useCallback(() => {
     setSelectedVehicle(null);
