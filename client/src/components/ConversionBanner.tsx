@@ -1,11 +1,99 @@
 import React from 'react';
-import { Building, ArrowRight, Star, Crown, TrendingUp } from 'lucide-react';
+import { Building, ArrowRight, Star, Crown, TrendingUp, CheckCircle, XCircle, Clock } from 'lucide-react';
+
+interface ConversionStatus {
+  currentType: string;
+  conversionInProgress: boolean;
+  conversionRejected: boolean;
+  rejectionReason?: string;
+  professionalAccount?: any;
+}
 
 interface ConversionBannerProps {
   onConvert: () => void;
+  conversionStatus?: ConversionStatus;
 }
 
-export const ConversionBanner: React.FC<ConversionBannerProps> = ({ onConvert }) => {
+export const ConversionBanner: React.FC<ConversionBannerProps> = ({ onConvert, conversionStatus }) => {
+  // Affichage prioritaire pour les comptes approuvés
+  if (conversionStatus?.currentType === 'professional') {
+    return (
+      <div className="bg-gradient-to-r from-green-600 to-emerald-700 rounded-2xl p-6 text-white shadow-xl border border-green-200 mb-6">
+        <div className="flex items-center space-x-4">
+          <div className="bg-white/20 p-3 rounded-xl">
+            <CheckCircle className="h-8 w-8 text-white" />
+          </div>
+          <div>
+            <h3 className="text-xl font-bold mb-1">✅ Compte professionnel actif</h3>
+            <p className="text-green-100 text-sm font-medium">
+              Votre compte professionnel est vérifié et actif. Profitez de tous les avantages !
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Affichage prioritaire pour les comptes rejetés
+  if (conversionStatus?.conversionRejected) {
+    return (
+      <div className="bg-gradient-to-r from-red-600 to-rose-700 rounded-2xl p-6 text-white shadow-xl border border-red-200 mb-6">
+        <div className="flex items-start justify-between">
+          <div className="flex items-center space-x-4">
+            <div className="bg-white/20 p-3 rounded-xl">
+              <XCircle className="h-8 w-8 text-white" />
+            </div>
+            <div>
+              <h3 className="text-xl font-bold mb-1">❌ Demande rejetée</h3>
+              <p className="text-red-100 text-sm font-medium mb-2">
+                Votre demande de conversion a été rejetée.
+              </p>
+              {conversionStatus.rejectionReason && (
+                <div className="bg-white/20 p-3 rounded-lg mb-4">
+                  <p className="text-sm font-semibold">Raison :</p>
+                  <p className="text-sm">{conversionStatus.rejectionReason}</p>
+                </div>
+              )}
+            </div>
+          </div>
+          <button
+            onClick={onConvert}
+            className="bg-white text-red-700 hover:bg-red-50 px-6 py-3 rounded-xl font-semibold transition-all duration-200 flex items-center space-x-2 shadow-lg hover:shadow-xl transform hover:scale-105"
+          >
+            <span>Nouvelle demande</span>
+            <ArrowRight className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Affichage prioritaire pour les demandes en cours
+  if (conversionStatus?.conversionInProgress) {
+    return (
+      <div className="bg-gradient-to-r from-yellow-600 to-orange-700 rounded-2xl p-6 text-white shadow-xl border border-yellow-200 mb-6">
+        <div className="flex items-center space-x-4">
+          <div className="bg-white/20 p-3 rounded-xl">
+            <Clock className="h-8 w-8 text-white" />
+          </div>
+          <div>
+            <h3 className="text-xl font-bold mb-1">⏳ Conversion en cours</h3>
+            <p className="text-yellow-100 text-sm font-medium">
+              Votre demande est en cours d'examen par notre équipe. Vous serez notifié dès que votre compte sera vérifié.
+            </p>
+            {conversionStatus.professionalAccount && (
+              <div className="mt-3 bg-white/20 p-3 rounded-lg">
+                <p className="text-sm font-semibold mb-1">Entreprise soumise :</p>
+                <p className="text-sm">{conversionStatus.professionalAccount.company_name}</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Bannière standard pour inviter à la conversion
   return (
     <div className="bg-gradient-to-r from-blue-600 via-blue-700 to-purple-700 rounded-2xl p-6 text-white shadow-xl border border-blue-200 mb-6">
       {/* Background decorations */}

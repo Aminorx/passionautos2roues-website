@@ -10,6 +10,7 @@ import brandIcon from '@assets/Brand_1752260033631.png';
 import { DeletionQuestionnaireModal } from './DeletionQuestionnaireModal';
 import { ProfessionalVerificationBanner } from './ProfessionalVerificationBanner';
 import { ConversionBanner } from './ConversionBanner';
+import { useQuery } from '@tanstack/react-query';
 
 interface DashboardTab {
   id: string;
@@ -40,6 +41,24 @@ interface DashboardProps {
 export const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'overview', onCreateListing, onRedirectHome, onRedirectToSearch, setSearchFilters, setCurrentView }) => {
   const { vehicles, setVehicles, setSelectedVehicle, setSearchFilters: contextSetSearchFilters } = useApp();
   const { user, dbUser, isLoading, refreshDbUser } = useAuth();
+
+  // Récupérer le statut de conversion pour tous les utilisateurs (permet d'afficher les notifications appropriées)
+  const { data: conversionStatus } = useQuery({
+    queryKey: ['/api/account/conversion/status'],
+    enabled: !!user?.id,
+    retry: 1,
+    queryFn: async () => {
+      const response = await fetch('/api/account/conversion/status', {
+        headers: {
+          'x-user-id': user?.id || '',
+        },
+      });
+      if (!response.ok) {
+        throw new Error('Erreur lors de la récupération du statut');
+      }
+      return response.json();
+    },
+  });
   const [userVehiclesWithInactive, setUserVehiclesWithInactive] = useState<Vehicle[]>([]);
   const [deletedVehicles, setDeletedVehicles] = useState<Vehicle[]>([]);
   const [vehicleToDelete, setVehicleToDelete] = useState<{id: string; title: string} | null>(null);
@@ -477,10 +496,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'overview', o
 
   const renderOverview = () => (
     <div className="space-y-8">
-      {/* Conversion Banner for Individual Users */}
-      {dbUser?.type === 'individual' && (
-        <ConversionBanner onConvert={handleConversionClick} />
-      )}
+      {/* Conversion Banner - Affiché pour tous les utilisateurs avec statut approprié */}
+      <ConversionBanner 
+        onConvert={handleConversionClick} 
+        conversionStatus={conversionStatus}
+      />
       
       {/* Welcome Section */}
       <div className="relative bg-gradient-to-r from-primary-bolt-500 via-primary-bolt-600 to-primary-bolt-700 rounded-2xl p-8 text-white overflow-hidden">

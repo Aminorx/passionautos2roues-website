@@ -67,13 +67,13 @@ export function UserMenu({ onNavigate, onDashboardNavigate }: UserMenuProps) {
           <div className="py-2">
             <button
               onClick={() => {
-                onDashboardNavigate?.('profile')
+                onDashboardNavigate?.('overview')
                 setIsOpen(false)
               }}
               className="flex items-center w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
             >
               <User className="mr-2 h-4 w-4" />
-              <span>Mon profil</span>
+              <span>Tableau de bord</span>
             </button>
             
             <button

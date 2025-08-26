@@ -246,12 +246,15 @@ export const AccountConversion: React.FC<{ onBack: () => void }> = ({ onBack }) 
             <div className="space-y-4">
               <button
                 onClick={() => {
+                  console.log('🔄 Démarrage nouvelle conversion...');
+                  queryClient.invalidateQueries({ queryKey: ['/api/account/conversion/status'] });
                   startConversionMutation.mutate();
                   setStep(1);
                 }}
-                className="w-full bg-primary-bolt-600 hover:bg-primary-bolt-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
+                disabled={startConversionMutation.isPending}
+                className="w-full bg-primary-bolt-600 hover:bg-primary-bolt-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors disabled:opacity-50"
               >
-                Soumettre une nouvelle demande
+                {startConversionMutation.isPending ? 'Démarrage...' : 'Soumettre une nouvelle demande'}
               </button>
               <button
                 onClick={onBack}
