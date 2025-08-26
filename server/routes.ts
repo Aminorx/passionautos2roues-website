@@ -19,6 +19,8 @@ import { setupWishlistDirect } from "./routes/wishlist-direct.js";
 import { ensureUserExists, createUserFromAuth } from "./auth-hooks";
 import { supabaseServer } from "./supabase";
 import multer from 'multer';
+import sharp from "sharp";
+import { v4 as uuidv4 } from "uuid";
 
 // Configuration multer pour upload en mémoire
 const upload = multer({ 
@@ -963,6 +965,140 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use("/api/professional-accounts", professionalShopRouter);
   app.use("/api/vehicles", professionalShopRouter);
   app.use("/api/subscriptions", subscriptionsRouter);
+
+  // Routes pour la personnalisation des comptes professionnels
+  
+  // Upload d'images pour la personnalisation (logo, bannière)
+  app.post('/api/professional-accounts/upload-image', upload.single('image'), async (req, res) => {
+    try {
+      const userId = req.headers['x-user-id'] as string;
+      const file = req.file;
+      const type = req.body.type; // 'logo' ou 'banner'
+
+      if (!userId) {
+        return res.status(401).json({ error: 'Non authentifié' });
+      }
+
+      if (!file) {
+        return res.status(400).json({ error: 'Aucune image fournie' });
+      }
+
+      if (!type || (type !== 'logo' && type !== 'banner')) {
+        return res.status(400).json({ error: 'Type d\'image invalide' });
+      }
+
+      console.log(`📸 Upload ${type} pour compte pro ${userId}`);
+
+      // Générer un nom unique pour l'image
+      const imageId = uuidv4();
+      const fileName = `${type}-${imageId}.webp`;
+      const filePath = `professional/${userId}/${fileName}`;
+
+      // Optimiser l'image
+      const image = sharp(file.buffer);
+      const metadata = await image.metadata();
+      
+      // Dimensions selon le type
+      const maxWidth = type === 'logo' ? 300 : 1200;
+      const maxHeight = type === 'logo' ? 300 : 400;
+      
+      let processedImage = image;
+      if (metadata.width && metadata.height && (metadata.width > maxWidth || metadata.height > maxHeight)) {
+        processedImage = processedImage.resize(maxWidth, maxHeight, { 
+          fit: 'inside', 
+          withoutEnlargement: true 
+        });
+      }
+
+      // Convertir en WebP
+      const processedBuffer = await processedImage.webp({ quality: 85 }).toBuffer();
+
+      // Upload vers Supabase Storage
+      const { data, error } = await supabaseServer.storage
+        .from('vehicle-images')
+        .upload(filePath, processedBuffer, {
+          contentType: 'image/webp',
+          upsert: true
+        });
+
+      if (error) {
+        console.error(`❌ Erreur upload ${type}:`, error);
+        return res.status(500).json({ error: `Erreur upload ${type}` });
+      }
+
+      // Générer l'URL publique
+      const { data: { publicUrl } } = supabaseServer.storage
+        .from('vehicle-images')
+        .getPublicUrl(filePath);
+
+      console.log(`✅ ${type} uploadé: ${fileName}`);
+      res.json({ imageUrl: publicUrl });
+
+    } catch (error) {
+      console.error(`❌ Erreur upload image:`, error);
+      res.status(500).json({ error: 'Erreur serveur' });
+    }
+  });
+
+  // Récupérer la personnalisation d'un compte professionnel
+  app.get('/api/professional-accounts/customization/:userId', async (req, res) => {
+    try {
+      const { userId } = req.params;
+      
+      const { data: customization, error } = await supabaseServer
+        .from('professional_accounts')
+        .select('company_logo, banner_image, brand_colors, description, specialties, certifications')
+        .eq('user_id', userId)
+        .single();
+
+      if (error) {
+        console.error('❌ Erreur récupération personnalisation:', error);
+        return res.status(404).json({ error: 'Compte professionnel non trouvé' });
+      }
+
+      res.json(customization || {});
+    } catch (error) {
+      console.error('❌ Erreur récupération personnalisation:', error);
+      res.status(500).json({ error: 'Erreur serveur' });
+    }
+  });
+
+  // Mettre à jour la personnalisation d'un compte professionnel
+  app.put('/api/professional-accounts/customization', async (req, res) => {
+    try {
+      const userId = req.headers['x-user-id'] as string;
+      if (!userId) {
+        return res.status(401).json({ error: 'Non authentifié' });
+      }
+
+      const customizationData = req.body;
+
+      const { data, error } = await supabaseServer
+        .from('professional_accounts')
+        .update({
+          company_logo: customizationData.company_logo,
+          banner_image: customizationData.banner_image,
+          brand_colors: customizationData.brand_colors,
+          description: customizationData.description,
+          specialties: customizationData.specialties,
+          certifications: customizationData.certifications,
+          updated_at: new Date().toISOString()
+        })
+        .eq('user_id', userId)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('❌ Erreur sauvegarde personnalisation:', error);
+        return res.status(500).json({ error: 'Erreur sauvegarde' });
+      }
+
+      res.json({ success: true, data });
+    } catch (error) {
+      console.error('❌ Erreur sauvegarde personnalisation:', error);
+      res.status(500).json({ error: 'Erreur serveur' });
+    }
+  });
 
   // Route pour vérifier le statut de vérification d'un utilisateur professionnel
   app.get('/api/professional-accounts/status/:userId', async (req, res) => {
