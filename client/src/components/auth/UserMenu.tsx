@@ -78,6 +78,17 @@ export function UserMenu({ onNavigate, onDashboardNavigate }: UserMenuProps) {
             
             <button
               onClick={() => {
+                onDashboardNavigate?.('profile')
+                setIsOpen(false)
+              }}
+              className="flex items-center w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
+            >
+              <User className="mr-2 h-4 w-4" />
+              <span>Mon profil</span>
+            </button>
+            
+            <button
+              onClick={() => {
                 onDashboardNavigate?.('listings')
                 setIsOpen(false)
               }}
@@ -85,17 +96,6 @@ export function UserMenu({ onNavigate, onDashboardNavigate }: UserMenuProps) {
             >
               <Settings className="mr-2 h-4 w-4" />
               <span>Mes annonces</span>
-            </button>
-            
-            <button
-              onClick={() => {
-                onDashboardNavigate?.('favorites')
-                setIsOpen(false)
-              }}
-              className="flex items-center w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
-            >
-              <Heart className="mr-2 h-4 w-4" />
-              <span>Mes favoris</span>
             </button>
             
             <div className="border-t border-gray-100 my-1"></div>
@@ -111,8 +111,8 @@ export function UserMenu({ onNavigate, onDashboardNavigate }: UserMenuProps) {
               <span>Créer une annonce</span>
             </button>
             
-            {/* Administration - visible uniquement pour les admins */}
-            {(dbUser?.email === 'admin@passionauto2roues.com' || dbUser?.type === 'professional') && (
+            {/* Section pour administrateurs et professionnels */}
+            {dbUser?.email === 'admin@passionauto2roues.com' && (
               <>
                 <div className="border-t border-gray-100 my-1"></div>
                 <button
@@ -124,6 +124,24 @@ export function UserMenu({ onNavigate, onDashboardNavigate }: UserMenuProps) {
                 >
                   <Shield className="mr-2 h-4 w-4" />
                   <span>Administration</span>
+                </button>
+              </>
+            )}
+            
+            {/* Ma Boutique Pro - visible uniquement pour les professionnels */}
+            {dbUser?.type === 'professional' && (
+              <>
+                <div className="border-t border-gray-100 my-1"></div>
+                <button
+                  onClick={() => {
+                    // Maintenant avec le bon format pour l'URL complète
+                    window.location.href = '/pro/21'
+                    setIsOpen(false)
+                  }}
+                  className="flex items-center w-full px-3 py-2 text-sm text-blue-600 hover:bg-blue-50"
+                >
+                  <Shield className="mr-2 h-4 w-4" />
+                  <span>Ma Boutique Pro</span>
                 </button>
               </>
             )}

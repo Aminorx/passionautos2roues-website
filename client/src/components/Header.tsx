@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Bell, Heart, MessageCircle, User, Menu, X, LogIn } from 'lucide-react';
+import { Search, Bell, Heart, MessageCircle, User, Menu, X, LogIn, Settings, Car } from 'lucide-react';
 import { useApp } from '../contexts/AppContext';
 import { useAuth } from '../hooks/useAuth';
 import { useUnreadMessages } from '../hooks/useUnreadMessages';
@@ -240,13 +240,13 @@ export const Header: React.FC<HeaderProps> = ({
           <div className="hidden lg:flex items-center space-x-6">
             {isAuthenticated ? (
               <div className="flex items-center space-x-6">
-                {/* Mes recherches */}
+                {/* Mes annonces */}
                 <button 
-                  onClick={() => handleDashboardNavClick('searches')}
+                  onClick={() => handleDashboardNavClick('listings')}
                   className="flex flex-col items-center text-gray-600 hover:text-primary-bolt-500 transition-colors group"
                 >
-                  <Bell className="h-5 w-5 mb-1 group-hover:scale-110 transition-transform" />
-                  <span className="text-xs">Mes recherches</span>
+                  <Car className="h-5 w-5 mb-1 group-hover:scale-110 transition-transform" />
+                  <span className="text-xs">Mes annonces</span>
                 </button>
 
                 {/* Favoris */}
