@@ -245,7 +245,8 @@ function App() {
       <AuthProvider>
         <AppProvider>
           <Router>
-            <Route path="/pro/:shopId" component={AppContent} />
+            {/* Suppression de la route spécifique /pro/:shopId qui cause la duplication */}
+            {/* Ne garder qu'une seule route qui englobe tout */}
             <Route component={AppContent} />
           </Router>
         </AppProvider>
