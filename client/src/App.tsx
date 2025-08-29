@@ -2,7 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from './lib/queryClient';
 import { AppProvider, useApp } from './contexts/AppContext';
-import { Router, Route, useRoute } from 'wouter';
+import { Router, Route, useRoute, Switch, useLocation } from 'wouter';
 import { AuthProvider } from './contexts/AuthContext';
 import { Header } from './components/Header';
 import { Hero } from './components/Hero';
@@ -35,44 +35,38 @@ import { AccountConversion } from './pages/AccountConversion';
 // import CreateProAccount from './pages/CreateProAccount';
 
 function AppContent() {
-  const [currentView, setCurrentView] = useState('home');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showCreateListingModal, setShowCreateListingModal] = useState(false);
   const [dashboardTab, setDashboardTab] = useState('overview');
   const [searchQuery, setSearchQuery] = useState('');
   const { selectedVehicle, setSelectedVehicle, setSearchFilters } = useApp();
   
-  // Check if we're on a pro shop route - ALWAYS call the hook
-  const [match] = useRoute('/pro/:shopId');
+  // Utiliser useLocation pour obtenir et modifier l'URL actuelle
+  const [location, setLocation] = useLocation();
+  
+  // Fonction pour convertir l'URL en format "currentView" pour la compatibilité
+  const getCurrentView = useCallback(() => {
+    if (location === '/') return 'home';
+    if (location.startsWith('/pro/')) return 'pro-shop';
+    return location.slice(1); // Enlever le "/" au début
+  }, [location]);
+  
+  // Fonction pour convertir "currentView" en URL
+  const setCurrentView = useCallback((view: string) => {
+    setLocation(view === 'home' ? '/' : `/${view}`);
+  }, [setLocation]);
   
   const handleSearch = useCallback((query: string) => {
     setSearchQuery(query);
-    setCurrentView('search');
-  }, []);
+    setLocation('/search');
+  }, [setLocation]);
 
-  // Scroll to top when view changes
+  // Scroll to top when location changes
   React.useEffect(() => {
     if (!selectedVehicle) {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
-  }, [currentView, selectedVehicle]);
-
-  // If we're on a pro shop route, render the pro shop layout
-  if (match) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
-        <Header
-          currentView="pro-shop"
-          setCurrentView={setCurrentView}
-          mobileMenuOpen={mobileMenuOpen}
-          setMobileMenuOpen={setMobileMenuOpen}
-          setDashboardTab={setDashboardTab}
-          onSearch={handleSearch}
-        />
-        <ProShop />
-      </div>
-    );
-  }
+  }, [location, selectedVehicle]);
 
   const handleBack = useCallback(() => {
     setSelectedVehicle(null);
@@ -83,12 +77,12 @@ function AppContent() {
     
     // Navigation basée sur le chemin du breadcrumb
     if (path === 'home') {
-      setCurrentView('home');
+      setLocation('/');
     } else if (path.includes('/')) {
       // Navigation vers une marque spécifique (ex: "car/bmw")
       const [category, brand] = path.split('/');
       setSearchFilters({ category, brand });
-      setCurrentView('listings');
+      setLocation('/listings');
     } else {
       // Navigation vers une catégorie
       const categoryMap: { [key: string]: string } = {
@@ -108,96 +102,22 @@ function AppContent() {
       const filterCategory = categoryMap[path];
       if (filterCategory) {
         setSearchFilters({ category: filterCategory });
-        setCurrentView('listings');
+        setLocation('/listings');
       } else {
-        setCurrentView('home');
+        setLocation('/');
       }
     }
-  }, [setSelectedVehicle, setCurrentView, setSearchFilters]);
+  }, [setSelectedVehicle, setLocation, setSearchFilters]);
 
-  const renderContent = () => {
-    switch (currentView) {
-      case 'listings':
-        return <VehicleListings />;
-      case 'dashboard':
-        return <Dashboard 
-          initialTab={dashboardTab} 
-          onCreateListing={() => setShowCreateListingModal(true)}
-          onRedirectHome={() => setCurrentView('home')}
-          onRedirectToSearch={() => setCurrentView('search')}
-          setSearchFilters={setSearchFilters}
-          setCurrentView={setCurrentView}
-        />;
-      case 'create-listing':
-        setShowCreateListingModal(true);
-        setCurrentView('home');
-        return <Hero setCurrentView={setCurrentView} />;
-      case 'conseils':
-        return <Conseils />;
-      case 'about':
-        return <AboutPage onBack={() => setCurrentView('home')} setCurrentView={setCurrentView} />;
-      case 'terms':
-        return <TermsPage onBack={() => setCurrentView('home')} setCurrentView={setCurrentView} />;
-      case 'privacy':
-        return <PrivacyPage onBack={() => setCurrentView('home')} setCurrentView={setCurrentView} />;
-      case 'legal':
-        return <LegalPage onBack={() => setCurrentView('home')} setCurrentView={setCurrentView} />;
-      case 'help':
-        return <HelpPage onBack={() => setCurrentView('home')} setCurrentView={setCurrentView} />;
-      case 'safety':
-        return <SafetyTipsPage onBack={() => setCurrentView('home')} setCurrentView={setCurrentView} />;
-      case 'search':
-        return <SearchPage />;
-      case 'search-old':
-        return <SearchResults 
-          searchQuery={searchQuery} 
-          onBack={() => setCurrentView('home')} 
-          onVehicleSelect={setSelectedVehicle}
-        />;
-      case 'messages':
-        return <Messages />;
-      case 'admin':
-        // Vérifier si l'admin est authentifié
-        const isAdminAuth = localStorage.getItem('admin_authenticated') === 'true';
-        if (isAdminAuth) {
-          return <AdminDashboardClean onBack={() => setCurrentView('home')} />;
-        } else {
-          return <AdminLogin 
-            onLoginSuccess={() => setCurrentView('admin')} 
-            onBack={() => setCurrentView('home')} 
-          />;
-        }
-      case 'admin-login':
-        return <AdminLogin 
-          onLoginSuccess={() => setCurrentView('admin')} 
-          onBack={() => setCurrentView('home')} 
-        />;
-      case 'admin-test':
-        return <AdminTest />;
-      case 'create-pro-account':
-        return <div className="p-8 text-center">
-          <h2 className="text-2xl font-bold">Compte Professionnel</h2>
-          <p className="mt-4">Page de création de compte professionnel en développement...</p>
-        </div>;
-      case 'auth-callback':
-        return <AuthCallback />;
-      case 'account-conversion':
-        return <AccountConversion onBack={() => setCurrentView('dashboard')} />;
-      case 'pro-shop':
-        return <ProShop />;
-      case 'pro-customization':
-        return <ProCustomization onBack={() => setCurrentView('dashboard')} />;
-      case 'subscription-purchase':
-        return <SubscriptionPurchase onBack={() => setCurrentView('dashboard')} />;
-      default:
-        return <Hero setCurrentView={setCurrentView} />;
-    }
-  };
+  // Nous n'utilisons plus renderContent(), car nous utilisons un système de routes
+  const handleCreateListing = useCallback(() => {
+    setShowCreateListingModal(true);
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
       <Header
-        currentView={currentView}
+        currentView={getCurrentView()}
         setCurrentView={setCurrentView}
         mobileMenuOpen={mobileMenuOpen}
         setMobileMenuOpen={setMobileMenuOpen}
@@ -215,7 +135,121 @@ function AppContent() {
         />
       ) : (
         <>
-          {renderContent()}
+          {/* Utiliser des routes au lieu d'un switch sur currentView */}
+          <Switch>
+            <Route path="/pro/:shopId">
+              {(params) => <ProShop />}
+            </Route>
+            <Route path="/listings">
+              <VehicleListings />
+            </Route>
+            <Route path="/dashboard">
+              <Dashboard 
+                initialTab={dashboardTab} 
+                onCreateListing={() => setShowCreateListingModal(true)}
+                onRedirectHome={() => setLocation('/')}
+                onRedirectToSearch={() => setLocation('/search')}
+                setSearchFilters={setSearchFilters}
+                setCurrentView={setCurrentView}
+              />
+            </Route>
+            <Route path="/create-listing">
+              {() => {
+                setShowCreateListingModal(true);
+                return <Hero setCurrentView={setCurrentView} />;
+              }}
+            </Route>
+            <Route path="/conseils">
+              <Conseils />
+            </Route>
+            <Route path="/about">
+              <AboutPage 
+                onBack={() => setLocation('/')} 
+                setCurrentView={setCurrentView}
+              />
+            </Route>
+            <Route path="/terms">
+              <TermsPage 
+                onBack={() => setLocation('/')} 
+                setCurrentView={setCurrentView}
+              />
+            </Route>
+            <Route path="/privacy">
+              <PrivacyPage 
+                onBack={() => setLocation('/')} 
+                setCurrentView={setCurrentView}
+              />
+            </Route>
+            <Route path="/legal">
+              <LegalPage 
+                onBack={() => setLocation('/')} 
+                setCurrentView={setCurrentView}
+              />
+            </Route>
+            <Route path="/help">
+              <HelpPage 
+                onBack={() => setLocation('/')} 
+                setCurrentView={setCurrentView}
+              />
+            </Route>
+            <Route path="/safety">
+              <SafetyTipsPage 
+                onBack={() => setLocation('/')} 
+                setCurrentView={setCurrentView}
+              />
+            </Route>
+            <Route path="/search">
+              <SearchPage />
+            </Route>
+            <Route path="/search-old">
+              <SearchResults 
+                searchQuery={searchQuery} 
+                onBack={() => setLocation('/')} 
+                onVehicleSelect={setSelectedVehicle}
+              />
+            </Route>
+            <Route path="/messages">
+              <Messages />
+            </Route>
+            <Route path="/admin">
+              {() => {
+                const isAdminAuth = localStorage.getItem('admin_authenticated') === 'true';
+                return isAdminAuth ? 
+                  <AdminDashboardClean onBack={() => setLocation('/')} /> : 
+                  <AdminLogin onLoginSuccess={() => setLocation('/admin')} onBack={() => setLocation('/')} />;
+              }}
+            </Route>
+            <Route path="/admin-login">
+              <AdminLogin 
+                onLoginSuccess={() => setLocation('/admin')} 
+                onBack={() => setLocation('/')} 
+              />
+            </Route>
+            <Route path="/admin-test">
+              <AdminTest />
+            </Route>
+            <Route path="/create-pro-account">
+              <div className="p-8 text-center">
+                <h2 className="text-2xl font-bold">Compte Professionnel</h2>
+                <p className="mt-4">Page de création de compte professionnel en développement...</p>
+              </div>
+            </Route>
+            <Route path="/auth-callback">
+              <AuthCallback />
+            </Route>
+            <Route path="/account-conversion">
+              <AccountConversion onBack={() => setLocation('/dashboard')} />
+            </Route>
+            <Route path="/pro-customization">
+              <ProCustomization onBack={() => setLocation('/dashboard')} />
+            </Route>
+            <Route path="/subscription-purchase">
+              <SubscriptionPurchase onBack={() => setLocation('/dashboard')} />
+            </Route>
+            <Route path="/">
+              <Hero setCurrentView={setCurrentView} />
+            </Route>
+          </Switch>
           <Footer setCurrentView={setCurrentView} />
         </>
       )}
@@ -230,7 +264,7 @@ function AppContent() {
         <CreateListingForm 
           onSuccess={() => {
             setShowCreateListingModal(false);
-            setCurrentView('dashboard');
+            setLocation('/dashboard');
             setDashboardTab('listings');
           }}
         />
