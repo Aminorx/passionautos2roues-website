@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useRoute } from 'wouter';
+import { useApp } from '../contexts/AppContext';
 import { 
   Building2, Globe, Phone, Mail, MapPin, Star, 
   Eye, Heart, Calendar, Filter, Grid, List,
   ChevronDown, Award, Shield, Verified,
   Image as ImageIcon, PaintBucket, Settings
 } from 'lucide-react';
-import { Link } from 'wouter';
 
 interface ProAccount {
   id: string;
@@ -56,6 +56,7 @@ interface Vehicle {
 
 export default function ProShop() {
   const [match, params] = useRoute('/pro/:shopId');
+  const { setSelectedVehicle } = useApp();
   const [proAccount, setProAccount] = useState<ProAccount | null>(null);
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [loading, setLoading] = useState(true);
@@ -347,10 +348,14 @@ export default function ProShop() {
                 : "space-y-6"
               }>
                 {filteredAndSortedVehicles.map((vehicle) => (
-                  <Link
+                  <div
                     key={vehicle.id}
-                    href={`/annonce/${vehicle.id}`}
-                    className={`bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-200 ${
+                    onClick={() => {
+                      console.log('🖱️ CLIC PRO SHOP:', vehicle.title, 'ID:', vehicle.id);
+                      setSelectedVehicle(vehicle);
+                      console.log('✅ setSelectedVehicle appelé depuis ProShop');
+                    }}
+                    className={`bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-200 cursor-pointer ${
                       viewMode === 'list' ? 'flex' : 'block'
                     }`}
                   >
@@ -409,7 +414,7 @@ export default function ProShop() {
                         </span>
                       </div>
                     </div>
-                  </Link>
+                  </div>
                 ))}
               </div>
             ) : (
