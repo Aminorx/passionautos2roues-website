@@ -1319,6 +1319,14 @@ export const CreateListingForm: React.FC<CreateListingFormProps> = ({ onSuccess 
     // navigate('/dashboard');
   };
 
+  // Fonction pour continuer à naviguer (ferme aussi le formulaire)
+  const handleContinueNavigating = () => {
+    setShowSuccessModal(false);
+    if (onSuccess) {
+      onSuccess(); // Ferme le formulaire principal
+    }
+  };
+
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (files.length === 0) return;
@@ -3822,7 +3830,7 @@ export const CreateListingForm: React.FC<CreateListingFormProps> = ({ onSuccess 
       {/* Modal de succès */}
       <PublishSuccessModal
         isOpen={showSuccessModal}
-        onClose={() => setShowSuccessModal(false)}
+        onClose={handleContinueNavigating}
         onNavigateToDashboard={navigateToDashboard}
         listingType={formData.listingType === 'sale' ? 'sell' : 'search'}
       />
