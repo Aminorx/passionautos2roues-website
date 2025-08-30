@@ -205,8 +205,26 @@ router.post('/submit', upload.single('kbisDocument'), async (req, res) => {
     // Upload du document KBIS si présent
     if (req.file) {
       console.log('📤 Upload document KBIS...');
+      console.log('📄 Détails fichier:', {
+        name: req.file.originalname,
+        type: req.file.mimetype,
+        size: req.file.size,
+        bufferLength: req.file.buffer.length
+      });
+      
+      // DEBUG: Liste des buckets disponibles
+      try {
+        const { data: buckets, error: bucketsError } = await supabaseServer.storage.listBuckets();
+        console.log('🪣 Buckets disponibles:', buckets?.map(b => b.name) || 'Erreur');
+        if (bucketsError) console.log('❌ Erreur liste buckets:', bucketsError);
+      } catch (e) {
+        console.log('❌ Exception liste buckets:', e);
+      }
+      
       try {
         const fileName = `kbis-${updatedAccount.id}-${Date.now()}.${req.file.originalname.split('.').pop()}`;
+        console.log('📁 Nom fichier généré:', fileName);
+        console.log('🪣 Tentative upload vers bucket: verifications-documents');
         
         const { data: uploadData, error: uploadError } = await supabaseServer
           .storage
@@ -218,6 +236,7 @@ router.post('/submit', upload.single('kbisDocument'), async (req, res) => {
 
         if (uploadError) {
           console.error('❌ Erreur upload Supabase Storage:', uploadError);
+          console.error('❌ Détails erreur upload:', JSON.stringify(uploadError, null, 2));
         } else {
           console.log('✅ Fichier uploadé:', uploadData.path);
           
@@ -230,13 +249,15 @@ router.post('/submit', upload.single('kbisDocument'), async (req, res) => {
               file_url: uploadData.path,
               file_name: req.file.originalname,
               file_size: req.file.size,
+              upload_date: new Date().toISOString(),
               verification_status: 'pending'
             });
 
           if (docError) {
             console.error('❌ Erreur enregistrement document:', docError);
+            console.error('❌ Détails erreur DB:', JSON.stringify(docError, null, 2));
           } else {
-            console.log('✅ Document KBIS enregistré');
+            console.log('✅ Document KBIS enregistré en base de données');
           }
         }
       } catch (uploadError) {
