@@ -374,7 +374,7 @@ export const VehicleDetail: React.FC<VehicleDetailProps> = ({ vehicle, onBack, o
               </div>
 
               {/* Features */}
-              {vehicle.features.length > 0 && (
+              {vehicle.features && vehicle.features.length > 0 && (
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-3">Équipements</h3>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
