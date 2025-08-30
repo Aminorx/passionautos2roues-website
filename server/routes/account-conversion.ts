@@ -140,7 +140,11 @@ router.post('/start', async (req, res) => {
 
 // POST /api/account/conversion/submit - Soumettre les données de conversion
 router.post('/submit', upload.single('kbisDocument'), async (req, res) => {
-  console.log('🚀 API /submit appelée !');
+  console.log('');
+  console.log('========================================');
+  console.log('🚀 API /submit APPELÉE !');
+  console.log('========================================');
+  console.log('');
   try {
     const userId = req.headers['x-user-id'] as string;
     if (!userId) {

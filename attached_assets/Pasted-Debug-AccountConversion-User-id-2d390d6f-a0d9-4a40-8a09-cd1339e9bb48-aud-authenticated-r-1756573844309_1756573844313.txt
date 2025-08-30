@@ -1,0 +1,51 @@
+Debug AccountConversion - User: {id: '2d390d6f-a0d9-4a40-8a09-cd1339e9bb48', aud: 'authenticated', role: 'authenticated', email: 'cmm.saghir@gmail.com', email_confirmed_at: '2025-08-30T11:21:27.808357Z', …}
+AccountConversion.tsx:37 🔍 Debug AccountConversion - isAuthenticated: true
+AccountConversion.tsx:36 🔍 Debug AccountConversion - User: {id: '2d390d6f-a0d9-4a40-8a09-cd1339e9bb48', aud: 'authenticated', role: 'authenticated', email: 'cmm.saghir@gmail.com', email_confirmed_at: '2025-08-30T11:21:27.808357Z', …}
+AccountConversion.tsx:37 🔍 Debug AccountConversion - isAuthenticated: true
+AccountConversion.tsx:224 🔍 DEBUG - Professional account: null
+AccountConversion.tsx:225 🔍 DEBUG - Conversion status: {currentType: 'individual', canConvert: true, professionalAccount: null, conversionInProgress: false, conversionApproved: false, …}
+AccountConversion.tsx:229 ⭐ Aucun compte pro - Appel /start d'abord
+AccountConversion.tsx:36 🔍 Debug AccountConversion - User: {id: '2d390d6f-a0d9-4a40-8a09-cd1339e9bb48', aud: 'authenticated', role: 'authenticated', email: 'cmm.saghir@gmail.com', email_confirmed_at: '2025-08-30T11:21:27.808357Z', …}
+AccountConversion.tsx:37 🔍 Debug AccountConversion - isAuthenticated: true
+AccountConversion.tsx:36 🔍 Debug AccountConversion - User: {id: '2d390d6f-a0d9-4a40-8a09-cd1339e9bb48', aud: 'authenticated', role: 'authenticated', email: 'cmm.saghir@gmail.com', email_confirmed_at: '2025-08-30T11:21:27.808357Z', …}
+AccountConversion.tsx:37 🔍 Debug AccountConversion - isAuthenticated: true
+AccountConversion.tsx:41 Toast: Conversion initiée Votre demande de conversion a été initiée avec succès.
+AccountConversion.tsx:36 🔍 Debug AccountConversion - User: {id: '2d390d6f-a0d9-4a40-8a09-cd1339e9bb48', aud: 'authenticated', role: 'authenticated', email: 'cmm.saghir@gmail.com', email_confirmed_at: '2025-08-30T11:21:27.808357Z', …}
+AccountConversion.tsx:37 🔍 Debug AccountConversion - isAuthenticated: true
+AccountConversion.tsx:36 🔍 Debug AccountConversion - User: {id: '2d390d6f-a0d9-4a40-8a09-cd1339e9bb48', aud: 'authenticated', role: 'authenticated', email: 'cmm.saghir@gmail.com', email_confirmed_at: '2025-08-30T11:21:27.808357Z', …}
+AccountConversion.tsx:37 🔍 Debug AccountConversion - isAuthenticated: true
+AccountConversion.tsx:36 🔍 Debug AccountConversion - User: {id: '2d390d6f-a0d9-4a40-8a09-cd1339e9bb48', aud: 'authenticated', role: 'authenticated', email: 'cmm.saghir@gmail.com', email_confirmed_at: '2025-08-30T11:21:27.808357Z', …}
+AccountConversion.tsx:37 🔍 Debug AccountConversion - isAuthenticated: true
+AccountConversion.tsx:36 🔍 Debug AccountConversion - User: {id: '2d390d6f-a0d9-4a40-8a09-cd1339e9bb48', aud: 'authenticated', role: 'authenticated', email: 'cmm.saghir@gmail.com', email_confirmed_at: '2025-08-30T11:21:27.808357Z', …}
+AccountConversion.tsx:37 🔍 Debug AccountConversion - isAuthenticated: true
+AccountConversion.tsx:123 🔍 DEBUG Frontend - Données à envoyer: {companyName: "Nom de l'entreprise", siret: '12345678954875', companyAddress: 'Eidhdd', phone: '0605040203', email: 'omar@happyagency.ma', …}
+AccountConversion.tsx:127 📝 Ajout FormData: companyName = Nom de l'entreprise
+AccountConversion.tsx:127 📝 Ajout FormData: siret = 12345678954875
+AccountConversion.tsx:127 📝 Ajout FormData: companyAddress = Eidhdd
+AccountConversion.tsx:127 📝 Ajout FormData: phone = 0605040203
+AccountConversion.tsx:127 📝 Ajout FormData: email = omar@happyagency.ma
+AccountConversion.tsx:127 📝 Ajout FormData: website = https://info.com
+AccountConversion.tsx:133 📎 Ajout fichier KBIS: extrait_immatriculation_inpi_978935807.pdf
+AccountConversion.tsx:36 🔍 Debug AccountConversion - User: {id: '2d390d6f-a0d9-4a40-8a09-cd1339e9bb48', aud: 'authenticated', role: 'authenticated', email: 'cmm.saghir@gmail.com', email_confirmed_at: '2025-08-30T11:21:27.808357Z', …}
+AccountConversion.tsx:37 🔍 Debug AccountConversion - isAuthenticated: true
+AccountConversion.tsx:36 🔍 Debug AccountConversion - User: {id: '2d390d6f-a0d9-4a40-8a09-cd1339e9bb48', aud: 'authenticated', role: 'authenticated', email: 'cmm.saghir@gmail.com', email_confirmed_at: '2025-08-30T11:21:27.808357Z', …}
+AccountConversion.tsx:37 🔍 Debug AccountConversion - isAuthenticated: true
+AccountConversion.tsx:41 Toast: Demande soumise Votre demande de conversion a été soumise avec succès. Elle sera examinée par notre équipe.
+AccountConversion.tsx:36 🔍 Debug AccountConversion - User: {id: '2d390d6f-a0d9-4a40-8a09-cd1339e9bb48', aud: 'authenticated', role: 'authenticated', email: 'cmm.saghir@gmail.com', email_confirmed_at: '2025-08-30T11:21:27.808357Z', …}
+AccountConversion.tsx:37 🔍 Debug AccountConversion - isAuthenticated: true
+AccountConversion.tsx:36 🔍 Debug AccountConversion - User: {id: '2d390d6f-a0d9-4a40-8a09-cd1339e9bb48', aud: 'authenticated', role: 'authenticated', email: 'cmm.saghir@gmail.com', email_confirmed_at: '2025-08-30T11:21:27.808357Z', …}
+AccountConversion.tsx:37 🔍 Debug AccountConversion - isAuthenticated: true
+AccountConversion.tsx:36 🔍 Debug AccountConversion - User: {id: '2d390d6f-a0d9-4a40-8a09-cd1339e9bb48', aud: 'authenticated', role: 'authenticated', email: 'cmm.saghir@gmail.com', email_confirmed_at: '2025-08-30T11:21:27.808357Z', …}
+AccountConversion.tsx:37 🔍 Debug AccountConversion - isAuthenticated: true
+AccountConversion.tsx:36 🔍 Debug AccountConversion - User: {id: '2d390d6f-a0d9-4a40-8a09-cd1339e9bb48', aud: 'authenticated', role: 'authenticated', email: 'cmm.saghir@gmail.com', email_confirmed_at: '2025-08-30T11:21:27.808357Z', …}
+AccountConversion.tsx:37 🔍 Debug AccountConversion - isAuthenticated: true
+useFavorites.ts:181 🔄 Réinitialisation favoris - aucun utilisateur
+useFavorites.ts:181 🔄 Réinitialisation favoris - aucun utilisateur
+useAuth.ts:64 ✅ Utilisateur trouvé dans BD (et mis en cache): Cmm Saghir (individual)
+Dashboard.tsx:52 🔍 Récupération statut conversion pour utilisateur: 2d390d6f-a0d9-4a40-8a09-cd1339e9bb48
+useAuth.ts:64 ✅ Utilisateur trouvé dans BD (et mis en cache): Cmm Saghir (individual)
+Dashboard.tsx:120 ✅ Véhicules utilisateur récupérés (avec inactifs): 0
+Dashboard.tsx:63 ✅ Statut conversion récupéré: {currentType: 'individual', canConvert: true, professionalAccount: {…}, conversionInProgress: true, conversionApproved: false, …}
+2useAuth.ts:64 ✅ Utilisateur trouvé dans BD (et mis en cache): Cmm Saghir (individual)
+useFavorites.ts:33 ✅ Favoris rechargés: 0
+8useAuth.ts:64 ✅ Utilisateur trouvé dans BD (et mis en cache): Cmm Saghir (individual)
