@@ -5,6 +5,7 @@ import {
   Check, AlertCircle, ArrowLeft
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 
 interface CustomizationData {
@@ -24,7 +25,15 @@ interface ProCustomizationProps {
 }
 
 export default function ProCustomization({ onBack }: ProCustomizationProps) {
-  const { user } = useAuth();
+  const { user, dbUser } = useAuth();
+  
+  // Récupérer le statut de conversion pour récupérer l'ID du compte professionnel
+  const { data: conversionStatus } = useQuery({
+    queryKey: ['/api/account/conversion/status', user?.id],
+    enabled: !!user?.id && !!dbUser?.id,
+    retry: 1,
+  });
+
   const [customization, setCustomization] = useState<CustomizationData>({
     brand_colors: {
       primary: '#3B82F6',
@@ -565,20 +574,14 @@ export default function ProCustomization({ onBack }: ProCustomizationProps) {
                 <h3 className="text-xl font-bold text-gray-900 mb-4">Aperçu de votre boutique</h3>
                 <div className="bg-gray-100 p-4 rounded-xl">
                   <button
-                    onClick={async () => {
+                    onClick={() => {
                       try {
-                        // Récupérer les données utilisateur pour l'ID du compte professionnel
-                        const response = await fetch(`/api/users/by-email/${encodeURIComponent(user?.email || '')}`);
-                        if (response.ok) {
-                          const userData = await response.json();
-                          if (userData.professionalAccountId) {
-                            // Ouvrir dans un nouvel onglet
-                            window.open(`/pro/${userData.professionalAccountId}`, '_blank');
-                          } else {
-                            alert('Aucun compte professionnel trouvé');
-                          }
+                        // Utiliser la même logique que le Dashboard
+                        if (conversionStatus?.professionalAccount?.id) {
+                          // Ouvrir dans un nouvel onglet
+                          window.open(`/pro/${conversionStatus.professionalAccount.id}`, '_blank');
                         } else {
-                          alert('Erreur lors de la récupération du compte professionnel');
+                          alert('Aucun compte professionnel trouvé');
                         }
                       } catch (error) {
                         console.error('Erreur:', error);

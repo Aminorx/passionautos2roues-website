@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { User, LogOut, Settings, Heart, Plus, Shield } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
+import { useQuery } from '@tanstack/react-query'
 import { signOut } from '@/lib/supabase'
 
 interface UserMenuProps {
@@ -12,6 +13,13 @@ export function UserMenu({ onNavigate, onDashboardNavigate }: UserMenuProps) {
   const { user, dbUser } = useAuth()
   const [isSigningOut, setIsSigningOut] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
+
+  // Récupérer le statut de conversion pour récupérer l'ID du compte professionnel
+  const { data: conversionStatus } = useQuery({
+    queryKey: ['/api/account/conversion/status', user?.id],
+    enabled: !!user?.id && !!dbUser?.id && dbUser?.type === 'professional',
+    retry: 1,
+  })
 
   const handleSignOut = async () => {
     setIsSigningOut(true)
@@ -133,25 +141,14 @@ export function UserMenu({ onNavigate, onDashboardNavigate }: UserMenuProps) {
               <>
                 <div className="border-t border-gray-100 my-1"></div>
                 <button
-                  onClick={async () => {
+                  onClick={() => {
                     try {
-                      // Récupérer l'ID du compte professionnel dynamiquement
-                      if (!user.email) {
-                        alert('Email utilisateur non disponible');
-                        return;
-                      }
-                      
-                      const response = await fetch(`/api/users/by-email/${encodeURIComponent(user.email)}`);
-                      if (response.ok) {
-                        const userData = await response.json();
-                        if (userData.professionalAccountId) {
-                          // Ouvrir dans un nouvel onglet
-                          window.open(`/pro/${userData.professionalAccountId}`, '_blank');
-                        } else {
-                          alert('Aucun compte professionnel trouvé');
-                        }
+                      // Utiliser la même logique que le Dashboard
+                      if (conversionStatus?.professionalAccount?.id) {
+                        // Ouvrir dans un nouvel onglet
+                        window.open(`/pro/${conversionStatus.professionalAccount.id}`, '_blank');
                       } else {
-                        alert('Erreur lors de la récupération du compte professionnel');
+                        alert('Aucun compte professionnel trouvé');
                       }
                     } catch (error) {
                       console.error('Erreur:', error);
