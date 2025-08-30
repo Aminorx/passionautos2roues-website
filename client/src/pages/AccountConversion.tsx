@@ -119,13 +119,18 @@ export const AccountConversion: React.FC<{ onBack: () => void }> = ({ onBack }) 
     mutationFn: async (data: ConversionData) => {
       const formDataToSend = new FormData();
       
+      // DEBUG: Voir les données avant envoi
+      console.log('🔍 DEBUG Frontend - Données à envoyer:', data);
+      
       // Ajouter les données du formulaire
       Object.entries(data).forEach(([key, value]) => {
+        console.log(`📝 Ajout FormData: ${key} = ${value}`);
         formDataToSend.append(key, value);
       });
       
       // Ajouter le document KBIS si présent
       if (kbisDocument.file) {
+        console.log('📎 Ajout fichier KBIS:', kbisDocument.file.name);
         formDataToSend.append('kbisDocument', kbisDocument.file);
       }
       

@@ -146,9 +146,15 @@ router.post('/submit', upload.single('kbisDocument'), async (req, res) => {
       return res.status(401).json({ error: 'Non authentifié' });
     }
 
+    // DEBUG: Voir exactement ce qui arrive
+    console.log('🔍 DEBUG req.body reçu:', req.body);
+    console.log('🔍 DEBUG req.file:', req.file);
+    console.log('🔍 DEBUG Object.keys(req.body):', Object.keys(req.body));
+    
     // Valider les données (req.body contient maintenant les champs du FormData)
     const validation = convertAccountSchema.safeParse(req.body);
     if (!validation.success) {
+      console.log('❌ VALIDATION FAILED:', validation.error.errors);
       return res.status(400).json({ 
         error: 'Données invalides',
         details: validation.error.errors 
