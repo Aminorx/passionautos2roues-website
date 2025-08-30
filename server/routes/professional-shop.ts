@@ -57,6 +57,7 @@ router.get('/vehicles/:professionalAccountId', async (req, res) => {
     const { professionalAccountId } = req.params;
 
     // D'abord récupérer l'utilisateur associé au compte professionnel
+    console.log('🔍 Recherche du compte professionnel ID:', professionalAccountId);
     const { data: proAccount, error: proError } = await supabaseServer
       .from('professional_accounts')
       .select('user_id')
@@ -65,10 +66,14 @@ router.get('/vehicles/:professionalAccountId', async (req, res) => {
       .single();
 
     if (proError || !proAccount) {
+      console.log('❌ Compte professionnel non trouvé:', { professionalAccountId, proError });
       return res.status(404).json({ error: 'Compte professionnel non trouvé' });
     }
 
+    console.log('✅ Compte professionnel trouvé, user_id:', proAccount.user_id);
+
     // Récupérer toutes les annonces de cet utilisateur professionnel
+    console.log('🔍 Recherche des annonces pour user_id:', proAccount.user_id);
     const { data: vehicles, error: vehiclesError } = await supabaseServer
       .from('annonces')
       .select(`
@@ -88,7 +93,7 @@ router.get('/vehicles/:professionalAccountId', async (req, res) => {
         status,
         isActive
       `)
-      .eq('userId', proAccount.user_id)
+      .eq('user_id', proAccount.user_id)
       .eq('status', 'approved')
       .eq('isActive', true)
       .is('deletedAt', null)
@@ -97,6 +102,11 @@ router.get('/vehicles/:professionalAccountId', async (req, res) => {
     if (vehiclesError) {
       console.error('❌ Erreur récupération véhicules professionnels:', vehiclesError);
       return res.status(500).json({ error: 'Erreur récupération des annonces' });
+    }
+
+    console.log('🎯 Annonces trouvées:', vehicles?.length || 0);
+    if (vehicles?.length > 0) {
+      console.log('📋 Première annonce:', vehicles[0].title, 'ID:', vehicles[0].id);
     }
 
     res.json(vehicles || []);
