@@ -350,11 +350,7 @@ export default function ProShop() {
                 {filteredAndSortedVehicles.map((vehicle) => (
                   <div
                     key={vehicle.id}
-                    onClick={() => {
-                      console.log('🖱️ CLIC PRO SHOP:', vehicle.title, 'ID:', vehicle.id);
-                      setSelectedVehicle(vehicle);
-                      console.log('✅ setSelectedVehicle appelé depuis ProShop');
-                    }}
+                    onClick={() => setSelectedVehicle(vehicle)}
                     className={`bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-200 cursor-pointer ${
                       viewMode === 'list' ? 'flex' : 'block'
                     }`}

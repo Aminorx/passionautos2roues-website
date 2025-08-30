@@ -74,11 +74,6 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
-
-  // Log pour debug selectedVehicle
-  useEffect(() => {
-    console.log('🚗 SELECTED VEHICLE CHANGED:', selectedVehicle ? selectedVehicle.title : 'null');
-  }, [selectedVehicle]);
   const [searchFilters, setSearchFilters] = useState<SearchFilters>({});
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(true);

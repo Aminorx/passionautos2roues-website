@@ -35,11 +35,7 @@ const VehicleCardComponent: React.FC<VehicleCardProps> = ({ vehicle, onClick }) 
 
   return (
     <div 
-      onClick={() => {
-        console.log('🖱️ CLIC SUR ANNONCE:', vehicle.title, 'ID:', vehicle.id);
-        onClick();
-        console.log('✅ onClick() appelé pour véhicule:', vehicle.title);
-      }}
+      onClick={onClick}
       className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-200 transform hover:scale-[1.02] cursor-pointer overflow-hidden border border-gray-100"
     >
       {/* Premium Badge */}
