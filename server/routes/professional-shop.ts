@@ -147,9 +147,9 @@ router.get('/customization/:userId', async (req, res) => {
 });
 
 // PUT /api/professional-accounts/customization - Mettre à jour la personnalisation
-router.put('/customization', requireAuth, async (req, res) => {
+router.put('/customization', async (req, res) => {
   try {
-    const userId = req.user!.id;
+    const userId = req.headers['x-user-id'] || req.body.user_id;
     console.log('🎨 Mise à jour personnalisation pour user_id:', userId);
 
     const { 

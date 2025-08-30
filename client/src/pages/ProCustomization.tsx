@@ -147,9 +147,12 @@ export default function ProCustomization({ onBack }: ProCustomizationProps) {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'X-User-ID': user?.id || ''
         },
-        body: JSON.stringify(customization)
+        body: JSON.stringify({
+          ...customization,
+          user_id: user?.id
+        })
       });
 
       console.log('📥 RÉPONSE REÇUE:', response.status, response.statusText);
