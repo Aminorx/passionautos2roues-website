@@ -228,12 +228,12 @@ router.post('/submit', upload.single('kbisDocument'), async (req, res) => {
       try {
         const fileName = `kbis-${updatedAccount.id}-${Date.now()}.${req.file.originalname.split('.').pop()}`;
         console.log('📁 Nom fichier généré:', fileName);
-        console.log('🪣 Tentative upload vers bucket: verifications-documents');
+        console.log('🪣 Tentative upload vers bucket: vehicle-images/documents/');
         
         const { data: uploadData, error: uploadError } = await supabaseServer
           .storage
-          .from('verifications-documents')
-          .upload(fileName, req.file.buffer, {
+          .from('vehicle-images')
+          .upload(`documents/${fileName}`, req.file.buffer, {
             contentType: req.file.mimetype,
             upsert: false
           });
