@@ -68,16 +68,15 @@ router.get('/vehicles/:professionalAccountId', async (req, res) => {
       return res.status(404).json({ error: 'Compte professionnel non trouvé' });
     }
 
-    // Récupérer les véhicules de cet utilisateur professionnel
+    // Récupérer les véhicules de ce compte professionnel
     const { data: vehicles, error: vehiclesError } = await supabaseServer
-      .from('vehicles')
+      .from('annonces')
       .select(`
         id,
         title,
         price,
         images,
         category,
-        subcategory,
         brand,
         model,
         year,
@@ -89,7 +88,7 @@ router.get('/vehicles/:professionalAccountId', async (req, res) => {
         status,
         isActive
       `)
-      .eq('userId', proAccount.user_id)
+      .eq('professionalAccountId', professionalAccountId)
       .eq('status', 'approved')
       .eq('isActive', true)
       .is('deletedAt', null)
