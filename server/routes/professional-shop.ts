@@ -89,14 +89,14 @@ router.get('/vehicles/:professionalAccountId', async (req, res) => {
         location,
         created_at,
         views,
-        isPremium,
+        is_premium,
         status,
-        isActive
+        is_active
       `)
       .eq('user_id', proAccount.user_id)
       .eq('status', 'approved')
-      .eq('isActive', true)
-      .is('deletedAt', null)
+      .eq('is_active', true)
+      .is('deleted_at', null)
       .order('created_at', { ascending: false });
 
     if (vehiclesError) {
@@ -150,6 +150,7 @@ router.get('/customization/:userId', async (req, res) => {
 router.put('/customization', requireAuth, async (req, res) => {
   try {
     const userId = req.user!.id;
+    console.log('🎨 Mise à jour personnalisation pour user_id:', userId);
 
     const { 
       company_logo, 
@@ -159,6 +160,15 @@ router.put('/customization', requireAuth, async (req, res) => {
       specialties, 
       certifications 
     } = req.body;
+
+    console.log('📝 Données de personnalisation reçues:', {
+      company_logo: company_logo ? 'fourni' : 'vide',
+      banner_image: banner_image ? 'fourni' : 'vide',
+      brand_colors,
+      description: description ? `"${description.substring(0, 50)}..."` : 'vide',
+      specialties,
+      certifications
+    });
 
     const { error } = await supabaseServer
       .from('professional_accounts')
@@ -178,6 +188,7 @@ router.put('/customization', requireAuth, async (req, res) => {
       return res.status(500).json({ error: 'Erreur mise à jour' });
     }
 
+    console.log('✅ Personnalisation mise à jour avec succès pour user_id:', userId);
     res.json({ message: 'Personnalisation mise à jour avec succès' });
   } catch (error) {
     console.error('❌ Erreur mise à jour personnalisation:', error);
