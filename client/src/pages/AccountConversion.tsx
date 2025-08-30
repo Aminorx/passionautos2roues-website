@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../hooks/useAuth';
-import { Building, FileCheck, CheckCircle, Clock, XCircle, ArrowLeft, ArrowRight } from 'lucide-react';
+import { Building, FileCheck, CheckCircle, Clock, XCircle, ArrowLeft, ArrowRight, Upload, X } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 // import { useToast } from '../hooks/use-toast';
 
@@ -21,6 +21,12 @@ interface ConversionData {
   phone: string;
   email: string;
   website: string;
+}
+
+interface DocumentUpload {
+  file: File | null;
+  preview: string | null;
+  status: 'idle' | 'uploading' | 'uploaded' | 'error';
 }
 
 export const AccountConversion: React.FC<{ onBack: () => void }> = ({ onBack }) => {
@@ -45,6 +51,14 @@ export const AccountConversion: React.FC<{ onBack: () => void }> = ({ onBack }) 
     email: '',
     website: '',
   });
+
+  const [kbisDocument, setKbisDocument] = useState<DocumentUpload>({
+    file: null,
+    preview: null,
+    status: 'idle'
+  });
+  
+  const kbisInputRef = useRef<HTMLInputElement>(null);
 
   // Récupérer le statut de conversion
   const { data: conversionStatus = {}, isLoading } = useQuery({
@@ -103,13 +117,24 @@ export const AccountConversion: React.FC<{ onBack: () => void }> = ({ onBack }) 
   // Mutation pour soumettre les données
   const submitConversionMutation = useMutation({
     mutationFn: async (data: ConversionData) => {
+      const formDataToSend = new FormData();
+      
+      // Ajouter les données du formulaire
+      Object.entries(data).forEach(([key, value]) => {
+        formDataToSend.append(key, value);
+      });
+      
+      // Ajouter le document KBIS si présent
+      if (kbisDocument.file) {
+        formDataToSend.append('kbisDocument', kbisDocument.file);
+      }
+      
       const response = await fetch('/api/account/conversion/submit', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
           'x-user-id': user?.id || '',
         },
-        body: JSON.stringify(data),
+        body: formDataToSend,
       });
       if (!response.ok) {
         const error = await response.json();
@@ -137,6 +162,52 @@ export const AccountConversion: React.FC<{ onBack: () => void }> = ({ onBack }) 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  // Gestion upload document KBIS
+  const handleKbisUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Vérifications
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
+
+    if (file.size > maxSize) {
+      alert('Le fichier est trop volumineux. Maximum 5MB.');
+      return;
+    }
+
+    if (!allowedTypes.includes(file.type)) {
+      alert('Format non supporté. Utilisez PDF, JPG ou PNG.');
+      return;
+    }
+
+    // Créer aperçu si c'est une image
+    let preview = null;
+    if (file.type.startsWith('image/')) {
+      preview = URL.createObjectURL(file);
+    }
+
+    setKbisDocument({
+      file,
+      preview,
+      status: 'uploaded'
+    });
+  };
+
+  const removeKbisDocument = () => {
+    if (kbisDocument.preview) {
+      URL.revokeObjectURL(kbisDocument.preview);
+    }
+    setKbisDocument({
+      file: null,
+      preview: null,
+      status: 'idle'
+    });
+    if (kbisInputRef.current) {
+      kbisInputRef.current.value = '';
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -440,14 +511,73 @@ export const AccountConversion: React.FC<{ onBack: () => void }> = ({ onBack }) 
                   />
                 </div>
 
+                {/* Document KBIS */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Document KBIS/SIRET (optionnel)
+                  </label>
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-primary-bolt-400 transition-colors relative">
+                    <input
+                      ref={kbisInputRef}
+                      type="file"
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                      accept=".pdf,.jpg,.jpeg,.png"
+                      onChange={handleKbisUpload}
+                    />
+                    
+                    {kbisDocument.status === 'uploaded' && kbisDocument.file ? (
+                      <div className="space-y-3">
+                        <CheckCircle className="h-12 w-12 text-green-600 mx-auto" />
+                        <div>
+                          <h3 className="font-medium text-gray-900">{kbisDocument.file.name}</h3>
+                          <p className="text-sm text-gray-500">
+                            {(kbisDocument.file.size / 1024 / 1024).toFixed(2)} MB
+                          </p>
+                        </div>
+                        {kbisDocument.preview && (
+                          <img 
+                            src={kbisDocument.preview} 
+                            alt="Aperçu du document" 
+                            className="max-w-full h-32 object-contain mx-auto rounded"
+                          />
+                        )}
+                        <button
+                          type="button"
+                          onClick={removeKbisDocument}
+                          className="inline-flex items-center px-3 py-1 text-sm text-red-600 hover:text-red-800 transition-colors"
+                        >
+                          <X className="h-4 w-4 mr-1" />
+                          Supprimer
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        <Upload className="h-12 w-12 text-gray-400 mx-auto" />
+                        <div>
+                          <h3 className="font-medium text-gray-900">Télécharger votre document</h3>
+                          <p className="text-sm text-gray-600">
+                            Glissez votre extrait KBIS ou SIRET ici
+                          </p>
+                          <p className="text-xs text-gray-500 mt-1">
+                            PDF, JPG ou PNG • Max 5 MB
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-xs text-gray-500 mt-2">
+                    Le document KBIS accélère le processus de validation de votre compte professionnel.
+                  </p>
+                </div>
+
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                   <div className="flex items-start space-x-3">
                     <FileCheck className="h-5 w-5 text-blue-600 mt-0.5" />
                     <div>
-                      <h3 className="font-semibold text-blue-900">Documents requis</h3>
+                      <h3 className="font-semibold text-blue-900">Validation automatique</h3>
                       <p className="text-blue-800 text-sm mt-1">
-                        Après avoir soumis ces informations, notre équipe vérifiera votre SIRET
-                        et pourra vous demander des documents complémentaires (KBIS, etc.).
+                        Avec un document KBIS/SIRET fourni, votre compte sera validé automatiquement.
+                        Sinon, notre équipe vérifiera manuellement votre SIRET.
                       </p>
                     </div>
                   </div>
