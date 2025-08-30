@@ -213,14 +213,21 @@ export const AccountConversion: React.FC<{ onBack: () => void }> = ({ onBack }) 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Si aucune conversion n'est en cours, la démarrer d'abord
-    if (!(conversionStatus as ConversionStatus)?.conversionInProgress && 
-        !(conversionStatus as ConversionStatus)?.professionalAccount) {
+    // Vérifier si un compte professionnel existe déjà
+    const professionalAccount = (conversionStatus as ConversionStatus)?.professionalAccount;
+    
+    console.log('🔍 DEBUG - Professional account:', professionalAccount);
+    console.log('🔍 DEBUG - Conversion status:', conversionStatus);
+    
+    // Si aucun compte professionnel n'existe, le créer d'abord
+    if (!professionalAccount) {
+      console.log('⭐ Aucun compte pro - Appel /start d\'abord');
       startConversionMutation.mutate();
       return;
     }
     
-    // Sinon, soumettre les données (cela fonctionne aussi pour les rejets - l'API update le statut à 'pending')
+    // Sinon, soumettre les données directement
+    console.log('⭐ Compte pro existant - Appel /submit directement');
     submitConversionMutation.mutate(formData);
   };
 

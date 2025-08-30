@@ -2,6 +2,23 @@ import { Router } from 'express';
 import { supabaseServer } from '../supabase';
 import { z } from 'zod';
 import { insertProfessionalAccountSchema, insertVerificationDocumentSchema } from '../../shared/schema';
+import multer from 'multer';
+
+// Configuration multer pour upload en mémoire
+const upload = multer({ 
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB
+  },
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
+    if (allowedTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Format de fichier non autorisé. Utilisez PDF, JPG ou PNG.'));
+    }
+  }
+});
 
 const router = Router();
 
@@ -122,14 +139,14 @@ router.post('/start', async (req, res) => {
 });
 
 // POST /api/account/conversion/submit - Soumettre les données de conversion
-router.post('/submit', async (req, res) => {
+router.post('/submit', upload.single('kbisDocument'), async (req, res) => {
   try {
     const userId = req.headers['x-user-id'] as string;
     if (!userId) {
       return res.status(401).json({ error: 'Non authentifié' });
     }
 
-    // Valider les données
+    // Valider les données (req.body contient maintenant les champs du FormData)
     const validation = convertAccountSchema.safeParse(req.body);
     if (!validation.success) {
       return res.status(400).json({ 
@@ -139,6 +156,8 @@ router.post('/submit', async (req, res) => {
     }
 
     const data = validation.data;
+    console.log('📋 Données de conversion reçues:', data);
+    console.log('📎 Fichier reçu:', req.file ? req.file.originalname : 'Aucun fichier');
 
     // Récupérer le compte professionnel existant
     const { data: existingAccount, error: fetchError } = await supabaseServer
@@ -175,6 +194,48 @@ router.post('/submit', async (req, res) => {
     if (updateError) {
       console.error('❌ Erreur mise à jour compte professionnel:', updateError);
       return res.status(500).json({ error: 'Erreur mise à jour compte professionnel' });
+    }
+
+    // Upload du document KBIS si présent
+    if (req.file) {
+      console.log('📤 Upload document KBIS...');
+      try {
+        const fileName = `kbis-${updatedAccount.id}-${Date.now()}.${req.file.originalname.split('.').pop()}`;
+        
+        const { data: uploadData, error: uploadError } = await supabaseServer
+          .storage
+          .from('verifications-documents')
+          .upload(fileName, req.file.buffer, {
+            contentType: req.file.mimetype,
+            upsert: false
+          });
+
+        if (uploadError) {
+          console.error('❌ Erreur upload Supabase Storage:', uploadError);
+        } else {
+          console.log('✅ Fichier uploadé:', uploadData.path);
+          
+          // Enregistrer le document dans la table
+          const { error: docError } = await supabaseServer
+            .from('verification_documents')
+            .insert({
+              professional_account_id: updatedAccount.id,
+              document_type: 'kbis',
+              file_url: uploadData.path,
+              file_name: req.file.originalname,
+              file_size: req.file.size,
+              verification_status: 'pending'
+            });
+
+          if (docError) {
+            console.error('❌ Erreur enregistrement document:', docError);
+          } else {
+            console.log('✅ Document KBIS enregistré');
+          }
+        }
+      } catch (uploadError) {
+        console.error('❌ Erreur traitement document:', uploadError);
+      }
     }
 
     res.json({ 
