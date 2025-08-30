@@ -386,17 +386,16 @@ export const AdminDashboardClean: React.FC<AdminDashboardProps> = ({ onBack }) =
 
   const handleViewDocument = async (document: VerificationDocument) => {
     try {
-      console.log(`🔗 Génération URL signée pour: ${document.file_url}`);
-      const response = await fetch(`/api/admin/documents/${encodeURIComponent(document.file_url)}/signed-url`);
-      if (response.ok) {
-        const data = await response.json();
-        window.open(data.signedUrl, '_blank');
-      } else {
-        alert('❌ Impossible d\'ouvrir le document');
-      }
+      console.log(`🔗 Ouverture document: ${document.file_url}`);
+      
+      // Construire l'URL publique directement
+      const publicUrl = `https://dhzcpxbzzkyvrmxqklye.supabase.co/storage/v1/object/public/vehicle-images/${document.file_url}`;
+      console.log(`🌐 URL publique: ${publicUrl}`);
+      
+      window.open(publicUrl, '_blank');
     } catch (error) {
-      console.error('Erreur ouverture document:', error);
-      alert('❌ Erreur lors de l\'ouverture du document');
+      console.error('❌ Erreur ouverture document:', error);
+      alert('❌ Impossible d\'ouvrir le document');
     }
   };
 
