@@ -126,17 +126,23 @@ export default function ProCustomization({ onBack }: ProCustomizationProps) {
   };
 
   const handleSave = async () => {
+    console.log('🎨 DÉMARRAGE SAUVEGARDE - handleSave appelé');
+    console.log('📋 DONNÉES À SAUVEGARDER:', customization);
+    
     setSaving(true);
     try {
       // Récupérer le token d'authentification Supabase
       const { data: { session } } = await supabase.auth.getSession();
       const token = session?.access_token;
 
+      console.log('🔑 TOKEN RÉCUPÉRÉ:', token ? 'Présent' : 'Manquant');
+
       if (!token) {
-        console.error('Token d\'authentification manquant');
+        console.error('❌ Token d\'authentification manquant');
         return;
       }
 
+      console.log('📡 ENVOI REQUÊTE VERS API...');
       const response = await fetch('/api/professional-accounts/customization', {
         method: 'PUT',
         headers: {
@@ -146,15 +152,18 @@ export default function ProCustomization({ onBack }: ProCustomizationProps) {
         body: JSON.stringify(customization)
       });
 
+      console.log('📥 RÉPONSE REÇUE:', response.status, response.statusText);
+
       if (response.ok) {
+        console.log('✅ SAUVEGARDE RÉUSSIE');
         setSavedMessage('Modifications sauvegardées avec succès !');
         setTimeout(() => setSavedMessage(''), 3000);
       } else {
         const errorData = await response.json();
-        console.error('Erreur sauvegarde:', errorData);
+        console.error('❌ ERREUR SAUVEGARDE:', errorData);
       }
     } catch (error) {
-      console.error('Erreur sauvegarde:', error);
+      console.error('❌ ERREUR EXCEPTION:', error);
     } finally {
       setSaving(false);
     }
