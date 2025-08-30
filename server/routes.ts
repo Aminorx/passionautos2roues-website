@@ -963,7 +963,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use("/api/auth", authSyncRoutes);
   app.use("/api/account/conversion", accountConversionRoutes);
   app.use("/api/professional-accounts", professionalShopRouter);
-  app.use("/api/vehicles", professionalShopRouter);
   app.use("/api/subscriptions", subscriptionsRouter);
 
   // Routes pour la personnalisation des comptes professionnels

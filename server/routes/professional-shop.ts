@@ -51,7 +51,7 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// GET /api/vehicles/professional/:professionalAccountId - Récupérer les annonces d'un professionnel
+// GET /api/professional-accounts/vehicles/:professionalAccountId - Récupérer les annonces d'un professionnel
 router.get('/vehicles/:professionalAccountId', async (req, res) => {
   try {
     const { professionalAccountId } = req.params;

@@ -83,7 +83,7 @@ export default function ProShop() {
       setProAccount(proData);
 
       // Récupérer les annonces du professionnel
-      const vehiclesResponse = await fetch(`/api/vehicles/professional/${shopId}`);
+      const vehiclesResponse = await fetch(`/api/professional-accounts/vehicles/${shopId}`);
       if (vehiclesResponse.ok) {
         const vehiclesData = await vehiclesResponse.json();
         setVehicles(vehiclesData.filter((v: Vehicle) => v.isActive && v.status === 'approved'));
