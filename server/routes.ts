@@ -796,7 +796,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`🔗 Génération URL signée pour: ${path}`);
       
       const { data, error } = await supabaseServer.storage
-        .from('verifications-documents')
+        .from('vehicle-images')
         .createSignedUrl(path, 3600); // 1 heure d'expiration
       
       if (error) {
