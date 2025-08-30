@@ -5,6 +5,7 @@ import {
   Check, AlertCircle, ArrowLeft
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
+import { supabase } from '../lib/supabase';
 
 interface CustomizationData {
   company_logo?: string;
@@ -127,11 +128,20 @@ export default function ProCustomization({ onBack }: ProCustomizationProps) {
   const handleSave = async () => {
     setSaving(true);
     try {
+      // Récupérer le token d'authentification Supabase
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+
+      if (!token) {
+        console.error('Token d\'authentification manquant');
+        return;
+      }
+
       const response = await fetch('/api/professional-accounts/customization', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'X-User-ID': user?.id || ''
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(customization)
       });
@@ -139,6 +149,9 @@ export default function ProCustomization({ onBack }: ProCustomizationProps) {
       if (response.ok) {
         setSavedMessage('Modifications sauvegardées avec succès !');
         setTimeout(() => setSavedMessage(''), 3000);
+      } else {
+        const errorData = await response.json();
+        console.error('Erreur sauvegarde:', errorData);
       }
     } catch (error) {
       console.error('Erreur sauvegarde:', error);
