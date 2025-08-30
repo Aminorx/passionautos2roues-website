@@ -140,6 +140,7 @@ router.post('/start', async (req, res) => {
 
 // POST /api/account/conversion/submit - Soumettre les données de conversion
 router.post('/submit', upload.single('kbisDocument'), async (req, res) => {
+  console.log('🚀 API /submit appelée !');
   try {
     const userId = req.headers['x-user-id'] as string;
     if (!userId) {
@@ -148,8 +149,11 @@ router.post('/submit', upload.single('kbisDocument'), async (req, res) => {
 
     // DEBUG: Voir exactement ce qui arrive
     console.log('🔍 DEBUG req.body reçu:', req.body);
-    console.log('🔍 DEBUG req.file:', req.file);
+    console.log('🔍 DEBUG req.file:', req.file ? 'FICHIER PRÉSENT' : 'AUCUN FICHIER');
     console.log('🔍 DEBUG Object.keys(req.body):', Object.keys(req.body));
+    if (req.file) {
+      console.log('📄 FICHIER DÉTECTÉ:', req.file.originalname, req.file.size);
+    }
     
     // Valider les données (req.body contient maintenant les champs du FormData)
     const validation = convertAccountSchema.safeParse(req.body);
