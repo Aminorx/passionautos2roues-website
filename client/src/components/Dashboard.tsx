@@ -1317,10 +1317,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'overview', o
           
           <button
             onClick={() => {
-              // Récupérer l'ID du compte professionnel pour rediriger vers la boutique publique
+              // Récupérer l'ID du compte professionnel pour ouvrir la boutique publique dans un nouvel onglet
               if (conversionStatus?.professionalAccount?.id) {
-                // Utiliser window.location pour naviguer vers la route Wouter
-                window.location.href = `/pro/${conversionStatus.professionalAccount.id}`;
+                // Ouvrir dans un nouvel onglet
+                window.open(`/pro/${conversionStatus.professionalAccount.id}`, '_blank');
               }
             }}
             className="flex items-center justify-center space-x-3 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-6 py-4 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-1"

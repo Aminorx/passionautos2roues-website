@@ -133,9 +133,30 @@ export function UserMenu({ onNavigate, onDashboardNavigate }: UserMenuProps) {
               <>
                 <div className="border-t border-gray-100 my-1"></div>
                 <button
-                  onClick={() => {
-                    // Maintenant avec le bon format pour l'URL complète
-                    window.location.href = '/pro/21'
+                  onClick={async () => {
+                    try {
+                      // Récupérer l'ID du compte professionnel dynamiquement
+                      if (!user.email) {
+                        alert('Email utilisateur non disponible');
+                        return;
+                      }
+                      
+                      const response = await fetch(`/api/users/by-email/${encodeURIComponent(user.email)}`);
+                      if (response.ok) {
+                        const userData = await response.json();
+                        if (userData.professionalAccountId) {
+                          // Ouvrir dans un nouvel onglet
+                          window.open(`/pro/${userData.professionalAccountId}`, '_blank');
+                        } else {
+                          alert('Aucun compte professionnel trouvé');
+                        }
+                      } else {
+                        alert('Erreur lors de la récupération du compte professionnel');
+                      }
+                    } catch (error) {
+                      console.error('Erreur:', error);
+                      alert('Erreur lors de l\'ouverture de la boutique');
+                    }
                     setIsOpen(false)
                   }}
                   className="flex items-center w-full px-3 py-2 text-sm text-blue-600 hover:bg-blue-50"

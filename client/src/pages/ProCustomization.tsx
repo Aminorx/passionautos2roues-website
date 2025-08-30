@@ -564,10 +564,33 @@ export default function ProCustomization({ onBack }: ProCustomizationProps) {
               <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                 <h3 className="text-xl font-bold text-gray-900 mb-4">Aperçu de votre boutique</h3>
                 <div className="bg-gray-100 p-4 rounded-xl">
-                  <p className="text-gray-600 text-center">
+                  <button
+                    onClick={async () => {
+                      try {
+                        // Récupérer les données utilisateur pour l'ID du compte professionnel
+                        const response = await fetch(`/api/users/by-email/${encodeURIComponent(user?.email || '')}`);
+                        if (response.ok) {
+                          const userData = await response.json();
+                          if (userData.professionalAccountId) {
+                            // Ouvrir dans un nouvel onglet
+                            window.open(`/pro/${userData.professionalAccountId}`, '_blank');
+                          } else {
+                            alert('Aucun compte professionnel trouvé');
+                          }
+                        } else {
+                          alert('Erreur lors de la récupération du compte professionnel');
+                        }
+                      } catch (error) {
+                        console.error('Erreur:', error);
+                        alert('Erreur lors de l\'ouverture de la boutique');
+                      }
+                    }}
+                    className="w-full text-gray-600 hover:text-blue-600 transition-colors"
+                  >
                     <Eye className="h-8 w-8 mx-auto mb-2" />
-                    L'aperçu de la boutique sera disponible prochainement
-                  </p>
+                    <span className="block">Aperçu de ma boutique</span>
+                    <span className="text-sm text-gray-500">(Ouvre dans un nouvel onglet)</span>
+                  </button>
                 </div>
               </div>
             )}
