@@ -49,9 +49,9 @@ interface Vehicle {
   location: string;
   created_at: string;
   views: number;
-  isPremium: boolean;
+  is_premium: boolean;
   status: string;
-  isActive: boolean;
+  is_active: boolean;
 }
 
 export default function ProShop() {
@@ -86,7 +86,7 @@ export default function ProShop() {
       const vehiclesResponse = await fetch(`/api/professional-accounts/vehicles/${shopId}`);
       if (vehiclesResponse.ok) {
         const vehiclesData = await vehiclesResponse.json();
-        setVehicles(vehiclesData.filter((v: Vehicle) => v.isActive && v.status === 'approved'));
+        setVehicles(vehiclesData.filter((v: any) => v.is_active && v.status === 'approved'));
       }
 
       setLoading(false);
