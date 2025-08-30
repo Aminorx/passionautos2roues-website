@@ -1298,13 +1298,8 @@ export const CreateListingForm: React.FC<CreateListingFormProps> = ({ onSuccess 
         const newVehicle = await response.json();
         console.log('Annonce créée avec succès:', newVehicle);
         
-        // SOLUTION: Forcer le rechargement de la page pour actualiser le cache
+        // Afficher le modal de succès
         setShowSuccessModal(true);
-        
-        // Programmer le rechargement après l'affichage du modal de succès
-        setTimeout(() => {
-          window.location.reload();
-        }, 2000);
       } else {
         throw new Error('Erreur lors de la création de l\'annonce');
       }
