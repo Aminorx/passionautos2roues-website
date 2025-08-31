@@ -114,16 +114,22 @@ function AppContent() {
     setShowCreateListingModal(true);
   }, []);
 
+  // Vérifier si on est sur une route admin
+  const isAdminRoute = location.startsWith('/admin');
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
-      <Header
-        currentView={getCurrentView()}
-        setCurrentView={setCurrentView}
-        mobileMenuOpen={mobileMenuOpen}
-        setMobileMenuOpen={setMobileMenuOpen}
-        setDashboardTab={setDashboardTab}
-        onSearch={handleSearch}
-      />
+      {/* Masquer Header pour les routes admin */}
+      {!isAdminRoute && (
+        <Header
+          currentView={getCurrentView()}
+          setCurrentView={setCurrentView}
+          mobileMenuOpen={mobileMenuOpen}
+          setMobileMenuOpen={setMobileMenuOpen}
+          setDashboardTab={setDashboardTab}
+          onSearch={handleSearch}
+        />
+      )}
       
       {selectedVehicle ? (
         <VehicleDetail
@@ -250,7 +256,8 @@ function AppContent() {
               <Hero setCurrentView={setCurrentView} />
             </Route>
           </Switch>
-          <Footer setCurrentView={setCurrentView} />
+          {/* Masquer Footer pour les routes admin */}
+          {!isAdminRoute && <Footer setCurrentView={setCurrentView} />}
         </>
       )}
       <UnifiedAuthModal />
