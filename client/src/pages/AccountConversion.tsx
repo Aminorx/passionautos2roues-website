@@ -1,11 +1,21 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useAuth } from '../hooks/useAuth';
-import { Building, FileCheck, CheckCircle, Clock, XCircle, ArrowLeft, ArrowRight, Upload, X } from 'lucide-react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import React, { useState, useEffect, useRef } from "react";
+import { useAuth } from "../hooks/useAuth";
+import {
+  Building,
+  FileCheck,
+  CheckCircle,
+  Clock,
+  XCircle,
+  ArrowLeft,
+  ArrowRight,
+  Upload,
+  X,
+} from "lucide-react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 // import { useToast } from '../hooks/use-toast';
 
 interface ConversionStatus {
-  currentType: 'individual' | 'professional';
+  currentType: "individual" | "professional";
   canConvert: boolean;
   professionalAccount: any | null;
   conversionInProgress: boolean;
@@ -26,53 +36,55 @@ interface ConversionData {
 interface DocumentUpload {
   file: File | null;
   preview: string | null;
-  status: 'idle' | 'uploading' | 'uploaded' | 'error';
+  status: "idle" | "uploading" | "uploaded" | "error";
 }
 
-export const AccountConversion: React.FC<{ onBack: () => void }> = ({ onBack }) => {
+export const AccountConversion: React.FC<{ onBack: () => void }> = ({
+  onBack,
+}) => {
   const { user, isAuthenticated } = useAuth();
-  
+
   // Debug: afficher les informations de l'utilisateur
-  console.log('🔍 Debug AccountConversion - User:', user);
-  console.log('🔍 Debug AccountConversion - isAuthenticated:', isAuthenticated);
-  
+  console.log("🔍 Debug AccountConversion - User:", user);
+  console.log("🔍 Debug AccountConversion - isAuthenticated:", isAuthenticated);
+
   // const { toast } = useToast();
   const toast = (options: any) => {
-    console.log('Toast:', options.title, options.description);
+    console.log("Toast:", options.title, options.description);
     // Placeholder pour les toasts - sera remplacé par le vrai système
   };
   const queryClient = useQueryClient();
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState<ConversionData>({
-    companyName: '',
-    siret: '',
-    companyAddress: '',
-    phone: '',
-    email: '',
-    website: '',
+    companyName: "",
+    siret: "",
+    companyAddress: "",
+    phone: "",
+    email: "",
+    website: "",
   });
 
   const [kbisDocument, setKbisDocument] = useState<DocumentUpload>({
     file: null,
     preview: null,
-    status: 'idle'
+    status: "idle",
   });
-  
+
   const kbisInputRef = useRef<HTMLInputElement>(null);
 
   // Récupérer le statut de conversion
   const { data: conversionStatus = {}, isLoading } = useQuery({
-    queryKey: ['/api/account/conversion/status'],
+    queryKey: ["/api/account/conversion/status"],
     enabled: !!user?.id,
     retry: 1,
     queryFn: async () => {
-      const response = await fetch('/api/account/conversion/status', {
+      const response = await fetch("/api/account/conversion/status", {
         headers: {
-          'x-user-id': user?.id || '',
+          "x-user-id": user?.id || "",
         },
       });
       if (!response.ok) {
-        throw new Error('Erreur lors de la récupération du statut');
+        throw new Error("Erreur lors de la récupération du statut");
       }
       return response.json();
     },
@@ -81,24 +93,28 @@ export const AccountConversion: React.FC<{ onBack: () => void }> = ({ onBack }) 
   // Mutation pour démarrer la conversion
   const startConversionMutation = useMutation({
     mutationFn: async () => {
-      const response = await fetch('/api/account/conversion/start', {
-        method: 'POST',
+      const response = await fetch("/api/account/conversion/start", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'x-user-id': user?.id || '',
+          "Content-Type": "application/json",
+          "x-user-id": user?.id || "",
         },
       });
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || 'Erreur lors du démarrage de la conversion');
+        throw new Error(
+          error.error || "Erreur lors du démarrage de la conversion",
+        );
       }
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/account/conversion/status'] });
+      queryClient.invalidateQueries({
+        queryKey: ["/api/account/conversion/status"],
+      });
       toast({
-        title: 'Conversion initiée',
-        description: 'Votre demande de conversion a été initiée avec succès.',
+        title: "Conversion initiée",
+        description: "Votre demande de conversion a été initiée avec succès.",
       });
       // Maintenant soumettre les données automatiquement
       setTimeout(() => {
@@ -107,9 +123,9 @@ export const AccountConversion: React.FC<{ onBack: () => void }> = ({ onBack }) 
     },
     onError: (error: Error) => {
       toast({
-        title: 'Erreur',
+        title: "Erreur",
         description: error.message,
-        variant: 'destructive',
+        variant: "destructive",
       });
     },
   });
@@ -118,55 +134,58 @@ export const AccountConversion: React.FC<{ onBack: () => void }> = ({ onBack }) 
   const submitConversionMutation = useMutation({
     mutationFn: async (data: ConversionData) => {
       const formDataToSend = new FormData();
-      
+
       // DEBUG: Voir les données avant envoi
-      console.log('🔍 DEBUG Frontend - Données à envoyer:', data);
-      
+      console.log("🔍 DEBUG Frontend - Données à envoyer:", data);
+
       // Ajouter les données du formulaire
       Object.entries(data).forEach(([key, value]) => {
         console.log(`📝 Ajout FormData: ${key} = ${value}`);
         formDataToSend.append(key, value);
       });
-      
+
       // Ajouter le document KBIS si présent
       if (kbisDocument.file) {
-        console.log('📎 Ajout fichier KBIS:', kbisDocument.file.name);
-        formDataToSend.append('kbisDocument', kbisDocument.file);
+        console.log("📎 Ajout fichier KBIS:", kbisDocument.file.name);
+        formDataToSend.append("kbisDocument", kbisDocument.file);
       }
-      
-      const response = await fetch('/api/account/conversion/submit', {
-        method: 'POST',
+
+      const response = await fetch("/api/account/conversion/submit", {
+        method: "POST",
         headers: {
-          'x-user-id': user?.id || '',
+          "x-user-id": user?.id || "",
         },
         body: formDataToSend,
       });
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || 'Erreur lors de la soumission');
+        throw new Error(error.error || "Erreur lors de la soumission");
       }
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/account/conversion/status'] });
+      queryClient.invalidateQueries({
+        queryKey: ["/api/account/conversion/status"],
+      });
       toast({
-        title: 'Demande soumise',
-        description: 'Votre demande de conversion a été soumise avec succès. Elle sera examinée par notre équipe.',
+        title: "Demande soumise",
+        description:
+          "Votre demande de conversion a été soumise avec succès. Elle sera examinée par notre équipe.",
       });
       setStep(3); // Aller à l'étape de confirmation
     },
     onError: (error: Error) => {
       toast({
-        title: 'Erreur',
+        title: "Erreur",
         description: error.message,
-        variant: 'destructive',
+        variant: "destructive",
       });
     },
   });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   // Gestion upload document KBIS
@@ -176,28 +195,33 @@ export const AccountConversion: React.FC<{ onBack: () => void }> = ({ onBack }) 
 
     // Vérifications
     const maxSize = 5 * 1024 * 1024; // 5MB
-    const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
+    const allowedTypes = [
+      "application/pdf",
+      "image/jpeg",
+      "image/jpg",
+      "image/png",
+    ];
 
     if (file.size > maxSize) {
-      alert('Le fichier est trop volumineux. Maximum 5MB.');
+      alert("Le fichier est trop volumineux. Maximum 5MB.");
       return;
     }
 
     if (!allowedTypes.includes(file.type)) {
-      alert('Format non supporté. Utilisez PDF, JPG ou PNG.');
+      alert("Format non supporté. Utilisez PDF, JPG ou PNG.");
       return;
     }
 
     // Créer aperçu si c'est une image
     let preview = null;
-    if (file.type.startsWith('image/')) {
+    if (file.type.startsWith("image/")) {
       preview = URL.createObjectURL(file);
     }
 
     setKbisDocument({
       file,
       preview,
-      status: 'uploaded'
+      status: "uploaded",
     });
   };
 
@@ -208,31 +232,32 @@ export const AccountConversion: React.FC<{ onBack: () => void }> = ({ onBack }) 
     setKbisDocument({
       file: null,
       preview: null,
-      status: 'idle'
+      status: "idle",
     });
     if (kbisInputRef.current) {
-      kbisInputRef.current.value = '';
+      kbisInputRef.current.value = "";
     }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Vérifier si un compte professionnel existe déjà
-    const professionalAccount = (conversionStatus as ConversionStatus)?.professionalAccount;
-    
-    console.log('🔍 DEBUG - Professional account:', professionalAccount);
-    console.log('🔍 DEBUG - Conversion status:', conversionStatus);
-    
+    const professionalAccount = (conversionStatus as ConversionStatus)
+      ?.professionalAccount;
+
+    console.log("🔍 DEBUG - Professional account:", professionalAccount);
+    console.log("🔍 DEBUG - Conversion status:", conversionStatus);
+
     // Si aucun compte professionnel n'existe, le créer d'abord
     if (!professionalAccount) {
-      console.log('⭐ Aucun compte pro - Appel /start d\'abord');
+      console.log("⭐ Aucun compte pro - Appel /start d'abord");
       startConversionMutation.mutate();
       return;
     }
-    
+
     // Sinon, soumettre les données directement
-    console.log('⭐ Compte pro existant - Appel /submit directement');
+    console.log("⭐ Compte pro existant - Appel /submit directement");
     submitConversionMutation.mutate(formData);
   };
 
@@ -240,8 +265,12 @@ export const AccountConversion: React.FC<{ onBack: () => void }> = ({ onBack }) 
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Accès non autorisé</h2>
-          <p className="text-gray-600">Vous devez être connecté pour accéder à cette page.</p>
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            Accès non autorisé
+          </h2>
+          <p className="text-gray-600">
+            Vous devez être connecté pour accéder à cette page.
+          </p>
         </div>
       </div>
     );
@@ -255,13 +284,15 @@ export const AccountConversion: React.FC<{ onBack: () => void }> = ({ onBack }) 
     );
   }
 
-  if ((conversionStatus as ConversionStatus)?.currentType === 'professional') {
+  if ((conversionStatus as ConversionStatus)?.currentType === "professional") {
     return (
       <div className="min-h-screen bg-gray-50 py-12">
         <div className="max-w-2xl mx-auto px-4">
           <div className="bg-white rounded-xl shadow-lg p-8 text-center">
             <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Compte professionnel actif</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+              Compte professionnel actif
+            </h2>
             <p className="text-gray-600 mb-6">
               Votre compte professionnel est déjà actif et vérifié.
             </p>
@@ -283,18 +314,42 @@ export const AccountConversion: React.FC<{ onBack: () => void }> = ({ onBack }) 
         <div className="max-w-2xl mx-auto px-4">
           <div className="bg-white rounded-xl shadow-lg p-8 text-center">
             <Clock className="h-16 w-16 text-yellow-500 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Conversion en cours</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+              Votre Deamnde de compte pro est en cours
+            </h2>
             <p className="text-gray-600 mb-6">
-              Votre demande de conversion en compte professionnel est en cours d'examen par notre équipe.
-              Vous recevrez une notification dès que votre compte sera vérifié.
+              Votre demande de compte professionnel est en cours d'examen par
+              notre équipe. Vous recevrez une notification dès que votre compte
+              sera vérifié.
             </p>
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-              <h3 className="font-semibold text-blue-900 mb-2">Informations soumises :</h3>
+              <h3 className="font-semibold text-blue-900 mb-2">
+                Informations soumises :
+              </h3>
               <div className="text-left text-blue-800">
-                <p><strong>Entreprise :</strong> {(conversionStatus as ConversionStatus).professionalAccount?.company_name}</p>
-                <p><strong>SIRET :</strong> {(conversionStatus as ConversionStatus).professionalAccount?.siret}</p>
-                {(conversionStatus as ConversionStatus).professionalAccount?.website && (
-                  <p><strong>Site web :</strong> {(conversionStatus as ConversionStatus).professionalAccount.website}</p>
+                <p>
+                  <strong>Entreprise :</strong>{" "}
+                  {
+                    (conversionStatus as ConversionStatus).professionalAccount
+                      ?.company_name
+                  }
+                </p>
+                <p>
+                  <strong>SIRET :</strong>{" "}
+                  {
+                    (conversionStatus as ConversionStatus).professionalAccount
+                      ?.siret
+                  }
+                </p>
+                {(conversionStatus as ConversionStatus).professionalAccount
+                  ?.website && (
+                  <p>
+                    <strong>Site web :</strong>{" "}
+                    {
+                      (conversionStatus as ConversionStatus).professionalAccount
+                        .website
+                    }
+                  </p>
                 )}
               </div>
             </div>
@@ -316,30 +371,37 @@ export const AccountConversion: React.FC<{ onBack: () => void }> = ({ onBack }) 
         <div className="max-w-2xl mx-auto px-4">
           <div className="bg-white rounded-xl shadow-lg p-8 text-center">
             <XCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Demande rejetée</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+              Demande rejetée
+            </h2>
             <p className="text-gray-600 mb-6">
               Votre demande de conversion en compte professionnel a été rejetée.
             </p>
             {(conversionStatus as ConversionStatus).rejectionReason && (
               <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-                <h3 className="font-semibold text-red-900 mb-2">Raison du rejet :</h3>
-                <p className="text-red-800">{(conversionStatus as ConversionStatus).rejectionReason}</p>
+                <h3 className="font-semibold text-red-900 mb-2">
+                  Raison du rejet :
+                </h3>
+                <p className="text-red-800">
+                  {(conversionStatus as ConversionStatus).rejectionReason}
+                </p>
               </div>
             )}
             <div className="space-y-4">
               <button
                 onClick={() => {
-                  console.log('🔄 Modification de la demande...');
+                  console.log("🔄 Modification de la demande...");
                   // Pré-remplir le formulaire avec les données existantes si disponibles
-                  const existingData = (conversionStatus as ConversionStatus).professionalAccount;
+                  const existingData = (conversionStatus as ConversionStatus)
+                    .professionalAccount;
                   if (existingData) {
                     setFormData({
-                      companyName: existingData.company_name || '',
-                      siret: existingData.siret || '',
-                      companyAddress: existingData.company_address || '',
-                      phone: existingData.phone || '',
-                      email: existingData.email || '',
-                      website: existingData.website || '',
+                      companyName: existingData.company_name || "",
+                      siret: existingData.siret || "",
+                      companyAddress: existingData.company_address || "",
+                      phone: existingData.phone || "",
+                      email: existingData.email || "",
+                      website: existingData.website || "",
                     });
                   }
                   setStep(1); // Commencer au formulaire
@@ -375,9 +437,12 @@ export const AccountConversion: React.FC<{ onBack: () => void }> = ({ onBack }) 
                 <ArrowLeft className="h-6 w-6" />
               </button>
               <div>
-                <h1 className="text-2xl font-bold">Passer en compte professionnel</h1>
+                <h1 className="text-2xl font-bold">
+                  Passer en compte professionnel
+                </h1>
                 <p className="text-primary-bolt-100">
-                  Accédez à des fonctionnalités exclusives pour les professionnels
+                  Accédez à des fonctionnalités exclusives pour les
+                  professionnels
                 </p>
               </div>
             </div>
@@ -391,8 +456,8 @@ export const AccountConversion: React.FC<{ onBack: () => void }> = ({ onBack }) 
                   <div
                     className={`w-8 h-8 rounded-full flex items-center justify-center font-semibold ${
                       stepNumber <= step
-                        ? 'bg-primary-bolt-600 text-white'
-                        : 'bg-gray-300 text-gray-600'
+                        ? "bg-primary-bolt-600 text-white"
+                        : "bg-gray-300 text-gray-600"
                     }`}
                   >
                     {stepNumber}
@@ -400,7 +465,9 @@ export const AccountConversion: React.FC<{ onBack: () => void }> = ({ onBack }) 
                   {stepNumber < 3 && (
                     <div
                       className={`w-16 h-1 ${
-                        stepNumber < step ? 'bg-primary-bolt-600' : 'bg-gray-300'
+                        stepNumber < step
+                          ? "bg-primary-bolt-600"
+                          : "bg-gray-300"
                       }`}
                     />
                   )}
@@ -408,13 +475,31 @@ export const AccountConversion: React.FC<{ onBack: () => void }> = ({ onBack }) 
               ))}
             </div>
             <div className="flex justify-between mt-2 text-sm">
-              <span className={step >= 1 ? 'text-primary-bolt-600 font-semibold' : 'text-gray-500'}>
+              <span
+                className={
+                  step >= 1
+                    ? "text-primary-bolt-600 font-semibold"
+                    : "text-gray-500"
+                }
+              >
                 Informations
               </span>
-              <span className={step >= 2 ? 'text-primary-bolt-600 font-semibold' : 'text-gray-500'}>
+              <span
+                className={
+                  step >= 2
+                    ? "text-primary-bolt-600 font-semibold"
+                    : "text-gray-500"
+                }
+              >
                 Vérification
               </span>
-              <span className={step >= 3 ? 'text-primary-bolt-600 font-semibold' : 'text-gray-500'}>
+              <span
+                className={
+                  step >= 3
+                    ? "text-primary-bolt-600 font-semibold"
+                    : "text-gray-500"
+                }
+              >
                 Confirmation
               </span>
             </div>
@@ -428,7 +513,8 @@ export const AccountConversion: React.FC<{ onBack: () => void }> = ({ onBack }) 
                     Informations de votre entreprise
                   </h2>
                   <p className="text-gray-600 mb-6">
-                    Fournissez les informations légales de votre entreprise pour la vérification.
+                    Fournissez les informations légales de votre entreprise pour
+                    la vérification.
                   </p>
                 </div>
 
@@ -462,7 +548,9 @@ export const AccountConversion: React.FC<{ onBack: () => void }> = ({ onBack }) 
                     placeholder="12345678901234"
                     maxLength={14}
                   />
-                  <p className="text-sm text-gray-500 mt-1">14 chiffres, sans espaces</p>
+                  <p className="text-sm text-gray-500 mt-1">
+                    14 chiffres, sans espaces
+                  </p>
                 </div>
 
                 <div>
@@ -536,20 +624,23 @@ export const AccountConversion: React.FC<{ onBack: () => void }> = ({ onBack }) 
                       accept=".pdf,.jpg,.jpeg,.png"
                       onChange={handleKbisUpload}
                     />
-                    
-                    {kbisDocument.status === 'uploaded' && kbisDocument.file ? (
+
+                    {kbisDocument.status === "uploaded" && kbisDocument.file ? (
                       <div className="space-y-3">
                         <CheckCircle className="h-12 w-12 text-green-600 mx-auto" />
                         <div>
-                          <h3 className="font-medium text-gray-900">{kbisDocument.file.name}</h3>
+                          <h3 className="font-medium text-gray-900">
+                            {kbisDocument.file.name}
+                          </h3>
                           <p className="text-sm text-gray-500">
-                            {(kbisDocument.file.size / 1024 / 1024).toFixed(2)} MB
+                            {(kbisDocument.file.size / 1024 / 1024).toFixed(2)}{" "}
+                            MB
                           </p>
                         </div>
                         {kbisDocument.preview && (
-                          <img 
-                            src={kbisDocument.preview} 
-                            alt="Aperçu du document" 
+                          <img
+                            src={kbisDocument.preview}
+                            alt="Aperçu du document"
                             className="max-w-full h-32 object-contain mx-auto rounded"
                           />
                         )}
@@ -566,7 +657,9 @@ export const AccountConversion: React.FC<{ onBack: () => void }> = ({ onBack }) 
                       <div className="space-y-2">
                         <Upload className="h-12 w-12 text-gray-400 mx-auto" />
                         <div>
-                          <h3 className="font-medium text-gray-900">Télécharger votre document</h3>
+                          <h3 className="font-medium text-gray-900">
+                            Télécharger votre document
+                          </h3>
                           <p className="text-sm text-gray-600">
                             Glissez votre extrait KBIS ou SIRET ici
                           </p>
@@ -578,7 +671,8 @@ export const AccountConversion: React.FC<{ onBack: () => void }> = ({ onBack }) 
                     )}
                   </div>
                   <p className="text-xs text-gray-500 mt-2">
-                    Le document KBIS accélère le processus de validation de votre compte professionnel.
+                    Le document KBIS accélère le processus de validation de
+                    votre compte professionnel.
                   </p>
                 </div>
 
@@ -586,10 +680,13 @@ export const AccountConversion: React.FC<{ onBack: () => void }> = ({ onBack }) 
                   <div className="flex items-start space-x-3">
                     <FileCheck className="h-5 w-5 text-blue-600 mt-0.5" />
                     <div>
-                      <h3 className="font-semibold text-blue-900">Validation automatique</h3>
+                      <h3 className="font-semibold text-blue-900">
+                        Validation automatique
+                      </h3>
                       <p className="text-blue-800 text-sm mt-1">
-                        Avec un document KBIS/SIRET fourni, votre compte sera validé automatiquement.
-                        Sinon, notre équipe vérifiera manuellement votre SIRET.
+                        Avec un document KBIS/SIRET fourni, votre compte sera
+                        validé automatiquement. Sinon, notre équipe vérifiera
+                        manuellement votre SIRET.
                       </p>
                     </div>
                   </div>
@@ -605,7 +702,11 @@ export const AccountConversion: React.FC<{ onBack: () => void }> = ({ onBack }) 
                   </button>
                   <button
                     type="submit"
-                    disabled={!formData.companyName || !formData.siret || submitConversionMutation.isPending}
+                    disabled={
+                      !formData.companyName ||
+                      !formData.siret ||
+                      submitConversionMutation.isPending
+                    }
                     className="bg-primary-bolt-600 hover:bg-primary-bolt-700 disabled:bg-gray-400 text-white px-6 py-3 rounded-lg font-semibold transition-colors flex items-center space-x-2"
                   >
                     {submitConversionMutation.isPending ? (
@@ -627,13 +728,18 @@ export const AccountConversion: React.FC<{ onBack: () => void }> = ({ onBack }) 
             {step === 3 && (
               <div className="text-center">
                 <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">Demande envoyée !</h2>
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  Demande envoyée !
+                </h2>
                 <p className="text-gray-600 mb-8">
-                  Votre demande de conversion en compte professionnel a été soumise avec succès.
-                  Notre équipe l'examinera dans les plus brefs délais.
+                  Votre demande de conversion en compte professionnel a été
+                  soumise avec succès. Notre équipe l'examinera dans les plus
+                  brefs délais.
                 </p>
                 <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
-                  <h3 className="font-semibold text-yellow-900 mb-2">Prochaines étapes :</h3>
+                  <h3 className="font-semibold text-yellow-900 mb-2">
+                    Prochaines étapes :
+                  </h3>
                   <ul className="text-left text-yellow-800 space-y-1">
                     <li>• Vérification de votre SIRET</li>
                     <li>• Contrôle des informations fournies</li>
