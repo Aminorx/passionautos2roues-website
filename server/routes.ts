@@ -1154,26 +1154,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.error('❌ Erreur récupération users publics:', publicError);
         // Continuer même si erreur sur les profils publics
       }
+
+      // Récupérer tous les comptes professionnels pour déterminer qui est pro
+      const { data: professionalAccounts, error: proError } = await supabaseServer
+        .from('professional_accounts')
+        .select('user_id, company_name, verification_status');
+      
+      if (proError) {
+        console.error('❌ Erreur récupération comptes pro:', proError);
+      }
       
       // OPTION A : Statut basé uniquement sur email_confirmed_at de Supabase Auth
       const allUsers = authUsers.users.map(authUser => {
         const publicProfile = publicUsers?.find(pu => pu.id === authUser.id);
+        const professionalAccount = professionalAccounts?.find(pa => pa.user_id === authUser.id);
         
         // Logique simplifiée :
         // - OAuth Gmail = email automatiquement confirmé = actif immédiatement
         // - Inscription email = email non confirmé = inactif jusqu'à validation admin
         const isEmailConfirmed = authUser.email_confirmed_at != null; // != null vérifie null ET undefined
         
+        // Déterminer le type de compte : si l'utilisateur a un professional_account, il est pro
+        const accountType = professionalAccount ? 'professional' : (publicProfile?.account_type || 'individual');
+        
         return {
           id: authUser.id,
           name: publicProfile?.name || authUser.user_metadata?.name || authUser.email?.split('@')[0] || 'Utilisateur',
           email: authUser.email,
-          account_type: publicProfile?.account_type || 'individual',
+          account_type: accountType,
           verified: isEmailConfirmed, // Statut = email confirmé dans Supabase
           email_verified: isEmailConfirmed,
           created_at: authUser.created_at,
           last_sign_in_at: authUser.last_sign_in_at,
           phone: authUser.phone,
+          // Informations professionnelles si disponibles
+          company_name: professionalAccount?.company_name,
+          professional_status: professionalAccount?.verification_status,
           // Debug info
           auth_confirmed_at: authUser.email_confirmed_at,
           provider: authUser.app_metadata?.provider // gmail, email, etc.
@@ -1182,6 +1198,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log(`✅ ${allUsers.length} utilisateurs auth récupérés`);
       console.log('📧 Emails trouvés:', allUsers.map(u => u.email));
+      console.log('🏢 Comptes professionnels trouvés:', professionalAccounts?.length || 0);
+      console.log('👥 Types de comptes:', allUsers.map(u => `${u.email}: ${u.account_type}`));
       
       
       res.json(allUsers);
