@@ -597,7 +597,6 @@ export const AdminDashboardClean: React.FC<AdminDashboardProps> = ({ onBack }) =
                     <thead className="bg-gray-50">
                       <tr>
                         <th className="text-left py-3 px-6 font-medium text-gray-600">Utilisateur</th>
-                        <th className="text-left py-3 px-6 font-medium text-gray-600">Type</th>
                         <th className="text-left py-3 px-6 font-medium text-gray-600">Statut</th>
                         <th className="text-left py-3 px-6 font-medium text-gray-600">Inscription</th>
                         <th className="text-left py-3 px-6 font-medium text-gray-600">Actions</th>
@@ -614,26 +613,12 @@ export const AdminDashboardClean: React.FC<AdminDashboardProps> = ({ onBack }) =
                           </td>
                           <td className="py-4 px-6">
                             <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                              user.type === 'professional' 
-                                ? 'bg-orange-100 text-orange-700' 
-                                : 'bg-blue-100 text-blue-700'
+                              user.verified 
+                                ? 'bg-green-100 text-green-700' 
+                                : 'bg-red-100 text-red-700'
                             }`}>
-                              {user.type === 'professional' ? 'Pro' : 'Particulier'}
+                              {user.verified ? '✅ Actif' : '❌ Inactif'}
                             </span>
-                          </td>
-                          <td className="py-4 px-6">
-                            <div className="flex flex-col gap-1">
-                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                user.verified 
-                                  ? 'bg-green-100 text-green-700' 
-                                  : 'bg-red-100 text-red-700'
-                              }`}>
-                                {user.verified ? '✅ Actif' : '❌ Inactif'}
-                              </span>
-                              <span className="px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
-                                {(user as any).provider === 'google' ? '🌐 OAuth' : '📧 Email'}
-                              </span>
-                            </div>
                           </td>
                           <td className="py-4 px-6 text-sm text-gray-600">
                             {new Date(user.createdAt).toLocaleDateString('fr-FR')}
@@ -658,12 +643,6 @@ export const AdminDashboardClean: React.FC<AdminDashboardProps> = ({ onBack }) =
                                   ❌ Suspendre
                                 </button>
                               )}
-                              <button
-                                className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs font-medium hover:bg-gray-200 transition-colors"
-                                title="Voir détails"
-                              >
-                                👁️ Détails
-                              </button>
                             </div>
                           </td>
                         </tr>
