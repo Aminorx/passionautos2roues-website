@@ -23,7 +23,7 @@ router.put('/update/:userId', async (req, res) => {
       bio,
       professionalPhone,
       specialties,
-      onboardingCompleted
+      profileCompleted
     } = req.body;
     
     // Construire l'objet de mise à jour (email exclu)
@@ -43,7 +43,7 @@ router.put('/update/:userId', async (req, res) => {
     if (bio !== undefined) updateData.bio = bio;
     if (professionalPhone !== undefined) updateData.professional_phone = professionalPhone;
     if (specialties !== undefined) updateData.specialties = specialties;
-    if (onboardingCompleted !== undefined) updateData.onboarding_completed = onboardingCompleted;
+    if (profileCompleted !== undefined) updateData.profile_completed = profileCompleted;
     
     if (Object.keys(updateData).length === 0) {
       return res.status(400).json({ error: 'Aucune donnée à mettre à jour' });

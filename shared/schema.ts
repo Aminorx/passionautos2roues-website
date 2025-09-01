@@ -9,7 +9,7 @@ export const users = pgTable("users", {
   name: text("name").notNull(),
   phone: text("phone"),
   whatsapp: text("whatsapp"),
-  type: text("type").notNull().default('individual'), // 'individual' | 'professional' - tous les comptes par défaut en particulier
+  type: text("type").notNull().default('individual'),
   companyName: text("company_name"),
   companyLogo: text("company_logo"),
   address: text("address"),
@@ -19,20 +19,13 @@ export const users = pgTable("users", {
   siret: text("siret"),
   bio: text("bio"),
   avatar: text("avatar"),
-  // Champs additionnels pour les profils
-  profileCompleted: boolean("profile_completed").default(false),
-  marketingConsent: boolean("marketing_consent").default(false),
   specialties: json("specialties").$type<string[]>(),
   verified: boolean("verified").default(false),
   emailVerified: boolean("email_verified").default(false),
   contactPreferences: json("contact_preferences").$type<string[]>(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   lastLoginAt: timestamp("last_login_at"),
-  stripeCustomerId: text("stripe_customer_id"),
-  // Champs professionnels additionnels
-  professionalPhone: text("professional_phone"), // Téléphone professionnel distinct
-  professionalEmail: text("professional_email"), // Email professionnel distinct  
-  isVerified: boolean("is_verified").default(false), // Statut de vérification pro
+  profileCompleted: boolean("profile_completed").default(false),
 });
 
 export const annonces = pgTable("annonces", {
@@ -45,29 +38,31 @@ export const annonces = pgTable("annonces", {
   model: text("model").notNull(),
   year: integer("year").notNull(),
   mileage: integer("mileage"),
-  fuelType: text("fuel_type"), // 'gasoline' | 'diesel' | 'electric' | 'hybrid'
-  condition: text("condition").notNull(), // 'new' | 'used' | 'damaged'
+  fuelType: text("fuel_type"),
+  condition: text("condition").notNull(),
   price: real("price").notNull(),
   location: text("location").notNull(),
   images: json("images").$type<string[]>().default([]),
   features: json("features").$type<string[]>().default([]),
-  listingType: text("listing_type").notNull().default("sale"), // 'sale' | 'search'
   isPremium: boolean("is_premium").default(false),
-  premiumType: text("premium_type"), // 'daily' | 'weekly' | 'monthly'
+  premiumType: text("premium_type"),
   premiumExpiresAt: timestamp("premium_expires_at"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
   views: integer("views").default(0),
   favorites: integer("favorites").default(0),
-  status: text("status").default("approved"), // 'pending' | 'approved' | 'rejected'
-  isActive: boolean("is_active").default(true), // Allow users to activate/deactivate their listings
-  // Soft delete et questionnaire de suppression
+  status: text("status").default("approved"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  listingType: text("listing_type").notNull().default("sale"),
+  contactPhone: text("contact_phone"),
+  contactEmail: text("contact_email"),
+  contactWhatsapp: text("contact_whatsapp"),
+  hidePhone: boolean("hide_phone").default(false),
+  isActive: boolean("is_active").default(true),
   deletedAt: timestamp("deleted_at"),
-  deletionReason: text("deletion_reason"), // 'sold_on_site' | 'sold_elsewhere' | 'no_longer_selling' | 'other'
-  deletionComment: text("deletion_comment"), // Commentaire facultatif pour "Autre"
-  // Colonnes professionnelles
+  deletionReason: text("deletion_reason"),
+  deletionComment: text("deletion_comment"),
   priorityScore: integer("priority_score").default(0),
-  professionalAccountId: integer("professional_account_id").references(() => professionalAccounts.id), // FK vers professional_accounts
+  professionalAccountId: integer("professional_account_id").references(() => professionalAccounts.id),
 });
 
 export const messages = pgTable("messages", {

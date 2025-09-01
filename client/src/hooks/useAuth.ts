@@ -8,7 +8,7 @@ interface DbUser {
   email: string;
   name: string;
   type: string;
-  onboarding_completed?: boolean;
+  profile_completed?: boolean;
   created_at?: string;
 }
 

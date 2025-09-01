@@ -74,9 +74,9 @@ function AppContent() {
     if (isLoading) return;
     
     // Si l'utilisateur est connecté mais n'a pas complété son profil
-    if (isAuthenticated && dbUser && !dbUser.profileCompleted) {
+    if (isAuthenticated && dbUser && !dbUser.profile_completed) {
       console.log('🔧 ÉTAPE 1 - Profil incomplet détecté pour:', dbUser.email);
-      console.log('🔧 profileCompleted:', dbUser.profileCompleted);
+      console.log('🔧 profile_completed:', dbUser.profile_completed);
       setShowProfileSetup(true);
     }
   }, [isAuthenticated, dbUser, isLoading]);
@@ -334,7 +334,7 @@ function AppContent() {
           console.log('✅ Onboarding personnel terminé!');
           setShowProfileSetup(false);
           setOnboardingStep('choice');
-          // Recharger les données utilisateur pour mettre à jour onboarding_completed
+          // Recharger les données utilisateur pour mettre à jour profile_completed
           if (refreshDbUser) {
             await refreshDbUser();
           }
@@ -355,7 +355,7 @@ function AppContent() {
           console.log('✅ Onboarding professionnel terminé!');
           setShowProfileSetup(false);
           setOnboardingStep('choice');
-          // Recharger les données utilisateur pour mettre à jour onboarding_completed
+          // Recharger les données utilisateur pour mettre à jour profile_completed
           if (refreshDbUser) {
             await refreshDbUser();
           }
