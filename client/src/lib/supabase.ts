@@ -41,20 +41,36 @@ export const signIn = async (email: string, password: string) => {
 }
 
 export const signInWithOAuth = async (provider: 'google' | 'apple' | 'github') => {
+  // Utiliser l'URL de développement Replit si on est en développement
+  const isDevelopment = import.meta.env.DEV || window.location.hostname.includes('replit.dev');
+  const redirectUrl = isDevelopment 
+    ? window.location.origin + '/auth/callback'
+    : `${window.location.origin}/auth/callback`;
+    
+  console.log('🔗 OAuth redirect URL:', redirectUrl);
+  
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider,
     options: {
-      redirectTo: `${window.location.origin}/auth/callback`
+      redirectTo: redirectUrl
     }
   })
   return { data, error }
 }
 
 export const signInWithMagicLink = async (email: string) => {
+  // Utiliser l'URL de développement Replit si on est en développement
+  const isDevelopment = import.meta.env.DEV || window.location.hostname.includes('replit.dev');
+  const redirectUrl = isDevelopment 
+    ? window.location.origin + '/auth/callback'
+    : `${window.location.origin}/auth/callback`;
+    
+  console.log('🔗 Magic link redirect URL:', redirectUrl);
+  
   const { data, error } = await supabase.auth.signInWithOtp({
     email,
     options: {
-      emailRedirectTo: `${window.location.origin}/auth/callback`
+      emailRedirectTo: redirectUrl
     }
   })
   return { data, error }
@@ -77,8 +93,16 @@ export const getCurrentSession = async () => {
 
 // Reset password function
 export const resetPassword = async (email: string) => {
+  // Utiliser l'URL de développement Replit si on est en développement
+  const isDevelopment = import.meta.env.DEV || window.location.hostname.includes('replit.dev');
+  const redirectUrl = isDevelopment 
+    ? window.location.origin + '/auth/callback?type=recovery'
+    : `${window.location.origin}/auth/callback?type=recovery`;
+    
+  console.log('🔗 Password reset redirect URL:', redirectUrl);
+  
   const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${window.location.origin}/auth/callback?type=recovery`
+    redirectTo: redirectUrl
   })
   return { data, error }
 }

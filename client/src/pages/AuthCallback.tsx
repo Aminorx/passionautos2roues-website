@@ -6,15 +6,51 @@ export const AuthCallback: React.FC = () => {
   const [status, setStatus] = useState('processing');
 
   useEffect(() => {
-    const handleOAuthCallback = async () => {
+    const handleAuthCallback = async () => {
       try {
-        console.log('🔄 Traitement callback OAuth...');
+        const urlParams = new URLSearchParams(window.location.hash.replace('#', ''));
+        const accessToken = urlParams.get('access_token');
+        const refreshToken = urlParams.get('refresh_token');
+        const type = urlParams.get('type');
         
-        // Échanger le code OAuth contre une session Supabase
-        const { data, error } = await supabase.auth.exchangeCodeForSession(window.location.href);
+        console.log('🔄 Traitement callback auth - Type:', type);
+        console.log('🔄 Access token présent:', !!accessToken);
         
-        if (error) {
-          console.error('❌ Erreur échange code:', error);
+        // Si on a un access_token dans l'URL (magic link ou OAuth)
+        if (accessToken) {
+          console.log('✨ Magic link détecté, traitement...');
+          
+          // Supabase détecte automatiquement le token depuis l'URL
+          const { data, error } = await supabase.auth.getSession();
+          
+          if (error) {
+            console.error('❌ Erreur récupération session:', error);
+            setStatus('error');
+            setTimeout(() => {
+              window.location.href = '/?auth=error';
+            }, 2000);
+            return;
+          }
+        } else {
+          // Tentative avec exchangeCodeForSession pour OAuth classique
+          console.log('🔄 Tentative échange code OAuth...');
+          const { data, error } = await supabase.auth.exchangeCodeForSession(window.location.href);
+          
+          if (error) {
+            console.error('❌ Erreur échange code:', error);
+            setStatus('error');
+            setTimeout(() => {
+              window.location.href = '/?auth=error';
+            }, 2000);
+            return;
+          }
+        }
+        
+        // Vérifier qu'on a bien une session maintenant
+        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError || !sessionData.session) {
+          console.error('❌ Aucune session trouvée après callback');
           setStatus('error');
           setTimeout(() => {
             window.location.href = '/?auth=error';
@@ -22,8 +58,9 @@ export const AuthCallback: React.FC = () => {
           return;
         }
         
-        if (data.user) {
-          console.log('✅ Session créée pour:', data.user.email);
+        const user = sessionData.session.user;
+        if (user) {
+          console.log('✅ Session créée pour:', user.email);
           
           // Synchroniser l'utilisateur dans nos tables
           try {
@@ -33,8 +70,8 @@ export const AuthCallback: React.FC = () => {
                 'Content-Type': 'application/json',
               },
               body: JSON.stringify({ 
-                userId: data.user.id,
-                userData: data.user.user_metadata || {}
+                userId: user.id,
+                userData: user.user_metadata || {}
               })
             });
             
@@ -70,7 +107,7 @@ export const AuthCallback: React.FC = () => {
       }
     };
 
-    handleOAuthCallback();
+    handleAuthCallback();
   }, []);
 
   return (
