@@ -181,9 +181,7 @@ export class SupabaseStorage implements IStorage {
       .from('annonces')
       .select(`
         *,
-        users(*,
-          professional_accounts(*)
-        )
+        users(*)
       `)
       .eq('id', id)
       .is('deleted_at', null)
@@ -221,18 +219,10 @@ export class SupabaseStorage implements IStorage {
         contactPreferences: annonce.users.contact_preferences ? JSON.parse(annonce.users.contact_preferences) : [],
         createdAt: new Date(annonce.users.created_at),
         lastLoginAt: annonce.users.last_login_at ? new Date(annonce.users.last_login_at) : undefined,
-        // Données professionnelles si disponibles
-        professionalAccount: annonce.users.professional_accounts?.[0] ? {
-          companyName: annonce.users.professional_accounts[0].company_name,
-          phone: annonce.users.professional_accounts[0].phone,
-          email: annonce.users.professional_accounts[0].email,
-          website: annonce.users.professional_accounts[0].website,
-          description: annonce.users.professional_accounts[0].description,
-          isVerified: annonce.users.professional_accounts[0].is_verified,
-          verificationStatus: annonce.users.professional_accounts[0].verification_status,
-          companyLogo: annonce.users.professional_accounts[0].company_logo,
-          bannerImage: annonce.users.professional_accounts[0].banner_image
-        } : undefined
+        // Champs professionnels consolidés
+        professionalPhone: annonce.users.professional_phone,
+        professionalEmail: annonce.users.professional_email,
+        isVerified: annonce.users.is_verified
       } : undefined,
       title: annonce.title,
       description: annonce.description,

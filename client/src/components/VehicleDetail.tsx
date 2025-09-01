@@ -403,8 +403,8 @@ export const VehicleDetail: React.FC<VehicleDetailProps> = ({ vehicle, onBack, o
                 <div>
                   {/* Nom : Entreprise pour les pros, nom personnel pour les particuliers */}
                   <h3 className="font-semibold text-gray-900">
-                    {vehicle.user?.type === 'professional' && vehicle.user?.professionalAccount?.companyName 
-                      ? vehicle.user.professionalAccount.companyName 
+                    {vehicle.user?.type === 'professional' && vehicle.user?.companyName 
+                      ? vehicle.user.companyName 
                       : vehicle.user?.name}
                   </h3>
                   
@@ -412,7 +412,7 @@ export const VehicleDetail: React.FC<VehicleDetailProps> = ({ vehicle, onBack, o
                   {vehicle.user?.type === 'professional' ? (
                     <div className="flex items-center space-x-2 mt-1">
                       <span className="px-2 py-1 bg-orange-100 text-orange-600 text-xs font-semibold rounded">PRO</span>
-                      {vehicle.user.professionalAccount?.isVerified && (
+                      {vehicle.user.isVerified && (
                         <div className="flex items-center space-x-1 text-green-600 text-sm">
                           <CheckCircle className="h-4 w-4" />
                           <span>Vérifié</span>
@@ -439,17 +439,17 @@ export const VehicleDetail: React.FC<VehicleDetailProps> = ({ vehicle, onBack, o
                 </button>
 
                 {showContactInfo && (vehicle.contactPhone || 
-                  (vehicle.user?.type === 'professional' && vehicle.user?.professionalAccount?.phone) || 
+                  (vehicle.user?.type === 'professional' && vehicle.user?.professionalPhone) || 
                   vehicle.user?.phone) && (
                   <div className="p-3 bg-primary-bolt-50 rounded-xl text-center">
                     <a
                       href={`tel:${vehicle.contactPhone || 
-                        (vehicle.user?.type === 'professional' && vehicle.user?.professionalAccount?.phone) || 
+                        (vehicle.user?.type === 'professional' && vehicle.user?.professionalPhone) || 
                         vehicle.user?.phone}`}
                       className="text-lg font-semibold text-primary-bolt-500 hover:text-primary-bolt-600"
                     >
                       {vehicle.contactPhone || 
-                        (vehicle.user?.type === 'professional' && vehicle.user?.professionalAccount?.phone) || 
+                        (vehicle.user?.type === 'professional' && vehicle.user?.professionalPhone) || 
                         vehicle.user?.phone}
                     </a>
                   </div>
@@ -483,7 +483,7 @@ export const VehicleDetail: React.FC<VehicleDetailProps> = ({ vehicle, onBack, o
                 </button>
 
                 {/* Lien vers boutique professionnelle */}
-                {vehicle.user?.type === 'professional' && vehicle.user?.professionalAccount && (
+                {vehicle.user?.type === 'professional' && vehicle.user?.companyName && (
                   <button 
                     onClick={() => {
                       // Naviguer vers la boutique professionnelle

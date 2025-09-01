@@ -29,6 +29,10 @@ export const users = pgTable("users", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
   lastLoginAt: timestamp("last_login_at"),
   stripeCustomerId: text("stripe_customer_id"),
+  // Champs professionnels additionnels
+  professionalPhone: text("professional_phone"), // Téléphone professionnel distinct
+  professionalEmail: text("professional_email"), // Email professionnel distinct  
+  isVerified: boolean("is_verified").default(false), // Statut de vérification pro
 });
 
 export const annonces = pgTable("annonces", {
