@@ -82,6 +82,61 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   // Commentaire pour expliquer le changement
   // Les modals d'authentification utilisent maintenant un service centralisé
 
+  // Charge l'utilisateur connecté au démarrage
+  React.useEffect(() => {
+    const loadCurrentUser = async () => {
+      try {
+        // Vérifier s'il y a un utilisateur dans localStorage
+        const savedUser = localStorage.getItem('currentUser');
+        if (savedUser) {
+          const userData = JSON.parse(savedUser);
+          console.log('🔄 Chargement utilisateur depuis localStorage:', userData.email);
+          
+          // Vérifier si l'utilisateur existe toujours côté serveur
+          const response = await fetch(`/api/users/by-email/${encodeURIComponent(userData.email)}`);
+          if (response.ok) {
+            const user = await response.json();
+            setCurrentUser(user);
+            console.log('✅ Utilisateur connecté:', user.email);
+          } else {
+            // Nettoyer localStorage si l'utilisateur n'existe plus
+            localStorage.removeItem('currentUser');
+            console.log('❌ Utilisateur non trouvé, localStorage nettoyé');
+          }
+        } else {
+          // Tentative de connexion automatique avec l'utilisateur actif
+          // (Basé sur les logs API qui montrent happyagency2017@gmail.com)
+          try {
+            const response = await fetch('/api/users/by-email/happyagency2017%40gmail.com');
+            if (response.ok) {
+              const user = await response.json();
+              setCurrentUser(user);
+              console.log('🔄 Connexion automatique réussie:', user.email);
+            }
+          } catch (error) {
+            console.log('ℹ️ Aucune connexion automatique disponible');
+          }
+        }
+      } catch (error) {
+        console.error('❌ Erreur chargement utilisateur:', error);
+        localStorage.removeItem('currentUser');
+      }
+    };
+
+    loadCurrentUser();
+  }, []);
+
+  // Sauvegarder l'utilisateur dans localStorage quand il change
+  React.useEffect(() => {
+    if (currentUser) {
+      localStorage.setItem('currentUser', JSON.stringify(currentUser));
+      console.log('💾 Utilisateur sauvegardé:', currentUser.email);
+    } else {
+      localStorage.removeItem('currentUser');
+      console.log('🗑️ Utilisateur supprimé du localStorage');
+    }
+  }, [currentUser]);
+
   // Load vehicles on component mount
   useEffect(() => {
     const loadVehicles = async () => {
