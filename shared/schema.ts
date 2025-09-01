@@ -20,7 +20,7 @@ export const users = pgTable("users", {
   bio: text("bio"),
   avatar: text("avatar"),
   // Champs additionnels pour les profils
-  onboardingCompleted: boolean("onboarding_completed").default(false),
+  profileCompleted: boolean("profile_completed").default(false),
   marketingConsent: boolean("marketing_consent").default(false),
   specialties: json("specialties").$type<string[]>(),
   verified: boolean("verified").default(false),
