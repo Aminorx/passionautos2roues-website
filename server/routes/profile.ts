@@ -41,7 +41,7 @@ router.put('/update/:userId', async (req, res) => {
     if (website !== undefined) updateData.website = website;
     if (siret !== undefined) updateData.siret = siret;
     if (bio !== undefined) updateData.bio = bio;
-    if (professionalPhone !== undefined) updateData.professional_phone = professionalPhone;
+    // Note: professionalPhone ignoré - colonne n'existe pas dans la table users
     if (specialties !== undefined) updateData.specialties = specialties;
     if (profileCompleted !== undefined) updateData.profile_completed = profileCompleted;
     
@@ -131,7 +131,7 @@ router.post('/complete', requireAuth, async (req: any, res) => {
     if (website !== undefined) updateData.website = website;
     if (siret !== undefined) updateData.siret = siret;
     if (bio !== undefined) updateData.bio = bio;
-    if (professionalPhone !== undefined) updateData.professional_phone = professionalPhone;
+    // Note: professionalPhone ignoré - colonne n'existe pas dans la table users
     if (specialties !== undefined) updateData.specialties = specialties;
     
     console.log('🔧 Données de mise à jour:', updateData);
