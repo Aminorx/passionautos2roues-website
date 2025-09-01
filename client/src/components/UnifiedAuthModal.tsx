@@ -7,6 +7,7 @@ import { signIn, signUp, resetPassword } from '../lib/supabase';
 interface FormErrors {
   email?: string;
   password?: string;
+  confirmPassword?: string;
   general?: string;
 }
 
@@ -17,6 +18,7 @@ export const UnifiedAuthModal: React.FC = () => {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
+    confirmPassword: '',
   });
   
   const [errors, setErrors] = useState<FormErrors>({});
@@ -36,6 +38,7 @@ export const UnifiedAuthModal: React.FC = () => {
     setFormData({
       email: '',
       password: '',
+      confirmPassword: '',
     });
     setErrors({});
     setSuccessMessage('');
@@ -74,6 +77,15 @@ export const UnifiedAuthModal: React.FC = () => {
       newErrors.password = 'Le mot de passe est requis';
     } else if (!isPasswordReset && formData.password && formData.password.length < 6) {
       newErrors.password = 'Le mot de passe doit contenir au moins 6 caractères';
+    }
+
+    // Validation confirmation mot de passe (uniquement pour inscription)
+    if (isSignUp && !isPasswordReset) {
+      if (!formData.confirmPassword) {
+        newErrors.confirmPassword = 'Veuillez confirmer votre mot de passe';
+      } else if (formData.password !== formData.confirmPassword) {
+        newErrors.confirmPassword = 'Les mots de passe ne correspondent pas';
+      }
     }
 
     setErrors(newErrors);
@@ -141,9 +153,13 @@ export const UnifiedAuthModal: React.FC = () => {
         
         if (data.user) {
           console.log('✅ Inscription réussie:', data.user.email);
-          await handleAuthSuccess();
-          showToast('Compte créé', 'Votre compte a été créé avec succès !');
-          setShowAuthModal(false);
+          setSuccessMessage('Compte créé avec succès ! Un email de confirmation a été envoyé à votre adresse.');
+          showToast('Compte créé', 'Un email de confirmation a été envoyé. Vérifiez votre boîte mail !');
+          // Attendre un peu avant de fermer pour que l'utilisateur voit le message
+          setTimeout(() => {
+            handleAuthSuccess();
+            setShowAuthModal(false);
+          }, 3000);
         }
         
       } else {
@@ -292,6 +308,37 @@ export const UnifiedAuthModal: React.FC = () => {
                 <p className="mt-1 text-sm text-red-600 flex items-center">
                   <AlertCircle className="h-4 w-4 mr-1" />
                   {errors.password}
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* Champ Confirmation mot de passe - seulement pour inscription */}
+          {!isPasswordReset && isSignUp && (
+            <div>
+              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
+                Confirmer le mot de passe
+              </label>
+              <div className="relative">
+                <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                  <Lock size={18} />
+                </span>
+                <input
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type={showPassword ? 'text' : 'password'}
+                  value={formData.confirmPassword}
+                  onChange={handleInputChange}
+                  placeholder="••••••••"
+                  className={`w-full pl-10 pr-3 py-3 rounded-lg border ${
+                    errors.confirmPassword ? 'border-red-500' : 'border-gray-300'
+                  } focus:ring-2 focus:ring-[#0CBFDE] focus:border-[#0CBFDE]`}
+                />
+              </div>
+              {errors.confirmPassword && (
+                <p className="mt-1 text-sm text-red-600 flex items-center">
+                  <AlertCircle className="h-4 w-4 mr-1" />
+                  {errors.confirmPassword}
                 </p>
               )}
             </div>
