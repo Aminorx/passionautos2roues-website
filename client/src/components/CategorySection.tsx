@@ -45,13 +45,21 @@ const CategorySectionComponent: React.FC<CategorySectionProps> = ({
         return 'Date inconnue';
       }
       
+      // Vérifier si la date est celle par défaut de 1970 (problème de migration)
+      const epoch = new Date('1970-01-01T00:00:00.000Z');
+      if (Math.abs(dateObj.getTime() - epoch.getTime()) < 1000) {
+        return 'Récemment ajouté'; // Afficher un texte plus approprié
+      }
+      
       const now = new Date();
       const diffTime = Math.abs(now.getTime() - dateObj.getTime());
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
       
-      if (diffDays === 1) return "aujourd'hui";
-      if (diffDays === 2) return "hier";
-      return `il y a ${diffDays} jours`;
+      if (diffDays === 0) return "aujourd'hui";
+      if (diffDays === 1) return "hier";
+      if (diffDays < 7) return `il y a ${diffDays} jours`;
+      if (diffDays < 30) return `il y a ${Math.ceil(diffDays / 7)} semaines`;
+      return `il y a ${Math.ceil(diffDays / 30)} mois`;
     } catch (error) {
       return 'Date inconnue';
     }
