@@ -154,7 +154,13 @@ export const DraggableModal: React.FC<DraggableModalProps> = ({
           </div>
           
           <button
-            onClick={onClose}
+            onClick={(e) => {
+              e.stopPropagation(); // Empêcher l'événement de remonter au modal
+              onClose();
+            }}
+            onMouseDown={(e) => {
+              e.stopPropagation(); // Empêcher le drag de s'activer
+            }}
             className="p-2 hover:bg-white hover:bg-opacity-20 rounded-lg transition-colors"
             type="button"
             title="Fermer (les données seront perdues)"
