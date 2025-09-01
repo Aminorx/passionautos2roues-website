@@ -725,13 +725,19 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'overview', o
     </div>
   );
 
-  const renderListings = () => (
-    <div className="space-y-8">
-      <div className="flex flex-col md:flex-row md:justify-between md:items-center space-y-4 md:space-y-0">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Mes annonces</h1>
-          <p className="text-gray-600 mt-2 text-lg">{userVehicles.length} annonce{userVehicles.length !== 1 ? 's' : ''} publiée{userVehicles.length !== 1 ? 's' : ''}</p>
-        </div>
+  const renderListings = () => {
+    // Filtrer uniquement les annonces actives (non supprimées)
+    const activeVehicles = userVehicles.filter(vehicle => !(vehicle as any).deletedAt);
+    
+    return (
+      <div className="space-y-12">
+        {/* Section Mes annonces actives */}
+        <div className="space-y-8">
+          <div className="flex flex-col md:flex-row md:justify-between md:items-center space-y-4 md:space-y-0">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Mes annonces</h1>
+              <p className="text-gray-600 mt-2 text-lg">{activeVehicles.length} annonce{activeVehicles.length !== 1 ? 's' : ''} active{activeVehicles.length !== 1 ? 's' : ''}</p>
+            </div>
         <div className="flex items-center space-x-4">
           <button 
             onClick={onCreateListing}
@@ -743,9 +749,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'overview', o
         </div>
       </div>
 
-      {userVehicles.length > 0 ? (
-        <div className="grid gap-8">
-          {userVehicles.map((vehicle) => (
+        {activeVehicles.length > 0 ? (
+          <div className="grid gap-8">
+            {activeVehicles.map((vehicle) => (
             <div key={vehicle.id} className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300">
               <div className="md:flex">
                 <div className="md:w-80 h-64 bg-gradient-to-br from-gray-200 to-gray-300 relative overflow-hidden">
@@ -854,26 +860,88 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'overview', o
                 </div>
               </div>
             </div>
-          ))}
-        </div>
-      ) : (
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-16 text-center">
-          <div className="w-24 h-24 bg-gradient-to-r from-primary-bolt-100 to-primary-bolt-200 rounded-full flex items-center justify-center mx-auto mb-8">
-            <Car className="h-12 w-12 text-primary-bolt-500" />
+            ))}
           </div>
-          <h3 className="text-2xl font-bold text-gray-900 mb-4">Aucune annonce publiée</h3>
-          <p className="text-gray-600 mb-8 text-lg">Commencez dès maintenant à vendre vos véhicules ou pièces détachées.</p>
-          <button 
-            onClick={onCreateListing}
-            className="bg-gradient-to-r from-primary-bolt-500 to-primary-bolt-600 hover:from-primary-bolt-600 hover:to-primary-bolt-700 text-white px-10 py-4 rounded-xl font-semibold flex items-center space-x-3 mx-auto shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-1"
-          >
-            <Plus className="h-6 w-6" />
-            <span>Publier une annonce</span>
-          </button>
+        ) : (
+          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-16 text-center">
+            <div className="w-24 h-24 bg-gradient-to-r from-primary-bolt-100 to-primary-bolt-200 rounded-full flex items-center justify-center mx-auto mb-8">
+              <Car className="h-12 w-12 text-primary-bolt-500" />
+            </div>
+            <h3 className="text-2xl font-bold text-gray-900 mb-4">Aucune annonce active</h3>
+            <p className="text-gray-600 mb-8 text-lg">Commencez dès maintenant à vendre vos véhicules ou pièces détachées.</p>
+            <button 
+              onClick={onCreateListing}
+              className="bg-gradient-to-r from-primary-bolt-500 to-primary-bolt-600 hover:from-primary-bolt-600 hover:to-primary-bolt-700 text-white px-10 py-4 rounded-xl font-semibold flex items-center space-x-3 mx-auto shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-1"
+            >
+              <Plus className="h-6 w-6" />
+              <span>Publier une annonce</span>
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Section Annonces supprimées */}
+      {deletedVehicles.length > 0 && (
+        <div className="space-y-8">
+          <div className="border-t border-gray-200 pt-8">
+            <div className="flex flex-col md:flex-row md:justify-between md:items-center space-y-4 md:space-y-0">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900 flex items-center space-x-3">
+                  <Trash2 className="h-7 w-7 text-gray-500" />
+                  <span>Annonces supprimées</span>
+                </h2>
+                <p className="text-gray-600 mt-2 text-lg">
+                  {deletedVehicles.length} annonce{deletedVehicles.length !== 1 ? 's' : ''} supprimée{deletedVehicles.length !== 1 ? 's' : ''}
+                </p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {deletedVehicles.map((vehicle) => (
+              <div key={vehicle.id} className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm opacity-75">
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                      {vehicle.title}
+                    </h3>
+                    <p className="text-gray-600 text-sm">
+                      {vehicle.brand} {vehicle.model} • {vehicle.year}
+                    </p>
+                  </div>
+                  <span className="bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs font-medium">
+                    Supprimée
+                  </span>
+                </div>
+                
+                <div className="space-y-2 mb-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600">Prix :</span>
+                    <span className="font-semibold text-gray-900">
+                      {vehicle.price.toLocaleString()} €
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600">Supprimée le :</span>
+                    <span className="text-sm text-gray-900">
+                      {(vehicle as any).deletedAt ? new Date((vehicle as any).deletedAt).toLocaleDateString('fr-FR') : 'N/A'}
+                    </span>
+                  </div>
+                  {(vehicle as any).deletionReason && (
+                    <div className="mt-3 p-3 bg-gray-50 rounded-lg">
+                      <p className="text-xs font-medium text-gray-700 mb-1">Raison de suppression :</p>
+                      <p className="text-sm text-gray-600">{(vehicle as any).deletionReason}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>
-  );
+    );
+  };
 
   const renderMessages = () => {
     if (loadingMessages) {
