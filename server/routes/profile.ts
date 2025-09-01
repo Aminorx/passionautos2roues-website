@@ -148,7 +148,60 @@ router.post('/complete', requireAuth, async (req: any, res) => {
       return res.status(500).json({ error: 'Erreur finalisation profil' });
     }
     
-    console.log('✅ Profil finalisé pour:', data.email);
+    console.log('✅ Profil utilisateur finalisé pour:', data.email);
+    
+    // Si c'est un compte professionnel, créer/mettre à jour professional_accounts
+    if (type === 'professional') {
+      console.log('🏢 Création/mise à jour compte professionnel...');
+      
+      // Vérifier si le compte professionnel existe déjà
+      const { data: existingProAccount } = await supabaseServer
+        .from('professional_accounts')
+        .select('id')
+        .eq('user_id', userId)
+        .single();
+      
+      const professionalData: any = {
+        user_id: userId,
+        company_name: companyName || '',
+        siret: siret || '',
+        company_address: address || '',
+        phone: professionalPhone || phone || '',
+        email: data.email,
+        website: website || '',
+        description: bio || '',
+        specialties: specialties || [],
+        verification_status: 'pending',
+        updated_at: new Date().toISOString()
+      };
+      
+      if (existingProAccount) {
+        // Mettre à jour
+        const { error: proError } = await supabaseServer
+          .from('professional_accounts')
+          .update(professionalData)
+          .eq('user_id', userId);
+          
+        if (proError) {
+          console.error('❌ Erreur mise à jour compte professionnel:', proError);
+        } else {
+          console.log('✅ Compte professionnel mis à jour');
+        }
+      } else {
+        // Créer
+        professionalData.created_at = new Date().toISOString();
+        const { error: proError } = await supabaseServer
+          .from('professional_accounts')
+          .insert(professionalData);
+          
+        if (proError) {
+          console.error('❌ Erreur création compte professionnel:', proError);
+        } else {
+          console.log('✅ Compte professionnel créé');
+        }
+      }
+    }
+    
     res.json({ success: true, user: data });
     
   } catch (error) {
