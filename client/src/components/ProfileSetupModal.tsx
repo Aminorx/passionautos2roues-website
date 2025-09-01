@@ -17,20 +17,17 @@ export const ProfileSetupModal: React.FC<ProfileSetupModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div 
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+      onClick={(e) => e.stopPropagation()} // DÉSACTIVER fermeture par clic extérieur
+    >
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-md relative animate-in fade-in-0 zoom-in-95 duration-300">
         
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b">
+        {/* Header - SANS bouton fermer (obligation de compléter) */}
+        <div className="flex items-center justify-center p-6 border-b">
           <h2 className="text-2xl font-bold text-gray-900">
             Finaliser votre profil
           </h2>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
-          >
-            <X size={24} />
-          </button>
         </div>
 
         {/* Content */}
@@ -78,8 +75,8 @@ export const ProfileSetupModal: React.FC<ProfileSetupModalProps> = ({
               </button>
             </div>
             
-            <div className="text-center text-xs text-gray-500">
-              Vous pourrez modifier ce choix plus tard dans vos paramètres
+            <div className="text-center text-xs text-red-600 font-medium">
+              ⚠️ Vous devez compléter votre profil pour accéder au site
             </div>
           </div>
         </div>
