@@ -182,6 +182,21 @@ export const Hero: React.FC<HeroProps> = ({ setCurrentView }) => {
       .slice(0, 4); // Reduced from 8 to 4 for faster loading
   }, [vehicles]);
 
+  // Nouvelles annonces - TOUTES catégories et conditions pour ne rien manquer
+  const latestAllAnnouncements = useMemo(() => {
+    return vehicles
+      .sort((a, b) => {
+        // Premium d'abord
+        if (a.isPremium && !b.isPremium) return -1;
+        if (!a.isPremium && b.isPremium) return 1;
+        // Puis par date de création (plus récent en premier)
+        const dateA = new Date(a.createdAt || a.created_at || 0);
+        const dateB = new Date(b.createdAt || b.created_at || 0);
+        return dateB.getTime() - dateA.getTime();
+      })
+      .slice(0, 8); // Afficher les 8 plus récentes toutes catégories confondues
+  }, [vehicles]);
+
   // Category sections configuration - memoized
   const categorySections = useMemo(() => [
     {
@@ -536,8 +551,16 @@ export const Hero: React.FC<HeroProps> = ({ setCurrentView }) => {
         </div>
       </section>
 
-      {/* Category Sections */}
+      {/* Latest Announcements Section - NOUVELLE SECTION POUR TOUT VOIR */}
       <div className="bg-gray-50">
+        <CategorySection
+          title="📆 Dernières annonces publiées"
+          vehicles={latestAllAnnouncements}
+          onViewAll={() => setCurrentView('listings')}
+          onVehicleClick={handleVehicleClick}
+        />
+        
+        {/* Category Sections */}
         {categorySections.map((section) => (
           <CategorySection
             key={section.id}
