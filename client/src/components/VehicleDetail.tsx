@@ -401,14 +401,30 @@ export const VehicleDetail: React.FC<VehicleDetailProps> = ({ vehicle, onBack, o
                   </span>
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900">{vehicle.user?.name}</h3>
-                  {vehicle.user?.type === 'professional' && vehicle.user?.companyName && (
-                    <p className="text-sm text-gray-600">{vehicle.user.companyName}</p>
+                  {/* Nom : Entreprise pour les pros, nom personnel pour les particuliers */}
+                  <h3 className="font-semibold text-gray-900">
+                    {vehicle.user?.type === 'professional' && vehicle.user?.professionalAccount?.companyName 
+                      ? vehicle.user.professionalAccount.companyName 
+                      : vehicle.user?.name}
+                  </h3>
+                  
+                  {/* Badge PRO + statut vérifié pour les professionnels */}
+                  {vehicle.user?.type === 'professional' ? (
+                    <div className="flex items-center space-x-2 mt-1">
+                      <span className="px-2 py-1 bg-orange-100 text-orange-600 text-xs font-semibold rounded">PRO</span>
+                      {vehicle.user.professionalAccount?.isVerified && (
+                        <div className="flex items-center space-x-1 text-green-600 text-sm">
+                          <CheckCircle className="h-4 w-4" />
+                          <span>Vérifié</span>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="flex items-center space-x-1 text-green-600 text-sm">
+                      <CheckCircle className="h-4 w-4" />
+                      <span>Compte vérifié</span>
+                    </div>
                   )}
-                  <div className="flex items-center space-x-1 text-green-600 text-sm">
-                    <CheckCircle className="h-4 w-4" />
-                    <span>Compte vérifié</span>
-                  </div>
                 </div>
               </div>
 
@@ -422,13 +438,19 @@ export const VehicleDetail: React.FC<VehicleDetailProps> = ({ vehicle, onBack, o
                   <span>Voir le téléphone</span>
                 </button>
 
-                {showContactInfo && (vehicle.contactPhone || vehicle.user?.phone) && (
+                {showContactInfo && (vehicle.contactPhone || 
+                  (vehicle.user?.type === 'professional' && vehicle.user?.professionalAccount?.phone) || 
+                  vehicle.user?.phone) && (
                   <div className="p-3 bg-primary-bolt-50 rounded-xl text-center">
                     <a
-                      href={`tel:${vehicle.contactPhone || vehicle.user?.phone}`}
+                      href={`tel:${vehicle.contactPhone || 
+                        (vehicle.user?.type === 'professional' && vehicle.user?.professionalAccount?.phone) || 
+                        vehicle.user?.phone}`}
                       className="text-lg font-semibold text-primary-bolt-500 hover:text-primary-bolt-600"
                     >
-                      {vehicle.contactPhone || vehicle.user?.phone}
+                      {vehicle.contactPhone || 
+                        (vehicle.user?.type === 'professional' && vehicle.user?.professionalAccount?.phone) || 
+                        vehicle.user?.phone}
                     </a>
                   </div>
                 )}
@@ -460,6 +482,24 @@ export const VehicleDetail: React.FC<VehicleDetailProps> = ({ vehicle, onBack, o
                   <span>Envoyer un message</span>
                 </button>
 
+                {/* Lien vers boutique professionnelle */}
+                {vehicle.user?.type === 'professional' && vehicle.user?.professionalAccount && (
+                  <button 
+                    onClick={() => {
+                      // Naviguer vers la boutique professionnelle
+                      const userId = vehicle.user?.id;
+                      if (userId) {
+                        window.open(`/pro/${userId}`, '_blank');
+                      }
+                    }}
+                    className="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white py-3 px-4 rounded-xl hover:from-orange-600 hover:to-orange-700 transition-all duration-200 font-semibold flex items-center justify-center space-x-2 shadow-lg"
+                  >
+                    <svg className="h-5 w-5 fill-current" viewBox="0 0 24 24">
+                      <path d="M19 7h-3V6a4 4 0 0 0-8 0v1H5a1 1 0 0 0-1 1v11a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V8a1 1 0 0 0-1-1zM10 6a2 2 0 0 1 4 0v1h-4V6zm8 13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V9h2v1a1 1 0 0 0 2 0V9h4v1a1 1 0 0 0 2 0V9h2v10z"/>
+                    </svg>
+                    <span>Voir la boutique</span>
+                  </button>
+                )}
 
               </div>
             </div>
