@@ -1,14 +1,18 @@
 import React from 'react';
-import { X } from 'lucide-react';
+import { X, User, Building2 } from 'lucide-react';
 
 interface ProfileSetupModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onPersonalAccount: () => void;
+  onProfessionalAccount: () => void;
 }
 
 export const ProfileSetupModal: React.FC<ProfileSetupModalProps> = ({
   isOpen,
-  onClose
+  onClose,
+  onPersonalAccount,
+  onProfessionalAccount
 }) => {
   if (!isOpen) return null;
 
@@ -19,7 +23,7 @@ export const ProfileSetupModal: React.FC<ProfileSetupModalProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b">
           <h2 className="text-2xl font-bold text-gray-900">
-            🎯 Test Profile Setup
+            Finaliser votre profil
           </h2>
           <button
             onClick={onClose}
@@ -31,29 +35,52 @@ export const ProfileSetupModal: React.FC<ProfileSetupModalProps> = ({
 
         {/* Content */}
         <div className="p-6">
-          <div className="text-center">
-            <div className="mb-4">
-              <p className="text-gray-700 mb-2">
-                ✅ <strong>Étape 1 réussie !</strong>
-              </p>
-              <p className="text-gray-600 text-sm">
-                Ce popup s'affiche car votre <code>profile_completed = false</code>
-              </p>
+          <div className="space-y-6">
+            <p className="text-center text-gray-600">
+              Pour commencer à utiliser PassionAuto2Roues, veuillez choisir le type de compte qui vous correspond :
+            </p>
+            
+            <div className="space-y-4">
+              {/* Compte Personnel */}
+              <button
+                onClick={onPersonalAccount}
+                className="w-full p-6 border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all duration-200 group"
+              >
+                <div className="flex items-center space-x-4">
+                  <div className="p-3 bg-blue-100 rounded-full group-hover:bg-blue-200 transition-colors">
+                    <User className="h-6 w-6 text-blue-600" />
+                  </div>
+                  <div className="text-left">
+                    <h3 className="font-semibold text-lg">Compte Personnel</h3>
+                    <p className="text-sm text-gray-600">
+                      Pour vendre ou acheter occasionnellement des véhicules
+                    </p>
+                  </div>
+                </div>
+              </button>
+              
+              {/* Compte Professionnel */}
+              <button
+                onClick={onProfessionalAccount}
+                className="w-full p-6 border-2 border-gray-200 rounded-lg hover:border-green-500 hover:bg-green-50 transition-all duration-200 group"
+              >
+                <div className="flex items-center space-x-4">
+                  <div className="p-3 bg-green-100 rounded-full group-hover:bg-green-200 transition-colors">
+                    <Building2 className="h-6 w-6 text-green-600" />
+                  </div>
+                  <div className="text-left">
+                    <h3 className="font-semibold text-lg">Compte Professionnel</h3>
+                    <p className="text-sm text-gray-600">
+                      Pour les concessionnaires, garages et professionnels de l'auto
+                    </p>
+                  </div>
+                </div>
+              </button>
             </div>
             
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
-              <p className="text-green-700 text-sm">
-                🔧 <strong>Test de déclenchement fonctionnel</strong><br/>
-                Le popup apparaît bien quand l'utilisateur a un profil incomplet.
-              </p>
+            <div className="text-center text-xs text-gray-500">
+              Vous pourrez modifier ce choix plus tard dans vos paramètres
             </div>
-
-            <button
-              onClick={onClose}
-              className="w-full bg-[#0CBFDE] hover:bg-[#0CBFDE]/90 text-white font-medium py-3 px-4 rounded-lg transition-colors"
-            >
-              Fermer le test
-            </button>
           </div>
         </div>
       </div>

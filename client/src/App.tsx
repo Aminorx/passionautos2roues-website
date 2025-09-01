@@ -304,10 +304,20 @@ function AppContent() {
       )}
       <UnifiedAuthModal />
       
-      {/* Modal de configuration du profil - ÉTAPE 1 */}
+      {/* Modal de configuration du profil - ÉTAPE 2 */}
       <ProfileSetupModal 
         isOpen={showProfileSetup}
         onClose={() => setShowProfileSetup(false)}
+        onPersonalAccount={() => {
+          console.log('🔧 Choix: Compte Personnel');
+          setShowProfileSetup(false);
+          // TODO: Rediriger vers formulaire personnel
+        }}
+        onProfessionalAccount={() => {
+          console.log('🔧 Choix: Compte Professionnel');
+          setShowProfileSetup(false);
+          // TODO: Rediriger vers formulaire professionnel
+        }}
       />
       
       {/* Modal de création d'annonce déplaçable */}
