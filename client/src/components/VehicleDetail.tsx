@@ -27,6 +27,8 @@ export const VehicleDetail: React.FC<VehicleDetailProps> = ({ vehicle, onBack, o
   const [showMessageForm, setShowMessageForm] = useState(false);
   const [messageText, setMessageText] = useState('');
   const [showContactModal, setShowContactModal] = useState(false);
+  const [professionalAccount, setProfessionalAccount] = useState<any>(null);
+  const [loadingProfessional, setLoadingProfessional] = useState(false);
 
   // Function to handle navigation from footer links
   const handleFooterNavigation = (view: string) => {
@@ -40,10 +42,33 @@ export const VehicleDetail: React.FC<VehicleDetailProps> = ({ vehicle, onBack, o
     }
   };
 
+  // Function to fetch professional account info
+  const fetchProfessionalAccount = async (userId: string) => {
+    setLoadingProfessional(true);
+    try {
+      const response = await fetch(`/api/professional-account/${userId}`);
+      if (response.ok) {
+        const data = await response.json();
+        setProfessionalAccount(data);
+      }
+    } catch (error) {
+      console.error('Error fetching professional account:', error);
+    } finally {
+      setLoadingProfessional(false);
+    }
+  };
+
   // Scroll to top when vehicle changes
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [vehicle.id]);
+
+  // Fetch professional account if user is professional
+  useEffect(() => {
+    if (vehicle.user?.type === 'professional' && vehicle.user?.id) {
+      fetchProfessionalAccount(vehicle.user.id);
+    }
+  }, [vehicle.user?.id, vehicle.user?.type]);
 
   // Function to find similar vehicles
   const getSimilarVehicles = (currentVehicle: Vehicle, limit: number = 4): Vehicle[] => {
@@ -401,18 +426,29 @@ export const VehicleDetail: React.FC<VehicleDetailProps> = ({ vehicle, onBack, o
                   </span>
                 </div>
                 <div>
-                  {/* Nom : Entreprise pour les pros (via professional_account), nom personnel pour les particuliers */}
+                  {/* Nom personnel toujours affiché */}
                   <h3 className="font-semibold text-gray-900">
-                    {vehicle.user?.type === 'professional' && vehicle.user?.professionalAccount?.companyName 
-                      ? vehicle.user.professionalAccount.companyName 
-                      : vehicle.user?.name}
+                    {vehicle.user?.name}
                   </h3>
+                  
+                  {/* Nom commercial pour les pros - cliquable */}
+                  {vehicle.user?.type === 'professional' && professionalAccount?.company_name && (
+                    <button 
+                      onClick={() => onNavigate && onNavigate(`/pro/${vehicle.user.id}`)}
+                      className="text-[#0CBFDE] hover:text-[#0CBFDE]/80 font-medium text-sm flex items-center space-x-1 mt-1 transition-colors"
+                    >
+                      <span>{professionalAccount.company_name}</span>
+                      <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                      </svg>
+                    </button>
+                  )}
                   
                   {/* Badge PRO + statut vérifié pour les professionnels */}
                   {vehicle.user?.type === 'professional' ? (
-                    <div className="flex items-center space-x-2 mt-1">
+                    <div className="flex items-center space-x-2 mt-2">
                       <span className="px-2 py-1 bg-orange-100 text-orange-600 text-xs font-semibold rounded">PRO</span>
-                      {vehicle.user.professionalAccount?.isVerified && (
+                      {professionalAccount?.is_verified && (
                         <div className="flex items-center space-x-1 text-green-600 text-sm">
                           <CheckCircle className="h-4 w-4" />
                           <span>Vérifié</span>
@@ -420,7 +456,7 @@ export const VehicleDetail: React.FC<VehicleDetailProps> = ({ vehicle, onBack, o
                       )}
                     </div>
                   ) : (
-                    <div className="flex items-center space-x-1 text-green-600 text-sm">
+                    <div className="flex items-center space-x-1 text-green-600 text-sm mt-2">
                       <CheckCircle className="h-4 w-4" />
                       <span>Compte vérifié</span>
                     </div>
@@ -439,17 +475,17 @@ export const VehicleDetail: React.FC<VehicleDetailProps> = ({ vehicle, onBack, o
                 </button>
 
                 {showContactInfo && (vehicle.contactPhone || 
-                  (vehicle.user?.type === 'professional' && vehicle.user?.professionalAccount?.phone) || 
+                  (vehicle.user?.type === 'professional' && professionalAccount?.phone) || 
                   vehicle.user?.phone) && (
                   <div className="p-3 bg-primary-bolt-50 rounded-xl text-center">
                     <a
                       href={`tel:${vehicle.contactPhone || 
-                        (vehicle.user?.type === 'professional' && vehicle.user?.professionalAccount?.phone) || 
+                        (vehicle.user?.type === 'professional' && professionalAccount?.phone) || 
                         vehicle.user?.phone}`}
                       className="text-lg font-semibold text-primary-bolt-500 hover:text-primary-bolt-600"
                     >
                       {vehicle.contactPhone || 
-                        (vehicle.user?.type === 'professional' && vehicle.user?.professionalAccount?.phone) || 
+                        (vehicle.user?.type === 'professional' && professionalAccount?.phone) || 
                         vehicle.user?.phone}
                     </a>
                   </div>

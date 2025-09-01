@@ -55,6 +55,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Route pour récupérer les infos professionnelles par userId
+  app.get('/api/professional-account/:userId', async (req, res) => {
+    try {
+      const { data, error } = await supabaseServer
+        .from('professional_accounts')
+        .select('*')
+        .eq('user_id', req.params.userId)
+        .single();
+
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error fetching professional account:', error);
+        return res.status(500).json({ error: 'Failed to fetch professional account' });
+      }
+
+      res.json(data || null);
+    } catch (error) {
+      console.error('Error fetching professional account:', error);
+      res.status(500).json({ error: 'Failed to fetch professional account' });
+    }
+  });
+
   app.get("/api/users/by-email/:email", async (req, res) => {
     try {
       const email = decodeURIComponent(req.params.email);
