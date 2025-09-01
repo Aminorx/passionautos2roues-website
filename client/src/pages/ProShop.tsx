@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useRoute } from 'wouter';
+import { useRoute, Link } from 'wouter';
 import { useApp } from '../contexts/AppContext';
 import { 
   Building2, Globe, Phone, Mail, MapPin, Star, 
