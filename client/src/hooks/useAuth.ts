@@ -1,13 +1,14 @@
 import { useState, useEffect, useRef } from 'react'
 import { User, Session } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
-import { clearUserCache } from '@/lib/queryClient'
+// import { clearUserCache } from '@/lib/queryClient'
 // import { User as DbUser } from '@shared/schema'
 interface DbUser {
   id: string;
   email: string;
   name: string;
   type: string;
+  profile_completed?: boolean;
   created_at?: string;
 }
 

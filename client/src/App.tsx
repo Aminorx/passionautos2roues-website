@@ -9,6 +9,7 @@ import { Hero } from './components/Hero';
 import { VehicleListings } from './components/VehicleListings';
 import { VehicleDetail } from './components/VehicleDetail';
 import { UnifiedAuthModal } from './components/UnifiedAuthModal';
+import { ProfileSetupModal } from './components/ProfileSetupModal';
 import { Dashboard } from './components/Dashboard';
 import { CreateListingForm } from './components/CreateListingForm';
 import { DraggableModal } from './components/DraggableModal';
@@ -32,6 +33,7 @@ import ProCustomization from './pages/ProCustomization';
 import SubscriptionPurchase from './pages/SubscriptionPurchase';
 import { AuthCallback } from './pages/AuthCallback';
 import { AccountConversion } from './pages/AccountConversion';
+import { useAuth } from './hooks/useAuth';
 // import CreateProAccount from './pages/CreateProAccount';
 
 function AppContent() {
@@ -39,7 +41,9 @@ function AppContent() {
   const [showCreateListingModal, setShowCreateListingModal] = useState(false);
   const [dashboardTab, setDashboardTab] = useState('overview');
   const [searchQuery, setSearchQuery] = useState('');
+  const [showProfileSetup, setShowProfileSetup] = useState(false);
   const { selectedVehicle, setSelectedVehicle, setSearchFilters } = useApp();
+  const { isAuthenticated, dbUser, isLoading } = useAuth();
   
   // Utiliser useLocation pour obtenir et modifier l'URL actuelle
   const [location, setLocation] = useLocation();
@@ -60,6 +64,19 @@ function AppContent() {
     setSearchQuery(query);
     setLocation('/search');
   }, [setLocation]);
+
+  // Effet pour détecter si le profil est incomplet - ÉTAPE 1
+  React.useEffect(() => {
+    // Attendre que l'authentification soit chargée
+    if (isLoading) return;
+    
+    // Si l'utilisateur est connecté mais n'a pas complété son onboarding
+    if (isAuthenticated && dbUser && dbUser.profile_completed === false) {
+      console.log('🔧 ÉTAPE 1 - Profil incomplet détecté pour:', dbUser.email);
+      console.log('🔧 profile_completed:', dbUser.profile_completed);
+      setShowProfileSetup(true);
+    }
+  }, [isAuthenticated, dbUser, isLoading]);
 
   // Auto-sélection d'un véhicule depuis les paramètres URL (pour l'admin)
   React.useEffect(() => {
@@ -286,6 +303,12 @@ function AppContent() {
         </>
       )}
       <UnifiedAuthModal />
+      
+      {/* Modal de configuration du profil - ÉTAPE 1 */}
+      <ProfileSetupModal 
+        isOpen={showProfileSetup}
+        onClose={() => setShowProfileSetup(false)}
+      />
       
       {/* Modal de création d'annonce déplaçable */}
       <DraggableModal
