@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Mail, Phone, AlertCircle, CheckCircle, Lock, Eye, EyeOff } from 'lucide-react';
+import { X, Mail, AlertCircle, CheckCircle, Lock, Eye, EyeOff } from 'lucide-react';
 import { useApp } from '../contexts/AppContext';
 import { useAuthService } from '../services/AuthService';
 import { signInWithMagicLink, signIn, resetPassword } from '../lib/supabase';
@@ -69,11 +69,6 @@ export const UnifiedAuthModal: React.FC = () => {
       newErrors.email = 'L\'email est requis';
     } else if (!emailRegex.test(formData.email)) {
       newErrors.email = 'Format d\'email invalide';
-    }
-
-    // Validation téléphone (optionnel mais si fourni, doit être valide)
-    if (formData.phone && formData.phone.length < 10) {
-      newErrors.phone = 'Numéro de téléphone invalide';
     }
 
     // Validation mot de passe pour mode connexion existante
@@ -253,36 +248,6 @@ export const UnifiedAuthModal: React.FC = () => {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Téléphone - seulement pour nouveaux comptes */}
-            {loginMode === 'new' && (
-              <div>
-                <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
-                  Téléphone (optionnel)
-                </label>
-                <div className="relative">
-                  <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                    <Phone size={18} />
-                  </span>
-                  <input
-                    id="phone"
-                    name="phone"
-                    type="tel"
-                    value={formData.phone}
-                    onChange={handleInputChange}
-                    placeholder="+33 6 12 34 56 78"
-                    className={`w-full pl-10 pr-3 py-3 rounded-lg border ${
-                      errors.phone ? 'border-red-500' : 'border-gray-300'
-                    } focus:ring-2 focus:ring-[#0CBFDE] focus:border-[#0CBFDE]`}
-                  />
-                </div>
-                {errors.phone && (
-                  <p className="mt-1 text-sm text-red-600 flex items-center">
-                    <AlertCircle className="h-4 w-4 mr-1" />
-                    {errors.phone}
-                  </p>
-                )}
-              </div>
-            )}
             
             {/* Email */}
             <div>
