@@ -265,15 +265,26 @@ export const AdminDashboardClean: React.FC<AdminDashboardProps> = ({ onBack }) =
 
   const handleAnnonceDeactivate = async (annonceId: string) => {
     try {
+      const adminEmail = localStorage.getItem('admin_email') || 'admin@passionauto2roues.com';
       const response = await fetch(`/api/admin/annonces/${annonceId}/deactivate`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-user-email': adminEmail,
+          'authorization': `admin:${adminEmail}`
+        }
       });
       if (response.ok) {
+        console.log(`✅ Annonce ${annonceId} désactivée avec succès`);
         loadDashboardData();
+      } else {
+        const errorData = await response.json();
+        console.error('❌ Erreur désactivation:', errorData);
+        alert(`❌ Erreur: ${errorData.error || 'Impossible de désactiver l\'annonce'}`);
       }
     } catch (error) {
-      console.error('Erreur désactivation:', error);
+      console.error('❌ Erreur désactivation:', error);
+      alert('❌ Erreur réseau lors de la désactivation');
     }
   };
 

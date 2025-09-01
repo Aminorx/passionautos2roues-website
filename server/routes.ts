@@ -921,9 +921,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Route pour désactiver une annonce (admin)
+  // Route pour désactiver une annonce (admin) - AVEC authentification
   app.patch('/api/admin/annonces/:id/deactivate', async (req, res) => {
     const { id } = req.params;
+    
+    // Vérification authentification admin simple
+    const adminEmail = req.headers['x-user-email'] || req.headers['authorization'];
+    if (!adminEmail || (!adminEmail.includes('admin@passionauto2roues.com') && !adminEmail.includes('admin'))) {
+      return res.status(401).json({ error: 'Non authentifié' });
+    }
     
     try {
       console.log(`🔴 Désactivation annonce ${id} par admin...`);
@@ -931,7 +937,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { error } = await supabaseServer
         .from('annonces')
         .update({ 
-          status: 'inactive',
+          is_active: false,  // Utiliser is_active comme demandé
           updated_at: new Date().toISOString()
         })
         .eq('id', id);
