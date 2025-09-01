@@ -149,7 +149,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'overview', o
   // Récupérer les véhicules supprimés de l'utilisateur
   useEffect(() => {
     const fetchDeletedVehicles = async () => {
-      if (!dbUser?.id || activeTab !== 'deleted') return;
+      if (!dbUser?.id || activeTab !== 'listings') return;
       
       try {
         const response = await fetch(`/api/vehicles/user/${dbUser.id}/deleted`, {
