@@ -81,6 +81,14 @@ function AppContent() {
     }
   }, [location, selectedVehicle, setSelectedVehicle]);
 
+  // Gestion de l'ouverture du modal pour /create-listing
+  React.useEffect(() => {
+    if (location === '/create-listing') {
+      setShowCreateListingModal(true);
+      setLocation('/'); // Rediriger vers la page d'accueil pour éviter la réouverture
+    }
+  }, [location, setLocation]);
+
   // Scroll to top when location changes
   React.useEffect(() => {
     if (!selectedVehicle) {
@@ -180,10 +188,7 @@ function AppContent() {
               />
             </Route>
             <Route path="/create-listing">
-              {() => {
-                setShowCreateListingModal(true);
-                return <Hero setCurrentView={setCurrentView} />;
-              }}
+              <Hero setCurrentView={setCurrentView} />
             </Route>
             <Route path="/conseils">
               <Conseils />
