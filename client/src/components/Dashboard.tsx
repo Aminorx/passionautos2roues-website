@@ -12,6 +12,19 @@ import { ProfessionalVerificationBanner } from './ProfessionalVerificationBanner
 import { ConversionBanner } from './ConversionBanner';
 import { useQuery } from '@tanstack/react-query';
 
+// Helper function to translate deletion reasons from English to French
+const translateDeletionReason = (reason: string): string => {
+  const translations: Record<string, string> = {
+    'sold_on_site': 'Vendue via PassionAuto2Roues',
+    'sold_elsewhere': 'Vendue ailleurs',
+    'no_longer_selling': 'Je ne souhaite plus vendre',
+    'other': 'Autre raison',
+    // Fallback pour les raisons non reconnues
+  };
+  
+  return translations[reason] || reason;
+};
+
 interface DashboardTab {
   id: string;
   label: string;
@@ -22,7 +35,6 @@ interface DashboardTab {
 const dashboardTabs: DashboardTab[] = [
   { id: 'overview', label: 'Vue d\'ensemble', icon: <BarChart3 className="h-5 w-5" /> },
   { id: 'listings', label: 'Mes annonces', icon: <Car className="h-5 w-5" /> },
-  { id: 'deleted', label: 'Annonces supprimées', icon: <Trash2 className="h-5 w-5" /> },
   { id: 'favorites', label: 'Mes favoris', icon: <Heart className="h-5 w-5" /> },
   { id: 'messages', label: 'Messages', icon: <MessageCircle className="h-5 w-5" /> },
   { id: 'profile', label: 'Mon profil', icon: <User className="h-5 w-5" /> },
@@ -930,7 +942,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'overview', o
                   {(vehicle as any).deletionReason && (
                     <div className="mt-3 p-3 bg-gray-50 rounded-lg">
                       <p className="text-xs font-medium text-gray-700 mb-1">Raison de suppression :</p>
-                      <p className="text-sm text-gray-600">{(vehicle as any).deletionReason}</p>
+                      <p className="text-sm text-gray-600">{translateDeletionReason((vehicle as any).deletionReason)}</p>
                     </div>
                   )}
                 </div>
@@ -2260,7 +2272,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'overview', o
           <div className="flex-1">
             {activeTab === 'overview' && renderOverview()}
             {activeTab === 'listings' && renderListings()}
-            {activeTab === 'deleted' && renderDeletedListings()}
             {activeTab === 'favorites' && renderFavorites()}
             {activeTab === 'messages' && renderMessages()}
             {activeTab === 'profile' && renderProfile()}
