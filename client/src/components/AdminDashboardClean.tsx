@@ -264,6 +264,20 @@ export const AdminDashboardClean: React.FC<AdminDashboardProps> = ({ onBack }) =
   };
 
   const handleAnnonceDeactivate = async (annonceId: string) => {
+    // Message de confirmation
+    const confirmation = window.confirm(
+      '⚠️ Êtes-vous sûr de vouloir désactiver cette annonce ?\n\n' +
+      'Cette action va :\n' +
+      '• Masquer l\'annonce du site public\n' +
+      '• Marquer l\'annonce comme inactive dans la base de données\n\n' +
+      'Voulez-vous continuer ?'
+    );
+    
+    if (!confirmation) {
+      console.log('❌ Désactivation annulée par l\'admin');
+      return;
+    }
+
     try {
       const adminEmail = localStorage.getItem('admin_email') || 'admin@passionauto2roues.com';
       const response = await fetch(`/api/admin/annonces/${annonceId}/deactivate`, {
@@ -276,6 +290,7 @@ export const AdminDashboardClean: React.FC<AdminDashboardProps> = ({ onBack }) =
       });
       if (response.ok) {
         console.log(`✅ Annonce ${annonceId} désactivée avec succès`);
+        alert('✅ Annonce désactivée avec succès !');
         loadDashboardData();
       } else {
         const errorData = await response.json();
