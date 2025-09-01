@@ -74,3 +74,11 @@ export const getCurrentSession = async () => {
   const { data: { session }, error } = await supabase.auth.getSession()
   return { session, error }
 }
+
+// Reset password function
+export const resetPassword = async (email: string) => {
+  const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${window.location.origin}/auth/callback?type=recovery`
+  })
+  return { data, error }
+}

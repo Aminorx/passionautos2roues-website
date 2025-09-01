@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { X, Mail, Phone, AlertCircle, CheckCircle } from 'lucide-react';
+import { X, Mail, Phone, AlertCircle, CheckCircle, Lock, Eye, EyeOff } from 'lucide-react';
 import { useApp } from '../contexts/AppContext';
 import { useAuthService } from '../services/AuthService';
-import { signInWithMagicLink } from '../lib/supabase';
+import { signInWithMagicLink, signIn, resetPassword } from '../lib/supabase';
 
 interface FormErrors {
   email?: string;
   phone?: string;
+  password?: string;
   general?: string;
 }
 
@@ -17,11 +18,15 @@ export const UnifiedAuthModal: React.FC = () => {
   const [formData, setFormData] = useState({
     email: '',
     phone: '',
+    password: '',
   });
   
   const [errors, setErrors] = useState<FormErrors>({});
   const [isLoading, setIsLoading] = useState(false);
+  const [isPasswordReset, setIsPasswordReset] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+  const [loginMode, setLoginMode] = useState<'new' | 'existing'>('new'); // new = signup, existing = login
   const [notification, setNotification] = useState<{
     title: string;
     description: string;
@@ -33,9 +38,11 @@ export const UnifiedAuthModal: React.FC = () => {
     setFormData({
       email: '',
       phone: '',
+      password: '',
     });
     setErrors({});
     setSuccessMessage('');
+    setIsPasswordReset(false);
   };
 
   // Réinitialiser le formulaire quand le mode change
@@ -69,6 +76,11 @@ export const UnifiedAuthModal: React.FC = () => {
       newErrors.phone = 'Numéro de téléphone invalide';
     }
 
+    // Validation mot de passe pour mode connexion existante
+    if (loginMode === 'existing' && !isPasswordReset && !formData.password) {
+      newErrors.password = 'Le mot de passe est requis';
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -94,19 +106,34 @@ export const UnifiedAuthModal: React.FC = () => {
     setSuccessMessage('');
 
     try {
-      // Pour l'instant, on utilise seulement l'inscription avec magic link
-      const userData = {
-        phone: formData.phone
-      };
-      
-      // Utiliser magic link pour l'inscription
-      const { data, error } = await signInWithMagicLink(formData.email);
-      
-      if (!error) {
-        setSuccessMessage('Un lien de connexion a été envoyé à votre email !');
-        // Ne pas fermer la modal immédiatement, montrer le message de succès
+      if (isPasswordReset) {
+        // Reset password
+        const { error } = await resetPassword(formData.email);
+        
+        if (!error) {
+          setSuccessMessage('Un lien de récupération a été envoyé à votre email !');
+        } else {
+          setErrors({ general: error.message || 'Erreur lors de l\'envoi du lien' });
+        }
+      } else if (loginMode === 'existing') {
+        // Connexion avec mot de passe (anciens comptes)
+        const { data, error } = await signIn(formData.email, formData.password);
+        
+        if (!error && data.user) {
+          handleAuthSuccess();
+          setShowAuthModal(false);
+        } else {
+          setErrors({ general: error?.message || 'Email ou mot de passe incorrect' });
+        }
       } else {
-        setErrors({ general: error.message || 'Erreur lors de l\'envoi du lien' });
+        // Nouveau compte avec magic link
+        const { error } = await signInWithMagicLink(formData.email);
+        
+        if (!error) {
+          setSuccessMessage('Un lien de connexion a été envoyé à votre email !');
+        } else {
+          setErrors({ general: error.message || 'Erreur lors de l\'envoi du lien' });
+        }
       }
     } catch (error: any) {
       setErrors({ general: error.message || 'Une erreur est survenue. Veuillez réessayer.' });
@@ -144,7 +171,7 @@ export const UnifiedAuthModal: React.FC = () => {
         {/* Header */}
         <div className="flex justify-between items-center p-5 border-b">
           <h2 className="text-xl font-semibold text-gray-800">
-            Rejoignez Passion Auto2Roues
+            {loginMode === 'existing' ? 'Connexion' : 'Rejoignez Passion Auto2Roues'}
           </h2>
           <button
             onClick={handleClose}
@@ -164,6 +191,42 @@ export const UnifiedAuthModal: React.FC = () => {
         
         {/* Body */}
         <div className="p-5">
+          {/* Mode Toggle */}
+          <div className="mb-6">
+            <div className="flex bg-gray-100 p-1 rounded-lg">
+              <button
+                type="button"
+                onClick={() => {
+                  setLoginMode('new');
+                  setIsPasswordReset(false);
+                  setErrors({});
+                }}
+                className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors ${
+                  loginMode === 'new'
+                    ? 'bg-white text-gray-900 shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                Nouveau compte
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setLoginMode('existing');
+                  setIsPasswordReset(false);
+                  setErrors({});
+                }}
+                className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors ${
+                  loginMode === 'existing'
+                    ? 'bg-white text-gray-900 shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                Compte existant
+              </button>
+            </div>
+          </div>
+          
           {/* Google Sign In Button */}
           <button
             onClick={handleGoogleSignIn}
@@ -190,34 +253,36 @@ export const UnifiedAuthModal: React.FC = () => {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Téléphone */}
-            <div>
-              <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
-                Téléphone (optionnel)
-              </label>
-              <div className="relative">
-                <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                  <Phone size={18} />
-                </span>
-                <input
-                  id="phone"
-                  name="phone"
-                  type="tel"
-                  value={formData.phone}
-                  onChange={handleInputChange}
-                  placeholder="+33 6 12 34 56 78"
-                  className={`w-full pl-10 pr-3 py-3 rounded-lg border ${
-                    errors.phone ? 'border-red-500' : 'border-gray-300'
-                  } focus:ring-2 focus:ring-[#0CBFDE] focus:border-[#0CBFDE]`}
-                />
+            {/* Téléphone - seulement pour nouveaux comptes */}
+            {loginMode === 'new' && (
+              <div>
+                <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
+                  Téléphone (optionnel)
+                </label>
+                <div className="relative">
+                  <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                    <Phone size={18} />
+                  </span>
+                  <input
+                    id="phone"
+                    name="phone"
+                    type="tel"
+                    value={formData.phone}
+                    onChange={handleInputChange}
+                    placeholder="+33 6 12 34 56 78"
+                    className={`w-full pl-10 pr-3 py-3 rounded-lg border ${
+                      errors.phone ? 'border-red-500' : 'border-gray-300'
+                    } focus:ring-2 focus:ring-[#0CBFDE] focus:border-[#0CBFDE]`}
+                  />
+                </div>
+                {errors.phone && (
+                  <p className="mt-1 text-sm text-red-600 flex items-center">
+                    <AlertCircle className="h-4 w-4 mr-1" />
+                    {errors.phone}
+                  </p>
+                )}
               </div>
-              {errors.phone && (
-                <p className="mt-1 text-sm text-red-600 flex items-center">
-                  <AlertCircle className="h-4 w-4 mr-1" />
-                  {errors.phone}
-                </p>
-              )}
-            </div>
+            )}
             
             {/* Email */}
             <div>
@@ -249,6 +314,59 @@ export const UnifiedAuthModal: React.FC = () => {
               )}
             </div>
             
+            {/* Mot de passe - seulement pour comptes existants */}
+            {loginMode === 'existing' && (
+              <div>
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                  Mot de passe
+                </label>
+                <div className="relative">
+                  <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                    <Lock size={18} />
+                  </span>
+                  <input
+                    id="password"
+                    name="password"
+                    type={showPassword ? 'text' : 'password'}
+                    value={formData.password}
+                    onChange={handleInputChange}
+                    placeholder="••••••••"
+                    className={`w-full pl-10 pr-10 py-3 rounded-lg border ${
+                      errors.password ? 'border-red-500' : 'border-gray-300'
+                    } focus:ring-2 focus:ring-[#0CBFDE] focus:border-[#0CBFDE]`}
+                    required={!isPasswordReset}
+                  />
+                  <button
+                    type="button"
+                    className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+                {errors.password && (
+                  <p className="mt-1 text-sm text-red-600 flex items-center">
+                    <AlertCircle className="h-4 w-4 mr-1" />
+                    {errors.password}
+                  </p>
+                )}
+                
+                {/* Lien mot de passe oublié */}
+                <div className="mt-2 text-right">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsPasswordReset(true);
+                      setErrors({});
+                    }}
+                    className="text-sm text-[#0CBFDE] hover:text-[#0CBFDE]/80 font-medium"
+                  >
+                    Mot de passe oublié ?
+                  </button>
+                </div>
+              </div>
+            )}
+            
             {/* General Error */}
             {errors.general && (
               <div className="bg-red-50 border border-red-200 rounded-xl p-3">
@@ -270,11 +388,31 @@ export const UnifiedAuthModal: React.FC = () => {
                 {isLoading ? (
                   <div className="flex items-center space-x-2">
                     <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    <span>Envoi du lien...</span>
+                    <span>
+                      {isPasswordReset ? 'Envoi du lien...' : loginMode === 'existing' ? 'Connexion...' : 'Envoi du lien...'}
+                    </span>
                   </div>
+                ) : isPasswordReset ? (
+                  'Réinitialiser le mot de passe'
+                ) : loginMode === 'existing' ? (
+                  'Se connecter'
                 ) : (
                   'Recevoir un lien de connexion'
                 )}
+              </button>
+            )}
+            
+            {/* Retour depuis reset password */}
+            {isPasswordReset && (
+              <button
+                type="button"
+                onClick={() => {
+                  setIsPasswordReset(false);
+                  setErrors({});
+                }}
+                className="w-full mt-2 py-2 px-4 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Retour à la connexion
               </button>
             )}
           </form>
