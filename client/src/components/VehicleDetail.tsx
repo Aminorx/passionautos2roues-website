@@ -434,7 +434,7 @@ export const VehicleDetail: React.FC<VehicleDetailProps> = ({ vehicle, onBack, o
                   {/* Nom commercial pour les pros - cliquable */}
                   {vehicle.user?.type === 'professional' && professionalAccount?.company_name && (
                     <button 
-                      onClick={() => onNavigate && onNavigate(`/pro/${vehicle.user.id}`)}
+                      onClick={() => window.open(`/pro/${vehicle.user.id}`, '_blank')}
                       className="text-[#0CBFDE] hover:text-[#0CBFDE]/80 font-medium text-sm flex items-center space-x-1 mt-1 transition-colors"
                     >
                       <span>{professionalAccount.company_name}</span>
