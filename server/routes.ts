@@ -201,6 +201,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Route pour obtenir les statistiques complètes des annonces
+  app.get("/api/admin/vehicles-stats", async (req, res) => {
+    try {
+      console.log('📊 Récupération statistiques complètes annonces...');
+      
+      // Total des annonces
+      const { data: totalData, error: totalError } = await supabaseServer
+        .from('annonces')
+        .select('id, status, is_active, deleted_at');
+      
+      if (totalError) {
+        console.error('❌ Erreur récupération stats:', totalError);
+        return res.status(500).json({ error: "Failed to fetch stats" });
+      }
+      
+      const stats = {
+        total: totalData?.length || 0,
+        active: totalData?.filter(a => a.status === 'approved' && a.is_active !== false && !a.deleted_at).length || 0,
+        pending: totalData?.filter(a => a.status === 'pending' && !a.deleted_at).length || 0,
+        rejected: totalData?.filter(a => a.status === 'rejected' && !a.deleted_at).length || 0,
+        inactive: totalData?.filter(a => a.is_active === false && !a.deleted_at).length || 0,
+        deleted: totalData?.filter(a => a.deleted_at).length || 0
+      };
+      
+      console.log('📈 Stats générées:', stats);
+      res.json(stats);
+    } catch (error) {
+      console.error("❌ Erreur récupération stats complètes:", error);
+      res.status(500).json({ error: "Failed to fetch complete stats" });
+    }
+  });
+
   app.get("/api/vehicles/:id", async (req, res) => {
     try {
       const vehicle = await storage.getVehicleWithUser(req.params.id);
