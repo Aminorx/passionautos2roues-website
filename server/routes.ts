@@ -178,6 +178,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Route pour récupérer le nombre total d'annonces supprimées sur tout le site
+  app.get("/api/vehicles/deleted/count", async (req, res) => {
+    try {
+      console.log('🔄 Récupération nombre total annonces supprimées...');
+      const { data, error } = await supabaseServer
+        .from('annonces')
+        .select('id', { count: 'exact' })
+        .not('deleted_at', 'is', null);
+      
+      if (error) {
+        console.error('❌ Erreur comptage annonces supprimées:', error);
+        return res.status(500).json({ error: "Failed to count deleted vehicles" });
+      }
+      
+      const totalDeleted = data?.length || 0;
+      console.log(`✅ Nombre total annonces supprimées: ${totalDeleted}`);
+      res.json({ totalDeleted });
+    } catch (error) {
+      console.error("❌ Erreur récupération total annonces supprimées:", error);
+      res.status(500).json({ error: "Failed to fetch deleted vehicles count" });
+    }
+  });
+
   app.get("/api/vehicles/:id", async (req, res) => {
     try {
       const vehicle = await storage.getVehicleWithUser(req.params.id);
