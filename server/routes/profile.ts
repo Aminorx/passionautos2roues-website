@@ -97,7 +97,7 @@ router.get('/:userId', async (req, res) => {
 router.post('/complete', requireAuth, async (req: any, res) => {
   try {
     const userId = req.user.id; // ID depuis l'authentification
-    console.log('🔧 Finalisation onboarding pour user:', userId);
+    console.log('🔧 Finalisation profil pour user:', userId);
     
     const { 
       name,
@@ -144,15 +144,15 @@ router.post('/complete', requireAuth, async (req: any, res) => {
       .single();
     
     if (error) {
-      console.error('❌ Erreur finalisation onboarding:', error);
-      return res.status(500).json({ error: 'Erreur finalisation onboarding' });
+      console.error('❌ Erreur finalisation profil:', error);
+      return res.status(500).json({ error: 'Erreur finalisation profil' });
     }
     
-    console.log('✅ Onboarding finalisé pour:', data.email);
+    console.log('✅ Profil finalisé pour:', data.email);
     res.json({ success: true, user: data });
     
   } catch (error) {
-    console.error('❌ Erreur serveur finalisation onboarding:', error);
+    console.error('❌ Erreur serveur finalisation profil:', error);
     res.status(500).json({ error: 'Erreur serveur' });
   }
 });

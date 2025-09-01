@@ -73,7 +73,7 @@ function AppContent() {
     // Attendre que l'authentification soit chargée
     if (isLoading) return;
     
-    // Si l'utilisateur est connecté mais n'a pas complété son onboarding
+    // Si l'utilisateur est connecté mais n'a pas complété son profil
     if (isAuthenticated && dbUser && !dbUser.onboarding_completed) {
       console.log('🔧 ÉTAPE 1 - Profil incomplet détecté pour:', dbUser.email);
       console.log('🔧 onboarding_completed:', dbUser.onboarding_completed);
