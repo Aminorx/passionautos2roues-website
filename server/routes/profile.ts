@@ -115,9 +115,9 @@ router.post('/complete', requireAuth, async (req: any, res) => {
       specialties
     } = req.body;
     
-    // Construire l'objet de mise à jour avec onboarding_completed = true
+    // Construire l'objet de mise à jour avec profile_completed = true
     const updateData: any = {
-      onboarding_completed: true // Toujours marquer comme terminé
+      profile_completed: true // Toujours marquer comme terminé
     };
     
     if (name !== undefined) updateData.name = name;
