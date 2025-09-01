@@ -976,7 +976,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Route pour désactiver une annonce (admin) - AVEC authentification
+  // Route pour supprimer une annonce (admin) - avec deleted_at et reason - AVEC authentification
   app.patch('/api/admin/annonces/:id/deactivate', async (req, res) => {
     const { id } = req.params;
     
@@ -987,23 +987,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
     
     try {
-      console.log(`🔴 Désactivation annonce ${id} par admin...`);
+      console.log(`🔴 Suppression annonce ${id} par admin...`);
       
       const { error } = await supabaseServer
         .from('annonces')
         .update({ 
-          is_active: false,  // Utiliser is_active comme demandé
+          is_active: false,
+          deleted_at: new Date().toISOString(),
+          deletion_reason: "admin",
           updated_at: new Date().toISOString()
         })
         .eq('id', id);
       
       if (error) {
-        console.error('❌ Erreur désactivation annonce:', error);
-        return res.status(500).json({ error: 'Erreur lors de la désactivation' });
+        console.error('❌ Erreur suppression annonce:', error);
+        return res.status(500).json({ error: 'Erreur lors de la suppression' });
       }
       
-      console.log(`✅ Annonce ${id} désactivée avec succès`);
-      res.json({ success: true, message: 'Annonce désactivée avec succès' });
+      console.log(`✅ Annonce ${id} supprimée par admin avec succès`);
+      res.json({ success: true, message: 'Annonce supprimée avec succès' });
       
     } catch (error) {
       console.error('❌ Erreur désactivation annonce:', error);

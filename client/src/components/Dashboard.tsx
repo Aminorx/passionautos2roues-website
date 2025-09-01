@@ -19,6 +19,7 @@ const translateDeletionReason = (reason: string): string => {
     'sold_elsewhere': 'Vendue ailleurs',
     'no_longer_selling': 'Je ne souhaite plus vendre',
     'other': 'Autre raison',
+    'admin': 'Supprimée par l\'administration',
     // Fallback pour les raisons non reconnues
   };
   
