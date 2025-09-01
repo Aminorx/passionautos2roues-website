@@ -348,10 +348,32 @@ export class SupabaseStorage implements IStorage {
             siret: vehicle.users.siret,
             bio: vehicle.users.bio,
             avatar: vehicle.users.avatar,
-            specialties: vehicle.users.specialties ? JSON.parse(vehicle.users.specialties) : [],
+            specialties: (() => {
+              if (!vehicle.users.specialties) return [];
+              try {
+                return Array.isArray(vehicle.users.specialties) 
+                  ? vehicle.users.specialties 
+                  : JSON.parse(vehicle.users.specialties);
+              } catch {
+                return typeof vehicle.users.specialties === 'string' 
+                  ? [vehicle.users.specialties] 
+                  : [];
+              }
+            })(),
             verified: vehicle.users.verified,
             emailVerified: vehicle.users.email_verified,
-            contactPreferences: vehicle.users.contact_preferences ? JSON.parse(vehicle.users.contact_preferences) : [],
+            contactPreferences: (() => {
+              if (!vehicle.users.contact_preferences) return [];
+              try {
+                return Array.isArray(vehicle.users.contact_preferences) 
+                  ? vehicle.users.contact_preferences 
+                  : JSON.parse(vehicle.users.contact_preferences);
+              } catch {
+                return typeof vehicle.users.contact_preferences === 'string' 
+                  ? [vehicle.users.contact_preferences] 
+                  : [];
+              }
+            })(),
             createdAt: new Date(vehicle.users.created_at),
             lastLoginAt: vehicle.users.last_login_at ? new Date(vehicle.users.last_login_at) : undefined
           } : undefined,
@@ -1344,10 +1366,32 @@ export class SupabaseStorage implements IStorage {
             siret: vehicle.users.siret,
             bio: vehicle.users.bio,
             avatar: vehicle.users.avatar,
-            specialties: vehicle.users.specialties ? JSON.parse(vehicle.users.specialties) : [],
+            specialties: (() => {
+              if (!vehicle.users.specialties) return [];
+              try {
+                return Array.isArray(vehicle.users.specialties) 
+                  ? vehicle.users.specialties 
+                  : JSON.parse(vehicle.users.specialties);
+              } catch {
+                return typeof vehicle.users.specialties === 'string' 
+                  ? [vehicle.users.specialties] 
+                  : [];
+              }
+            })(),
             verified: vehicle.users.verified,
             emailVerified: vehicle.users.email_verified,
-            contactPreferences: vehicle.users.contact_preferences ? JSON.parse(vehicle.users.contact_preferences) : [],
+            contactPreferences: (() => {
+              if (!vehicle.users.contact_preferences) return [];
+              try {
+                return Array.isArray(vehicle.users.contact_preferences) 
+                  ? vehicle.users.contact_preferences 
+                  : JSON.parse(vehicle.users.contact_preferences);
+              } catch {
+                return typeof vehicle.users.contact_preferences === 'string' 
+                  ? [vehicle.users.contact_preferences] 
+                  : [];
+              }
+            })(),
             createdAt: new Date(vehicle.users.created_at),
             lastLoginAt: vehicle.users.last_login_at ? new Date(vehicle.users.last_login_at) : undefined
           } : undefined,

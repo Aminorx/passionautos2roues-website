@@ -37,8 +37,7 @@ router.get('/:id', async (req, res) => {
         )
       `)
       .eq('id', id)
-      .eq('verification_status', 'approved') // Seuls les comptes approuvés sont visibles
-      .single();
+      .single(); // Permettre l'accès à tous les comptes professionnels
 
     if (error || !professionalAccount) {
       return res.status(404).json({ error: 'Compte professionnel non trouvé' });
@@ -62,8 +61,7 @@ router.get('/vehicles/:professionalAccountId', async (req, res) => {
       .from('professional_accounts')
       .select('user_id')
       .eq('id', professionalAccountId)
-      .eq('verification_status', 'approved')
-      .single();
+      .single(); // Permettre l'accès à tous les comptes professionnels
 
     if (proError || !proAccount) {
       console.log('❌ Compte professionnel non trouvé:', { professionalAccountId, proError });
