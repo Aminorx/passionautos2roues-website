@@ -61,6 +61,26 @@ function AppContent() {
     setLocation('/search');
   }, [setLocation]);
 
+  // Auto-sélection d'un véhicule depuis les paramètres URL (pour l'admin)
+  React.useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const vehicleId = urlParams.get('vehicle');
+    
+    if (vehicleId && !selectedVehicle) {
+      // Rechercher le véhicule par ID et le sélectionner
+      fetch('/api/vehicles')
+        .then(res => res.json())
+        .then(vehicles => {
+          const vehicle = vehicles.find((v: any) => v.id === vehicleId);
+          if (vehicle) {
+            setSelectedVehicle(vehicle);
+            console.log(`🎯 Véhicule auto-sélectionné depuis URL:`, vehicle.title);
+          }
+        })
+        .catch(err => console.error('❌ Erreur auto-sélection véhicule:', err));
+    }
+  }, [location, selectedVehicle, setSelectedVehicle]);
+
   // Scroll to top when location changes
   React.useEffect(() => {
     if (!selectedVehicle) {

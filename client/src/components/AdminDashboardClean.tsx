@@ -260,7 +260,9 @@ export const AdminDashboardClean: React.FC<AdminDashboardProps> = ({ onBack }) =
   };
 
   const handleAnnonceView = (annonceId: string) => {
-    window.open(`/vehicle/${annonceId}`, '_blank');
+    // Ouvrir la page principale avec le véhicule sélectionné via paramètres URL
+    const currentDomain = window.location.origin;
+    window.open(`${currentDomain}/?vehicle=${annonceId}`, '_blank');
   };
 
   const handleAnnonceDeactivate = async (annonceId: string) => {
