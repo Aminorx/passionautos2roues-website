@@ -10,6 +10,8 @@ import { VehicleListings } from './components/VehicleListings';
 import { VehicleDetail } from './components/VehicleDetail';
 import { UnifiedAuthModal } from './components/UnifiedAuthModal';
 import { ProfileSetupModal } from './components/ProfileSetupModal';
+import { PersonalProfileForm } from './components/PersonalProfileForm';
+import { ProfessionalProfileForm } from './components/ProfessionalProfileForm';
 import { Dashboard } from './components/Dashboard';
 import { CreateListingForm } from './components/CreateListingForm';
 import { DraggableModal } from './components/DraggableModal';
@@ -42,8 +44,9 @@ function AppContent() {
   const [dashboardTab, setDashboardTab] = useState('overview');
   const [searchQuery, setSearchQuery] = useState('');
   const [showProfileSetup, setShowProfileSetup] = useState(false);
+  const [onboardingStep, setOnboardingStep] = useState<'choice' | 'personal' | 'professional'>('choice');
   const { selectedVehicle, setSelectedVehicle, setSearchFilters } = useApp();
-  const { isAuthenticated, dbUser, isLoading } = useAuth();
+  const { isAuthenticated, dbUser, isLoading, refreshDbUser } = useAuth();
   
   // Utiliser useLocation pour obtenir et modifier l'URL actuelle
   const [location, setLocation] = useLocation();
@@ -71,9 +74,9 @@ function AppContent() {
     if (isLoading) return;
     
     // Si l'utilisateur est connecté mais n'a pas complété son onboarding
-    if (isAuthenticated && dbUser && dbUser.profile_completed === false) {
+    if (isAuthenticated && dbUser && dbUser.onboarding_completed === false) {
       console.log('🔧 ÉTAPE 1 - Profil incomplet détecté pour:', dbUser.email);
-      console.log('🔧 profile_completed:', dbUser.profile_completed);
+      console.log('🔧 onboarding_completed:', dbUser.onboarding_completed);
       setShowProfileSetup(true);
     }
   }, [isAuthenticated, dbUser, isLoading]);
@@ -304,19 +307,62 @@ function AppContent() {
       )}
       <UnifiedAuthModal />
       
-      {/* Modal de configuration du profil - ÉTAPE 2 */}
+      {/* Modal de configuration du profil - ÉTAPE 3: Navigation complète */}
       <ProfileSetupModal 
-        isOpen={showProfileSetup}
-        onClose={() => setShowProfileSetup(false)}
+        isOpen={showProfileSetup && onboardingStep === 'choice'}
+        onClose={() => {
+          setShowProfileSetup(false);
+          setOnboardingStep('choice');
+        }}
         onPersonalAccount={() => {
           console.log('🔧 Choix: Compte Personnel');
-          setShowProfileSetup(false);
-          // TODO: Rediriger vers formulaire personnel
+          setOnboardingStep('personal');
         }}
         onProfessionalAccount={() => {
           console.log('🔧 Choix: Compte Professionnel');
+          setOnboardingStep('professional');
+        }}
+      />
+      
+      {/* Formulaire compte personnel */}
+      <PersonalProfileForm 
+        isOpen={showProfileSetup && onboardingStep === 'personal'}
+        onClose={() => {
+          setOnboardingStep('choice');
+        }}
+        onComplete={async () => {
+          console.log('✅ Onboarding personnel terminé!');
           setShowProfileSetup(false);
-          // TODO: Rediriger vers formulaire professionnel
+          setOnboardingStep('choice');
+          // Recharger les données utilisateur pour mettre à jour onboarding_completed
+          if (refreshDbUser) {
+            await refreshDbUser();
+          }
+        }}
+        initialData={{
+          name: dbUser?.name,
+          email: dbUser?.email
+        }}
+      />
+      
+      {/* Formulaire compte professionnel */}
+      <ProfessionalProfileForm 
+        isOpen={showProfileSetup && onboardingStep === 'professional'}
+        onClose={() => {
+          setOnboardingStep('choice');
+        }}
+        onComplete={async () => {
+          console.log('✅ Onboarding professionnel terminé!');
+          setShowProfileSetup(false);
+          setOnboardingStep('choice');
+          // Recharger les données utilisateur pour mettre à jour onboarding_completed
+          if (refreshDbUser) {
+            await refreshDbUser();
+          }
+        }}
+        initialData={{
+          name: dbUser?.name,
+          email: dbUser?.email
         }}
       />
       

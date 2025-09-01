@@ -8,7 +8,7 @@ interface DbUser {
   email: string;
   name: string;
   type: string;
-  profile_completed?: boolean;
+  onboarding_completed?: boolean;
   created_at?: string;
 }
 
@@ -275,7 +275,7 @@ export function useAuth(): AuthState {
       // Vider immédiatement le cache et les états
       userCacheRef.current.clear()
       lastFetchTimeRef.current.clear()
-      clearUserCache() // Vider le cache React Query
+      // clearUserCache() // Vider le cache React Query - fonction non disponible
       setUser(null)
       setDbUser(null)
       setSession(null)
