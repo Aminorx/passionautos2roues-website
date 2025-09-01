@@ -1524,6 +1524,67 @@ export const brandsByVehicleType = {
   ]
 };
 
+// Modèles de voitures populaires avec dropdown dynamique
+export const carModelsByBrand = {
+  'BMW': [
+    'Série 1', 'Série 2', 'Série 3', 'Série 4', 'Série 5', 'Série 6', 'Série 7', 'Série 8',
+    'X1', 'X2', 'X3', 'X4', 'X5', 'X6', 'X7',
+    'Z4', 'i3', 'i4', 'iX', 'iX3',
+    '114d', '116d', '118d', '120d', '220d', '320d', '330d', '520d', '530d',
+    'Autre BMW'
+  ],
+  'Mercedes-Benz': [
+    'Classe A', 'Classe B', 'Classe C', 'Classe E', 'Classe S',
+    'CLA', 'CLS', 'GLA', 'GLB', 'GLC', 'GLE', 'GLS',
+    'AMG GT', 'EQA', 'EQB', 'EQC', 'EQS',
+    'A180', 'A200', 'C180', 'C200', 'C220d', 'E200', 'E220d',
+    'Autre Mercedes'
+  ],
+  'Audi': [
+    'A1', 'A3', 'A4', 'A5', 'A6', 'A7', 'A8',
+    'Q2', 'Q3', 'Q5', 'Q7', 'Q8',
+    'TT', 'R8', 'e-tron GT',
+    '30 TFSI', '35 TFSI', '40 TFSI', '45 TFSI', '50 TFSI',
+    'Autre Audi'
+  ],
+  'Peugeot': [
+    '108', '208', '2008', '308', '3008', '408', '508', '5008',
+    'Partner', 'Rifter', 'Traveller',
+    'e-208', 'e-2008', 'e-308',
+    'Autre Peugeot'
+  ],
+  'Renault': [
+    'Twingo', 'Clio', 'Captur', 'Mégane', 'Scénic', 'Kadjar', 'Koleos', 'Talisman',
+    'ZOE', 'Kangoo', 'Trafic', 'Master',
+    'Duster', 'Sandero', 'Logan',
+    'Autre Renault'
+  ],
+  'Toyota': [
+    'Aygo', 'Yaris', 'Corolla', 'Camry', 'Prius',
+    'CHR', 'RAV4', 'Highlander', 'Land Cruiser',
+    'Proace', 'Hilux',
+    'Autre Toyota'
+  ],
+  'Volkswagen': [
+    'Up!', 'Polo', 'Golf', 'Jetta', 'Passat', 'Arteon',
+    'T-Cross', 'T-Roc', 'Tiguan', 'Touran', 'Touareg',
+    'ID.3', 'ID.4', 'ID.Buzz',
+    'Autre Volkswagen'
+  ],
+  'Ford': [
+    'Fiesta', 'Focus', 'Mondeo', 'Mustang',
+    'EcoSport', 'Kuga', 'Edge', 'Explorer',
+    'Transit', 'Ranger',
+    'Autre Ford'
+  ],
+  'Citroën': [
+    'C1', 'C3', 'C3 Aircross', 'C4', 'C4 Cactus', 'C5', 'C5 Aircross',
+    'Berlingo', 'SpaceTourer', 'Jumpy', 'Jumper',
+    'ë-C4', 'Ami',
+    'Autre Citroën'
+  ]
+};
+
 // Fonction utilitaire pour obtenir les marques selon la sous-catégorie
 export const getBrandsBySubcategory = (subcategory: string): string[] => {
   return brandsByVehicleType[subcategory as keyof typeof brandsByVehicleType] || [];

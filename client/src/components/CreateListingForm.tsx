@@ -11,7 +11,7 @@ import { AddressInput } from './AddressInput';
 import { PREMIUM_PACKS } from '@/types/premium';
 import { useApp } from '../contexts/AppContext';
 import { useAuth } from '../hooks/useAuth';
-import { getBrandsBySubcategory, fuelTypes } from '../utils/mockData';
+import { getBrandsBySubcategory, fuelTypes, carModelsByBrand } from '../utils/mockData';
 // Nouvelles images des catégories principales
 import voitureImage from '@assets/voiture-2_1752244968736.png';
 import motosImage from '@assets/motos-scooters_1752244968742.png';
@@ -1438,13 +1438,45 @@ export const CreateListingForm: React.FC<CreateListingFormProps> = ({ onSuccess 
           <label className="block text-sm font-semibold text-gray-700 mb-2">
             Modèle *
           </label>
-          <input
-            type="text"
-            value={formData.specificDetails.model || ''}
-            onChange={(e) => updateSpecificDetails('model', e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-bolt-500 focus:border-primary-bolt-500 transition-all"
-            placeholder="Ex: 320d"
-          />
+          {(() => {
+            // Logique intelligente : dropdown pour voitures avec marques populaires, texte libre sinon
+            const subcategory = getSelectedSubcategory();
+            const selectedBrand = formData.specificDetails.brand;
+            const isCarWithPopularBrand = subcategory?.id === 'voiture' && 
+                                        selectedBrand && 
+                                        selectedBrand !== 'Autres voitures' &&
+                                        carModelsByBrand[selectedBrand as keyof typeof carModelsByBrand];
+
+            if (isCarWithPopularBrand) {
+              // Dropdown pour marques populaires de voitures
+              const availableModels = carModelsByBrand[selectedBrand as keyof typeof carModelsByBrand] || [];
+              return (
+                <select
+                  value={formData.specificDetails.model || ''}
+                  onChange={(e) => updateSpecificDetails('model', e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-bolt-500 focus:border-primary-bolt-500 transition-all"
+                >
+                  <option value="">Sélectionnez un modèle</option>
+                  {availableModels.map((model) => (
+                    <option key={model} value={model}>
+                      {model}
+                    </option>
+                  ))}
+                </select>
+              );
+            } else {
+              // Input texte libre pour tout le reste
+              return (
+                <input
+                  type="text"
+                  value={formData.specificDetails.model || ''}
+                  onChange={(e) => updateSpecificDetails('model', e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-bolt-500 focus:border-primary-bolt-500 transition-all"
+                  placeholder="Ex: 320d, Agility 50, Niva..."
+                />
+              );
+            }
+          })()}
         </div>
 
         <div>
