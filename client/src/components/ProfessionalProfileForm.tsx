@@ -1,5 +1,5 @@
-import React from 'react';
-import { X, Building2, MapPin, Phone, Globe, FileText, Briefcase } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X, Building2, MapPin, Phone, Globe, FileText, Briefcase, ArrowRight, ArrowLeft, CreditCard, Star, Check } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -57,6 +57,14 @@ export const ProfessionalProfileForm: React.FC<ProfessionalProfileFormProps> = (
 }) => {
   // const { toast } = useToast(); // Hook non disponible
   
+  // État pour gérer les étapes du multistep
+  const [currentStep, setCurrentStep] = useState(1);
+  const [savedFormData, setSavedFormData] = useState<ProfessionalProfileData | null>(null);
+  const [subscriptionPlans, setSubscriptionPlans] = useState<any[]>([]);
+  const [selectedPlan, setSelectedPlan] = useState<any>(null);
+  const [isLoadingPlans, setIsLoadingPlans] = useState(false);
+  const [isCreatingCheckout, setIsCreatingCheckout] = useState(false);
+  
   const form = useForm<ProfessionalProfileData>({
     resolver: zodResolver(professionalProfileSchema),
     defaultValues: {
@@ -86,9 +94,33 @@ export const ProfessionalProfileForm: React.FC<ProfessionalProfileFormProps> = (
     }
   };
 
-  const onSubmit = async (data: ProfessionalProfileData) => {
+  // Charger les plans d'abonnement
+  const loadSubscriptionPlans = async () => {
+    setIsLoadingPlans(true);
     try {
-      console.log('🔧 Soumission profil professionnel:', data);
+      const response = await fetch('/api/subscriptions/plans');
+      if (!response.ok) throw new Error('Erreur chargement plans');
+      const plans = await response.json();
+      setSubscriptionPlans(plans);
+    } catch (error) {
+      console.error('❌ Erreur chargement plans:', error);
+      alert('Erreur lors du chargement des plans d\'abonnement');
+    } finally {
+      setIsLoadingPlans(false);
+    }
+  };
+
+  // Effet pour charger les plans quand on arrive à l'étape 2
+  useEffect(() => {
+    if (currentStep === 2 && subscriptionPlans.length === 0) {
+      loadSubscriptionPlans();
+    }
+  }, [currentStep]);
+
+  // Gestion étape 1 : sauvegarder le profil
+  const onSubmitStep1 = async (data: ProfessionalProfileData) => {
+    try {
+      console.log('🔧 Sauvegarde profil professionnel étape 1:', data);
       
       // Obtenir le token d'authentification depuis Supabase
       const { data: { session } } = await supabase.auth.getSession();
@@ -96,7 +128,7 @@ export const ProfessionalProfileForm: React.FC<ProfessionalProfileFormProps> = (
         throw new Error('Session non disponible');
       }
       
-      // Appeler l'API pour finaliser l'onboarding
+      // Appeler l'API pour sauvegarder le profil
       const response = await fetch('/api/profile/complete', {
         method: 'POST',
         headers: { 
@@ -109,14 +141,58 @@ export const ProfessionalProfileForm: React.FC<ProfessionalProfileFormProps> = (
         })
       });
 
-      if (!response.ok) throw new Error('Erreur lors de la mise à jour');
-
-      alert("✅ Profil professionnel complété !\nVotre compte professionnel est maintenant actif et prêt à l'emploi.");
-
-      onComplete();
+      if (!response.ok) throw new Error('Erreur lors de la sauvegarde');
+      
+      // Sauvegarder les données et passer à l'étape suivante
+      setSavedFormData(data);
+      setCurrentStep(2);
+      
     } catch (error) {
-      console.error('❌ Erreur:', error);
-      alert("❌ Erreur\nUne erreur est survenue. Veuillez réessayer.");
+      console.error('❌ Erreur sauvegarde profil:', error);
+      alert("❌ Erreur\nUne erreur est survenue lors de la sauvegarde. Veuillez réessayer.");
+    }
+  };
+
+  // Gestion étape 2 : créer la session Stripe
+  const handlePlanSelection = async (plan: any) => {
+    if (!savedFormData) {
+      alert('Erreur : données du profil manquantes');
+      return;
+    }
+    
+    setIsCreatingCheckout(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user?.email) {
+        throw new Error('Email utilisateur non disponible');
+      }
+      
+      console.log(`🔄 Création session checkout pour plan ${plan.id}`);
+      
+      const response = await fetch('/api/subscriptions/create-checkout-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          planId: plan.id,
+          userEmail: session.user.email
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error('Erreur création session de paiement');
+      }
+      
+      const { sessionUrl } = await response.json();
+      console.log('✅ Session créée, redirection vers Stripe');
+      
+      // Redirection vers Stripe
+      window.location.href = sessionUrl;
+      
+    } catch (error) {
+      console.error('❌ Erreur création checkout:', error);
+      alert('Erreur lors de la création de la session de paiement. Veuillez réessayer.');
+    } finally {
+      setIsCreatingCheckout(false);
     }
   };
 
@@ -130,11 +206,16 @@ export const ProfessionalProfileForm: React.FC<ProfessionalProfileFormProps> = (
         <div className="flex items-center justify-between p-6 border-b sticky top-0 bg-white rounded-t-xl">
           <div className="flex items-center space-x-3">
             <div className="p-2 bg-green-100 rounded-lg">
-              <Building2 className="h-6 w-6 text-green-600" />
+              {currentStep === 1 ? <Building2 className="h-6 w-6 text-green-600" /> : <CreditCard className="h-6 w-6 text-green-600" />}
             </div>
-            <h2 className="text-2xl font-bold text-gray-900">
-              Finaliser mon compte professionnel
-            </h2>
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900">
+                {currentStep === 1 ? 'Finaliser mon profil professionnel' : 'Choisir mon abonnement'}
+              </h2>
+              <p className="text-sm text-gray-500">
+                Étape {currentStep} sur 2
+              </p>
+            </div>
           </div>
           <button
             onClick={onClose}
@@ -144,8 +225,27 @@ export const ProfessionalProfileForm: React.FC<ProfessionalProfileFormProps> = (
           </button>
         </div>
 
-        {/* Content */}
-        <form onSubmit={form.handleSubmit(onSubmit)} className="p-6 space-y-8">
+        {/* Progress Bar */}
+        <div className="px-6 pt-4">
+          <div className="flex items-center">
+            <div className={`flex-1 h-2 rounded-full ${currentStep >= 1 ? 'bg-green-500' : 'bg-gray-200'}`}></div>
+            <div className="px-2">
+              <div className={`w-4 h-4 rounded-full ${currentStep >= 1 ? 'bg-green-500' : 'bg-gray-300'}`}></div>
+            </div>
+            <div className={`flex-1 h-2 rounded-full ${currentStep >= 2 ? 'bg-green-500' : 'bg-gray-200'}`}></div>
+            <div className="px-2">
+              <div className={`w-4 h-4 rounded-full ${currentStep >= 2 ? 'bg-green-500' : 'bg-gray-300'}`}></div>
+            </div>
+          </div>
+          <div className="flex justify-between mt-2 text-xs text-gray-500">
+            <span>Profil</span>
+            <span>Abonnement</span>
+          </div>
+        </div>
+
+        {/* Content - Étape 1 : Formulaire profil */}
+        {currentStep === 1 && (
+        <form onSubmit={form.handleSubmit(onSubmitStep1)} className="p-6 space-y-8">
           <div className="text-center mb-6">
             <p className="text-gray-600">
               Configurons votre profil professionnel pour optimiser votre visibilité sur PassionAuto2Roues
@@ -379,25 +479,125 @@ export const ProfessionalProfileForm: React.FC<ProfessionalProfileFormProps> = (
             </div>
           </section>
 
-          {/* Footer */}
+          {/* Footer Étape 1 */}
           <div className="flex justify-between items-center pt-6 border-t">
             <button
               type="button"
               onClick={onClose}
               className="px-6 py-3 text-gray-600 hover:text-gray-800 font-medium transition-colors"
             >
-              Retour
+              Annuler
             </button>
             
             <button
               type="submit"
               disabled={form.formState.isSubmitting}
-              className="px-8 py-3 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="px-8 py-3 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center space-x-2"
             >
-              {form.formState.isSubmitting ? 'Finalisation...' : 'Finaliser mon profil professionnel'}
+              <span>{form.formState.isSubmitting ? 'Sauvegarde...' : 'Continuer'}</span>
+              <ArrowRight className="h-4 w-4" />
             </button>
           </div>
         </form>
+        )}
+
+        {/* Content - Étape 2 : Plans d'abonnement */}
+        {currentStep === 2 && (
+          <div className="p-6">
+            <div className="text-center mb-8">
+              <p className="text-gray-600">
+                Choisissez le plan qui correspond le mieux à vos besoins professionnels
+              </p>
+            </div>
+
+            {isLoadingPlans ? (
+              <div className="flex justify-center py-12">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500"></div>
+              </div>
+            ) : (
+              <div className="grid md:grid-cols-3 gap-6 mb-8">
+                {subscriptionPlans.map((plan, index) => (
+                  <div
+                    key={plan.id}
+                    className={`relative border-2 rounded-xl p-6 cursor-pointer transition-all hover:shadow-lg ${
+                      index === 1 ? 'border-green-500 bg-green-50' : 'border-gray-200 hover:border-green-300'
+                    }`}
+                  >
+                    {index === 1 && (
+                      <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                        <span className="bg-green-500 text-white px-3 py-1 rounded-full text-xs font-medium">
+                          <Star className="inline h-3 w-3 mr-1" />
+                          Populaire
+                        </span>
+                      </div>
+                    )}
+                    
+                    <div className="text-center mb-6">
+                      <h3 className="text-xl font-bold text-gray-900 mb-2">{plan.name}</h3>
+                      <div className="text-3xl font-bold text-green-600 mb-1">
+                        {plan.price_monthly}€
+                        <span className="text-sm text-gray-500 font-normal">/mois</span>
+                      </div>
+                      <p className="text-sm text-gray-500">
+                        {plan.max_listings ? `${plan.max_listings} annonces/mois` : 'Annonces illimitées'}
+                      </p>
+                    </div>
+
+                    <div className="space-y-3 mb-6">
+                      {Object.entries(plan.features || {}).map(([key, value]) => {
+                        if (value) {
+                          const featureLabels: Record<string, string> = {
+                            badge_pro: 'Badge Professionnel',
+                            priority_search: 'Priorité dans les résultats',
+                            unlimited_photos: 'Photos illimitées',
+                            advanced_stats: 'Statistiques avancées',
+                            api_access: 'Accès API',
+                            pro_dashboard: 'Dashboard Pro',
+                            push_notifications: 'Notifications Push'
+                          };
+                          return (
+                            <div key={key} className="flex items-center space-x-2">
+                              <Check className="h-4 w-4 text-green-500" />
+                              <span className="text-sm text-gray-700">{featureLabels[key] || key}</span>
+                            </div>
+                          );
+                        }
+                        return null;
+                      })}
+                    </div>
+
+                    <button
+                      onClick={() => handlePlanSelection(plan)}
+                      disabled={isCreatingCheckout}
+                      className={`w-full py-3 rounded-lg font-medium transition-colors ${
+                        index === 1
+                          ? 'bg-green-600 text-white hover:bg-green-700'
+                          : 'bg-gray-900 text-white hover:bg-gray-800'
+                      } disabled:opacity-50 disabled:cursor-not-allowed`}
+                    >
+                      {isCreatingCheckout ? 'Redirection...' : 'Choisir ce plan'}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Footer Étape 2 */}
+            <div className="flex justify-between items-center pt-6 border-t">
+              <button
+                onClick={() => setCurrentStep(1)}
+                className="px-6 py-3 text-gray-600 hover:text-gray-800 font-medium transition-colors flex items-center space-x-2"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                <span>Retour au profil</span>
+              </button>
+              
+              <p className="text-xs text-gray-500">
+                Paiement sécurisé par Stripe • Annulation possible à tout moment
+              </p>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
