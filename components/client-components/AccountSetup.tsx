@@ -136,7 +136,6 @@ export const AccountSetup: React.FC<AccountSetupProps> = ({ onComplete }) => {
           setCurrentUser({
             ...currentUser,
             ...profileData,
-            professionalAccount: result.professionalAccount || currentUser.professionalAccount,
           });
         }
       } else {
