@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { ArrowLeft, Scale, FileText, Shield, AlertCircle } from 'lucide-react';
+import { LEGAL } from '../config/legalConfig';
 
 interface TermsPageProps {
   onBack: () => void;
@@ -43,7 +44,7 @@ export const TermsPage: React.FC<TermsPageProps> = ({ onBack, setCurrentView }) 
             Conditions Générales d'Utilisation
           </h1>
           <p className="text-lg text-gray-600">
-            Dernière mise à jour : 14 janvier 2025
+            Dernière mise à jour : {LEGAL.LAST_UPDATED}
           </p>
         </div>
 
@@ -54,7 +55,7 @@ export const TermsPage: React.FC<TermsPageProps> = ({ onBack, setCurrentView }) 
             <div>
               <h3 className="text-lg font-semibold text-blue-900 mb-2">Important</h3>
               <p className="text-blue-800">
-                En utilisant Passion Auto2Roues, vous acceptez les présentes conditions générales d'utilisation. 
+                En utilisant {LEGAL.SITE_NAME}, vous acceptez les présentes conditions générales d'utilisation. 
                 Nous vous recommandons de les lire attentivement.
               </p>
             </div>
@@ -72,10 +73,10 @@ export const TermsPage: React.FC<TermsPageProps> = ({ onBack, setCurrentView }) 
             <div className="space-y-4 text-gray-700">
               <p>
                 Les présentes Conditions Générales d'Utilisation (CGU) régissent l'accès et l'utilisation 
-                de la plateforme Auto2Roues, accessible à l'adresse auto2roues.fr.
+                de la plateforme {LEGAL.SITE_NAME}, éditée par {LEGAL.COMPANY_NAME}.
               </p>
               <p>
-                Auto2Roues est une plateforme de mise en relation entre particuliers et professionnels 
+                {LEGAL.SITE_NAME} est une plateforme de mise en relation entre particuliers et professionnels 
                 pour l'achat, la vente et la recherche de véhicules automobiles, motos, scooters, 
                 pièces détachées et services.
               </p>
@@ -95,7 +96,7 @@ export const TermsPage: React.FC<TermsPageProps> = ({ onBack, setCurrentView }) 
                 Elle nécessite de fournir des informations exactes et à jour.
               </p>
               <p>
-                <strong>2.2 Vérification :</strong> Auto2Roues se réserve le droit de vérifier 
+                <strong>2.2 Vérification :</strong> {LEGAL.SITE_NAME} se réserve le droit de vérifier 
                 l'identité des utilisateurs et de suspendre les comptes en cas d'informations 
                 incorrectes ou frauduleuses.
               </p>
@@ -138,7 +139,7 @@ export const TermsPage: React.FC<TermsPageProps> = ({ onBack, setCurrentView }) 
             <h2 className="text-2xl font-bold text-gray-900 mb-6">4. Transactions et Paiements</h2>
             <div className="space-y-4 text-gray-700">
               <p>
-                <strong>4.1 Rôle d'Auto2Roues :</strong> Auto2Roues est un intermédiaire 
+                <strong>4.1 Rôle de {LEGAL.SITE_NAME} :</strong> {LEGAL.SITE_NAME} est un intermédiaire 
                 technique qui facilite la mise en relation. Les transactions se déroulent 
                 directement entre acheteurs et vendeurs.
               </p>
@@ -148,7 +149,7 @@ export const TermsPage: React.FC<TermsPageProps> = ({ onBack, setCurrentView }) 
               </p>
               <p>
                 <strong>4.3 Remboursement :</strong> Les packs premium ne sont pas remboursables 
-                sauf en cas de dysfonctionnement technique imputable à Auto2Roues.
+                sauf en cas de dysfonctionnement technique imputable à {LEGAL.SITE_NAME}.
               </p>
             </div>
           </div>
@@ -161,7 +162,7 @@ export const TermsPage: React.FC<TermsPageProps> = ({ onBack, setCurrentView }) 
             </h2>
             <div className="space-y-4 text-gray-700">
               <p>
-                Auto2Roues s'engage à protéger la vie privée de ses utilisateurs conformément 
+                {LEGAL.SITE_NAME} s'engage à protéger la vie privée de ses utilisateurs conformément 
                 au Règlement Général sur la Protection des Données (RGPD).
               </p>
               <p>
@@ -180,11 +181,11 @@ export const TermsPage: React.FC<TermsPageProps> = ({ onBack, setCurrentView }) 
             <h2 className="text-2xl font-bold text-gray-900 mb-6">6. Propriété Intellectuelle</h2>
             <div className="space-y-4 text-gray-700">
               <p>
-                La plateforme Auto2Roues, son contenu, ses fonctionnalités et son design 
+                {LEGAL.SITE_NAME} et l'ensemble de ses contenus (textes, images, logos) 
                 sont protégés par les droits de propriété intellectuelle.
               </p>
               <p>
-                Les utilisateurs accordent à Auto2Roues une licence d'utilisation du contenu 
+                Les utilisateurs accordent à {LEGAL.COMPANY_NAME} une licence d'utilisation du contenu 
                 qu'ils publient pour les besoins du fonctionnement de la plateforme.
               </p>
             </div>
@@ -237,7 +238,7 @@ export const TermsPage: React.FC<TermsPageProps> = ({ onBack, setCurrentView }) 
             <h2 className="text-2xl font-bold text-gray-900 mb-6">Contact</h2>
             <p className="text-gray-700">
               Pour toute question concernant ces conditions générales d'utilisation, 
-              contactez-nous à : <span className="text-primary-bolt-500 font-semibold">contact@passionauto2roues.com</span>
+              contactez-nous à : <span className="text-primary-bolt-500 font-semibold">{LEGAL.CONTACT_EMAIL}</span>
             </p>
           </div>
         </div>

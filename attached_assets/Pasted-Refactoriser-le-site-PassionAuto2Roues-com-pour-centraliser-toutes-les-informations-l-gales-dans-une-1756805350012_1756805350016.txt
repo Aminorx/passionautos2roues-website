@@ -1,0 +1,55 @@
+Refactoriser le site PassionAuto2Roues.com pour centraliser toutes les informations légales dans une page/config “Données légales”, puis réutiliser ces variables dans les pages : Mentions légales, CGU, Politique de Confidentialité, À propos.
+
+Contexte :
+
+Les infos légales (dénomination, forme juridique, capital, RCS+ville, siège social, directeur de publication, email de contact, prestataires d’hébergement) doivent être définies une seule fois.
+
+Les pages listées doivent consommer ces mêmes données pour garantir cohérence et maintenance.
+
+À faire (sans écrire de code dans ta réponse) :
+
+Créer une source unique “Données légales” (ex. “Page de configuration légale”) contenant les champs :
+
+COMPANY_NAME, COMPANY_LEGAL_FORM, COMPANY_CAPITAL, COMPANY_RCS, COMPANY_ADDRESS, PUBLISHER, CONTACT_EMAIL, HOSTING_LIST, LAST_UPDATED.
+
+Remplacer dans les pages suivantes tout texte “en dur” par des références à ces champs :
+
+Mentions légales : éditeur, forme, capital, RCS+ville, siège, directeur de la publication, email, hébergeurs.
+
+CGU : éditeur, directeur de la publication, email, hébergeurs, date de mise à jour.
+
+Politique de Confidentialité : responsable du traitement, adresse, email, hébergeurs (partage des données), date de mise à jour.
+
+À propos : phrase d’édition du site (par la société…), RCS+ville, siège.
+
+Conserver la mise en forme existante des pages (titres, sections, paragraphes).
+
+Unifier l’email public (utiliser CONTACT_EMAIL partout).
+
+Lister clairement les hébergeurs (depuis HOSTING_LIST) avec leur rôle : Netlify (front), Render (backend), Supabase (base de données).
+
+Mettre à jour la date affichée sur chaque page via LAST_UPDATED.
+
+Produire un résumé des remplacements effectués page par page (avant → après), sans code.
+
+Contraintes :
+
+Ne pas modifier le contenu éditorial, seulement la source des données (passer de valeur fixe → variable).
+
+Ne pas ajouter de nouveau texte légal sans instruction explicite.
+
+Pas de code dans ta réponse : uniquement la liste d’actions, les variables utilisées et les emplacements.
+
+Livrables attendus :
+
+Une checklist par page avec : sections impactées, variables utilisées, et texte remplacé.
+
+Une table de mapping (variable → emplacements exacts dans chaque page).
+
+Un compte-rendu confirmant que toutes les occurrences des données légales “en dur” ont été remplacées.
+
+Validation :
+
+Une modification future dans la “Page de configuration légale” doit se refléter automatiquement dans Mentions légales, CGU, Confidentialité, À propos.
+
+Aucune divergence de dénomination, adresse, RCS, email ou hébergeur ne doit subsister.

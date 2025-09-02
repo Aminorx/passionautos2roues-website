@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { ArrowLeft, Car, Users, Shield, Target, Award, Heart } from 'lucide-react';
+import { LEGAL } from '../config/legalConfig';
 
 interface AboutPageProps {
   onBack: () => void;
@@ -24,7 +25,7 @@ export const AboutPage: React.FC<AboutPageProps> = ({ onBack, setCurrentView }) 
               <ArrowLeft className="h-5 w-5" />
               <span>Retour</span>
             </button>
-            <h1 className="text-xl font-bold text-gray-900">À propos de Passion Auto2Roues</h1>
+            <h1 className="text-xl font-bold text-gray-900">À propos de {LEGAL.SITE_NAME}</h1>
             <div className="w-20"></div>
           </div>
         </div>
@@ -40,7 +41,7 @@ export const AboutPage: React.FC<AboutPageProps> = ({ onBack, setCurrentView }) 
             </div>
           </div>
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            Passion Auto2Roues
+            {LEGAL.SITE_NAME}
           </h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
             La plateforme de référence pour acheter et vendre des véhicules automobiles, 
@@ -61,7 +62,7 @@ export const AboutPage: React.FC<AboutPageProps> = ({ onBack, setCurrentView }) 
           </p>
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
             <p className="text-blue-900 font-medium">
-              PassionAuto2Roues est édité par SOS MON GARAGE, société par actions simplifiée à associé unique au capital de 1 000,00 €, immatriculée au RCS Paris sous le numéro 940 510 381, dont le siège social est situé au 229 rue Saint-Honoré, 75001 Paris. Le représentant légal est M. Belmeskine Said, Président.
+              {LEGAL.SITE_NAME} est édité par {LEGAL.COMPANY_NAME}, {LEGAL.COMPANY_LEGAL_FORM.toLowerCase()} au capital de {LEGAL.COMPANY_CAPITAL}, immatriculée au {LEGAL.COMPANY_RCS}, dont le siège social est situé au {LEGAL.COMPANY_ADDRESS}. Le représentant légal est M. {LEGAL.PUBLISHER}, {LEGAL.PUBLISHER_TITLE}.
             </p>
           </div>
         </div>
@@ -153,13 +154,13 @@ export const AboutPage: React.FC<AboutPageProps> = ({ onBack, setCurrentView }) 
           <h2 className="text-2xl font-bold text-gray-900 mb-6">Nous Contacter</h2>
           <div className="space-y-4">
             <p className="text-gray-700">
-              <strong>Email :</strong> contact@passionauto2roues.com
+              <strong>Email :</strong> {LEGAL.CONTACT_EMAIL}
             </p>
             <p className="text-gray-700">
               <strong>Téléphone :</strong> +33 1 23 45 67 89
             </p>
             <p className="text-gray-700">
-              <strong>Adresse :</strong> 229 rue Saint-Honoré, 75001 Paris, France
+              <strong>Adresse :</strong> {LEGAL.COMPANY_ADDRESS}, France
             </p>
             <p className="text-gray-700">
               <strong>Horaires :</strong> Lundi à Vendredi, 9h-18h

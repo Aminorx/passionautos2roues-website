@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { ArrowLeft, Lock, Eye, UserCheck, Database, Shield } from 'lucide-react';
+import { LEGAL } from '../config/legalConfig';
 
 interface PrivacyPageProps {
   onBack: () => void;
@@ -43,7 +44,7 @@ export const PrivacyPage: React.FC<PrivacyPageProps> = ({ onBack, setCurrentView
             Politique de Confidentialité
           </h1>
           <p className="text-lg text-gray-600">
-            Dernière mise à jour : 14 janvier 2025
+            Dernière mise à jour : {LEGAL.LAST_UPDATED}
           </p>
         </div>
 
@@ -54,7 +55,7 @@ export const PrivacyPage: React.FC<PrivacyPageProps> = ({ onBack, setCurrentView
             <div>
               <h3 className="text-lg font-semibold text-green-900 mb-2">Conformité RGPD</h3>
               <p className="text-green-800">
-                Passion Auto2Roues est entièrement conforme au Règlement Général sur la Protection 
+                {LEGAL.SITE_NAME} est entièrement conforme au Règlement Général sur la Protection 
                 des Données (RGPD) et s'engage à protéger vos données personnelles.
               </p>
             </div>
@@ -168,7 +169,7 @@ export const PrivacyPage: React.FC<PrivacyPageProps> = ({ onBack, setCurrentView
               <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                 <h4 className="font-semibold text-yellow-900 mb-2">Prestataires de services</h4>
                 <p className="text-yellow-800">
-                  Hébergement (Netlify, Render, Supabase), paiement (Stripe), support client - sous contrat de confidentialité
+                  Hébergement ({LEGAL.HOSTING.map(h => h.name).join(', ')}), paiement (Stripe), support client - sous contrat de confidentialité
                 </p>
               </div>
               
@@ -293,11 +294,11 @@ export const PrivacyPage: React.FC<PrivacyPageProps> = ({ onBack, setCurrentView
             <h2 className="text-2xl font-bold text-gray-900 mb-6">Contact et Réclamations</h2>
             <div className="space-y-4 text-gray-700">
               <p>
-                <strong>Responsable du traitement :</strong> SOS MON GARAGE, 229 rue Saint-Honoré, 75001 Paris
+                <strong>Responsable du traitement :</strong> {LEGAL.COMPANY_NAME}, {LEGAL.COMPANY_ADDRESS}
               </p>
               <p>
                 <strong>Contact :</strong> 
-                <span className="text-primary-bolt-500 font-semibold"> contact@passionauto2roues.com</span>
+                <span className="text-primary-bolt-500 font-semibold"> {LEGAL.CONTACT_EMAIL}</span>
               </p>
               <p>
                 <strong>Autorité de contrôle :</strong> En cas de litige, vous pouvez saisir la 
@@ -308,7 +309,7 @@ export const PrivacyPage: React.FC<PrivacyPageProps> = ({ onBack, setCurrentView
               </p>
               <div className="bg-green-50 border border-green-200 rounded-lg p-4 mt-4">
                 <p className="text-green-800 font-medium">
-                  Conformément au RGPD, vous pouvez exercer vos droits en écrivant à contact@passionauto2roues.com.
+                  Conformément au RGPD, vous pouvez exercer vos droits en écrivant à {LEGAL.CONTACT_EMAIL}.
                 </p>
               </div>
             </div>
