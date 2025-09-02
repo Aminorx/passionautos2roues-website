@@ -217,13 +217,6 @@ export const PrivacyPage: React.FC<PrivacyPageProps> = ({ onBack, setCurrentView
                   </p>
                 </div>
               </div>
-              
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-4">
-                <p className="text-blue-800">
-                  <strong>Comment exercer vos droits :</strong> Contactez-nous à 
-                  <span className="font-semibold"> privacy@auto2roues.fr</span> avec une copie de votre pièce d'identité.
-                </p>
-              </div>
             </div>
           </div>
 
