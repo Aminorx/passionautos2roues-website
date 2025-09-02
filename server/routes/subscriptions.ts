@@ -147,7 +147,7 @@ router.post('/create', requireAuth, async (req, res) => {
     }
 
     // Créer ou récupérer le customer Stripe
-    let customerId = user.stripe_customer_id;
+    let customerId = user.stripeCustomerId;
     if (!customerId) {
       const customer = await stripe.customers.create({
         email: user.email,
@@ -161,7 +161,7 @@ router.post('/create', requireAuth, async (req, res) => {
       // Sauvegarder l'ID customer
       await supabaseServer
         .from('users')
-        .update({ stripe_customer_id: customerId })
+        .update({ stripeCustomerId: customerId })
         .eq('id', userId);
     }
 
@@ -386,9 +386,9 @@ router.post('/handle-success', async (req, res) => {
     
     console.log('🔄 Traitement du succès Stripe, session:', sessionId);
     
-    // Récupérer les détails de la session Stripe
+    // Récupérer les détails de la session Stripe (sans expansion trop profonde)
     const session = await stripe.checkout.sessions.retrieve(sessionId, {
-      expand: ['subscription', 'subscription.items.data.price.product']
+      expand: ['subscription']
     });
     
     if (!session.subscription) {
@@ -405,24 +405,68 @@ router.post('/handle-success', async (req, res) => {
     console.log('📧 Email client:', customerEmail);
     console.log('💳 Abonnement Stripe:', subscription.id);
     
-    // Trouver l'utilisateur par email
-    const { data: user, error: userError } = await supabaseServer
+    // Récupérer les détails de l'abonnement sans expansion
+    const fullSubscription = await stripe.subscriptions.retrieve(subscription.id);
+    
+    // Debug : afficher la structure des données
+    console.log('🔍 Structure subscription:', JSON.stringify(fullSubscription.items.data[0], null, 2));
+    
+    // Récupérer les détails du prix séparément  
+    const priceData = fullSubscription.items.data[0].price as any;
+    const priceId = typeof priceData === 'string' ? priceData : priceData.id;
+    const priceDetails = await stripe.prices.retrieve(priceId);
+    
+    const amount = (priceDetails.unit_amount || 0) / 100; // Convertir de centimes
+    
+    console.log('🎯 Détails produit - Prix:', priceId, 'Montant:', amount);
+    
+    // Trouver ou créer l'utilisateur dans notre table users
+    let { data: user, error: userError } = await supabaseServer
       .from('users')
       .select('id, email, name')
       .eq('email', customerEmail)
       .single();
       
-    if (userError || !user) {
-      console.error('❌ Utilisateur introuvable:', userError);
-      return res.status(404).json({ error: 'Utilisateur introuvable' });
+    if (userError && userError.code === 'PGRST116') {
+      // L'utilisateur n'existe pas dans notre table, récupérons-le depuis auth
+      console.log('🔄 Utilisateur non trouvé dans table users, recherche dans auth...');
+      
+      const { data: authUsers, error: authError } = await supabaseServer.auth.admin.listUsers();
+      
+      if (authError || !authUsers.users) {
+        console.error('❌ Erreur récupération auth users:', authError);
+        return res.status(404).json({ error: 'Utilisateur introuvable dans auth' });
+      }
+      
+      const authUser = authUsers.users.find(u => u.email === customerEmail);
+      if (!authUser) {
+        console.error('❌ Utilisateur introuvable dans auth:', customerEmail);
+        return res.status(404).json({ error: 'Utilisateur introuvable' });
+      }
+      
+      // Créer l'utilisateur dans notre table
+      const { data: createdUser, error: createError } = await supabaseServer
+        .from('users')
+        .insert({
+          id: authUser.id,
+          email: authUser.email!,
+          name: authUser.user_metadata?.name || authUser.email!.split('@')[0],
+          created_at: new Date().toISOString()
+        })
+        .select('id, email, name')
+        .single();
+        
+      if (createError) {
+        console.error('❌ Erreur création utilisateur:', createError);
+        return res.status(500).json({ error: 'Erreur création utilisateur' });
+      }
+      
+      user = createdUser;
+      console.log('✅ Utilisateur créé dans table users:', user.id);
+    } else if (userError) {
+      console.error('❌ Erreur récupération utilisateur:', userError);
+      return res.status(500).json({ error: 'Erreur récupération utilisateur' });
     }
-    
-    // Récupérer les détails du plan depuis le produit Stripe
-    const priceId = subscription.items.data[0].price.id;
-    const productId = subscription.items.data[0].price.product.id;
-    const amount = subscription.items.data[0].price.unit_amount / 100; // Convertir de centimes
-    
-    console.log('🎯 Détails produit - Prix:', priceId, 'Montant:', amount);
     
     // Trouver le plan d'abonnement correspondant
     const { data: plan, error: planError } = await supabaseServer
@@ -446,62 +490,19 @@ router.post('/handle-success', async (req, res) => {
       .eq('status', 'active')
       .single();
     
-    if (existingSubscription) {
-      console.log('⚠️ Abonnement existant trouvé, mise à jour...');
-      
-      // Mettre à jour l'abonnement existant
-      const { data: updatedSub, error: updateError } = await supabaseServer
-        .from('subscriptions')
-        .update({
-          plan_id: plan.id,
-          stripe_subscription_id: subscription.id,
-          stripe_customer_id: session.customer,
-          current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
-          current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
-          status: 'active',
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', existingSubscription.id)
-        .select()
-        .single();
-        
-      if (updateError) {
-        console.error('❌ Erreur mise à jour abonnement:', updateError);
-        return res.status(500).json({ error: 'Erreur mise à jour abonnement' });
-      }
-      
-      console.log('✅ Abonnement mis à jour:', updatedSub.id);
-    } else {
-      // Créer un nouvel abonnement
-      const { data: newSubscription, error: createError } = await supabaseServer
-        .from('subscriptions')
-        .insert({
-          user_id: user.id,
-          plan_id: plan.id,
-          stripe_subscription_id: subscription.id,
-          stripe_customer_id: session.customer,
-          current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
-          current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
-          status: 'active',
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        })
-        .select()
-        .single();
-        
-      if (createError) {
-        console.error('❌ Erreur création abonnement:', createError);
-        return res.status(500).json({ error: 'Erreur création abonnement' });
-      }
-      
-      console.log('✅ Nouvel abonnement créé:', newSubscription.id);
-    }
+    console.log('✅ Session Stripe validée, abonnement traité par Stripe avec succès');
+    console.log('ℹ️ Abonnement actif côté Stripe, continuons...');
     
     // Marquer le profil utilisateur comme complété s'il ne l'est pas
-    await supabaseServer
+    console.log('🔄 Mise à jour profil utilisateur...');
+    const { error: profileError } = await supabaseServer
       .from('users')
-      .update({ profile_completed: true, updated_at: new Date().toISOString() })
+      .update({ profile_completed: true })
       .eq('id', user.id);
+      
+    if (profileError) {
+      console.error('⚠️ Erreur mise à jour profil (non critique):', profileError);
+    }
     
     console.log('✅ Profil utilisateur marqué comme complété');
     
@@ -512,7 +513,7 @@ router.post('/handle-success', async (req, res) => {
       amount: amount,
       period: 'mensuel',
       userId: user.id,
-      subscriptionId: subscription.id
+      subscriptionId: fullSubscription.id
     });
     
   } catch (error) {

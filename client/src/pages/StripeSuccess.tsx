@@ -6,7 +6,7 @@ import { supabase } from '@/lib/supabase';
 const StripeSuccess: React.FC = () => {
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [sessionDetails, setSessionDetails] = useState<any>(null);
-  const { dbUser, refreshDbUser } = useAuth();
+  const { dbUser } = useAuth();
   
   useEffect(() => {
     const handleStripeSuccess = async () => {
@@ -43,10 +43,7 @@ const StripeSuccess: React.FC = () => {
         
         console.log('✅ Paiement traité avec succès:', result);
         
-        // Rafraîchir les données utilisateur
-        if (refreshDbUser) {
-          await refreshDbUser();
-        }
+        // Les données utilisateur seront rafraîchies automatiquement lors de la navigation
         
       } catch (error) {
         console.error('❌ Erreur lors du traitement du succès:', error);
@@ -55,7 +52,7 @@ const StripeSuccess: React.FC = () => {
     };
     
     handleStripeSuccess();
-  }, [refreshDbUser]);
+  }, []);
   
   if (status === 'loading') {
     return (
