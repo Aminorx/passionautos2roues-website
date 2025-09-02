@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { ArrowLeft, Shield, AlertTriangle, CheckCircle, Eye, Lock, Phone, CreditCard } from 'lucide-react';
+import { BRAND } from '../config/legalConfig';
 
 interface SafetyTipsPageProps {
   onBack: () => void;
@@ -50,7 +51,7 @@ export const SafetyTipsPage: React.FC<SafetyTipsPageProps> = ({ onBack, setCurre
       title: "Communication prudente",
       description: "Soyez vigilant dans vos communications et ne partagez pas d'informations sensibles.",
       tips: [
-        "Utilisez la messagerie Passion Auto2Roues pour les premiers contacts",
+        `Utilisez la messagerie ${BRAND.SITE_NAME} pour les premiers contacts`,
         "Ne communiquez jamais vos données bancaires par message",
         "Méfiez-vous des offres trop alléchantes",
         "Vérifiez l'identité de votre interlocuteur"
@@ -268,7 +269,7 @@ export const SafetyTipsPage: React.FC<SafetyTipsPageProps> = ({ onBack, setCurre
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a
-              href="mailto:security@auto2roues.fr"
+              href={`mailto:${BRAND.CONTACT_EMAIL}`}
               className="bg-red-500 text-white px-6 py-3 rounded-lg hover:bg-red-600 transition-colors"
             >
               Signaler un problème

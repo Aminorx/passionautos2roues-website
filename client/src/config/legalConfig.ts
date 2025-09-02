@@ -14,6 +14,10 @@ export const LEGAL = {
     { name: "Supabase", role: "hébergement et gestion de la base de données", url: "https://supabase.com" },
   ] as const,
   LAST_UPDATED: "2 septembre 2025",
-  SITE_NAME: "PassionAuto2Roues",
-  SITE_DOMAIN: "PassionAuto2Roues.com",
+} as const;
+
+export const BRAND = {
+  SITE_NAME: "Passion Auto2Roues",
+  SITE_DOMAIN: "passionauto2roues.com",
+  CONTACT_EMAIL: "contact@passionauto2roues.com",
 } as const;

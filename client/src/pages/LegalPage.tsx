@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { ArrowLeft, Building, Mail, Phone, Globe, FileText } from 'lucide-react';
-import { LEGAL } from '../config/legalConfig';
+import { LEGAL, BRAND } from '../config/legalConfig';
 
 interface LegalPageProps {
   onBack: () => void;
@@ -44,7 +44,7 @@ export const LegalPage: React.FC<LegalPageProps> = ({ onBack, setCurrentView }) 
             Mentions Légales
           </h1>
           <p className="text-lg text-gray-600">
-            Informations légales concernant {LEGAL.SITE_NAME}
+            Informations légales concernant {BRAND.SITE_NAME}
           </p>
         </div>
 
@@ -142,7 +142,7 @@ export const LegalPage: React.FC<LegalPageProps> = ({ onBack, setCurrentView }) 
             <div className="space-y-4 text-gray-700">
               <div className="bg-gray-50 rounded-lg p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Hébergement du site</h3>
-                <p className="mb-4">Le site {LEGAL.SITE_DOMAIN} est hébergé et opéré via plusieurs prestataires :</p>
+                <p className="mb-4">Le site {BRAND.SITE_DOMAIN} est hébergé et opéré via plusieurs prestataires :</p>
                 <div className="space-y-2">
                   {LEGAL.HOSTING.map((host, index) => (
                     <p key={index}><strong>• {host.name}</strong> – {host.role} ({host.url})</p>
@@ -157,7 +157,7 @@ export const LegalPage: React.FC<LegalPageProps> = ({ onBack, setCurrentView }) 
             <h2 className="text-2xl font-bold text-gray-900 mb-6">6. Propriété Intellectuelle</h2>
             <div className="space-y-4 text-gray-700">
               <p>
-                {LEGAL.SITE_NAME} et l'ensemble de ses contenus (textes, images, logos) sont la propriété de {LEGAL.COMPANY_NAME}.
+                {BRAND.SITE_NAME} et l'ensemble de ses contenus (textes, images, logos) sont la propriété de {LEGAL.COMPANY_NAME}.
               </p>
               <p>
                 Toute reproduction, représentation, modification, publication, adaptation de tout 
@@ -165,7 +165,7 @@ export const LegalPage: React.FC<LegalPageProps> = ({ onBack, setCurrentView }) 
                 est interdite, sauf autorisation écrite préalable de {LEGAL.COMPANY_NAME}.
               </p>
               <p>
-                Les marques {LEGAL.SITE_NAME} et les logos figurant sur le site sont des marques 
+                Les marques {BRAND.SITE_NAME} et les logos figurant sur le site sont des marques 
                 de {LEGAL.COMPANY_NAME}. Toute reproduction totale ou partielle de ces marques ou logos 
                 effectuée à partir des éléments du site sans l'autorisation expresse de {LEGAL.COMPANY_NAME} 
                 est donc prohibée.
@@ -178,7 +178,7 @@ export const LegalPage: React.FC<LegalPageProps> = ({ onBack, setCurrentView }) 
             <h2 className="text-2xl font-bold text-gray-900 mb-6">7. Cookies</h2>
             <div className="space-y-4 text-gray-700">
               <p>
-                Le site Auto2Roues utilise des cookies pour améliorer l'expérience utilisateur 
+                Le site {BRAND.SITE_NAME} utilise des cookies pour améliorer l'expérience utilisateur 
                 et analyser le trafic. Les cookies sont des petits fichiers texte déposés sur 
                 votre ordinateur lors de votre visite.
               </p>
@@ -198,18 +198,18 @@ export const LegalPage: React.FC<LegalPageProps> = ({ onBack, setCurrentView }) 
             <h2 className="text-2xl font-bold text-gray-900 mb-6">8. Responsabilité</h2>
             <div className="space-y-4 text-gray-700">
               <p>
-                Auto2Roues SAS s'efforce de fournir des informations aussi précises que possible. 
+                {LEGAL.COMPANY_NAME} s'efforce de fournir des informations aussi précises que possible. 
                 Toutefois, elle ne pourra être tenue responsable des omissions, des inexactitudes 
                 et des carences dans la mise à jour, qu'elles soient de son fait ou du fait des 
                 tiers partenaires qui lui fournissent ces informations.
               </p>
               <p>
-                Tous les informations indiquées sur le site Auto2Roues sont données à titre 
+                Tous les informations indiquées sur le site {BRAND.SITE_NAME} sont données à titre 
                 indicatif, et sont susceptibles d'évoluer. Par ailleurs, les renseignements 
                 figurant sur le site ne sont pas exhaustifs.
               </p>
               <p>
-                Auto2Roues SAS ne peut être tenue responsable des transactions effectuées entre 
+                {LEGAL.COMPANY_NAME} ne peut être tenue responsable des transactions effectuées entre 
                 utilisateurs via la plateforme.
               </p>
             </div>
@@ -220,7 +220,7 @@ export const LegalPage: React.FC<LegalPageProps> = ({ onBack, setCurrentView }) 
             <h2 className="text-2xl font-bold text-gray-900 mb-6">9. Droit Applicable</h2>
             <div className="space-y-4 text-gray-700">
               <p>
-                Tout litige en relation avec l'utilisation du site Auto2Roues est soumis au 
+                Tout litige en relation avec l'utilisation du site {BRAND.SITE_NAME} est soumis au 
                 droit français. En cas de litige, les tribunaux français seront seuls compétents.
               </p>
               <p>
@@ -236,7 +236,7 @@ export const LegalPage: React.FC<LegalPageProps> = ({ onBack, setCurrentView }) 
             <div className="space-y-4 text-gray-700">
               <p>
                 Conformément aux dispositions du Code de la consommation concernant le règlement 
-                amiable des litiges, Auto2Roues SAS adhère au Service du Médiateur du e-commerce 
+                amiable des litiges, {LEGAL.COMPANY_NAME} adhère au Service du Médiateur du e-commerce 
                 de la FEVAD (Fédération du e-commerce et de la vente à distance).
               </p>
               <p>

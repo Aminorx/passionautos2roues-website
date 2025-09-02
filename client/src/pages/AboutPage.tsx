@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { ArrowLeft, Car, Users, Shield, Target, Award, Heart } from 'lucide-react';
-import { LEGAL } from '../config/legalConfig';
+import { LEGAL, BRAND } from '../config/legalConfig';
 
 interface AboutPageProps {
   onBack: () => void;
@@ -25,7 +25,7 @@ export const AboutPage: React.FC<AboutPageProps> = ({ onBack, setCurrentView }) 
               <ArrowLeft className="h-5 w-5" />
               <span>Retour</span>
             </button>
-            <h1 className="text-xl font-bold text-gray-900">À propos de {LEGAL.SITE_NAME}</h1>
+            <h1 className="text-xl font-bold text-gray-900">À propos de {BRAND.SITE_NAME}</h1>
             <div className="w-20"></div>
           </div>
         </div>
@@ -41,7 +41,7 @@ export const AboutPage: React.FC<AboutPageProps> = ({ onBack, setCurrentView }) 
             </div>
           </div>
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            {LEGAL.SITE_NAME}
+            {BRAND.SITE_NAME}
           </h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
             La plateforme de référence pour acheter et vendre des véhicules automobiles, 
@@ -62,7 +62,7 @@ export const AboutPage: React.FC<AboutPageProps> = ({ onBack, setCurrentView }) 
           </p>
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
             <p className="text-blue-900 font-medium">
-              {LEGAL.SITE_NAME} est édité par {LEGAL.COMPANY_NAME}, {LEGAL.COMPANY_LEGAL_FORM.toLowerCase()} au capital de {LEGAL.COMPANY_CAPITAL}, immatriculée au {LEGAL.COMPANY_RCS}, dont le siège social est situé au {LEGAL.COMPANY_ADDRESS}. Le représentant légal est M. {LEGAL.PUBLISHER}, {LEGAL.PUBLISHER_TITLE}.
+              {BRAND.SITE_NAME} est édité par {LEGAL.COMPANY_NAME}, {LEGAL.COMPANY_LEGAL_FORM.toLowerCase()} au capital de {LEGAL.COMPANY_CAPITAL}, immatriculée au {LEGAL.COMPANY_RCS}, dont le siège social est situé au {LEGAL.COMPANY_ADDRESS}. Le représentant légal est M. {LEGAL.PUBLISHER}, {LEGAL.PUBLISHER_TITLE}.
             </p>
           </div>
         </div>
@@ -128,7 +128,7 @@ export const AboutPage: React.FC<AboutPageProps> = ({ onBack, setCurrentView }) 
 
         {/* Statistiques */}
         <div className="bg-gradient-to-r from-primary-bolt-500 to-primary-bolt-600 rounded-2xl shadow-lg p-8 text-white mb-12">
-          <h2 className="text-2xl font-bold mb-8 text-center">Auto2Roues en Chiffres</h2>
+          <h2 className="text-2xl font-bold mb-8 text-center">{BRAND.SITE_NAME} en Chiffres</h2>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <div className="text-center">
               <div className="text-3xl font-bold mb-2">10k+</div>

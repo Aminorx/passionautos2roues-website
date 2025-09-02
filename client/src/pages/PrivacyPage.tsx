@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { ArrowLeft, Lock, Eye, UserCheck, Database, Shield } from 'lucide-react';
-import { LEGAL } from '../config/legalConfig';
+import { LEGAL, BRAND } from '../config/legalConfig';
 
 interface PrivacyPageProps {
   onBack: () => void;
@@ -55,7 +55,7 @@ export const PrivacyPage: React.FC<PrivacyPageProps> = ({ onBack, setCurrentView
             <div>
               <h3 className="text-lg font-semibold text-green-900 mb-2">Conformité RGPD</h3>
               <p className="text-green-800">
-                {LEGAL.SITE_NAME} est entièrement conforme au Règlement Général sur la Protection 
+                {BRAND.SITE_NAME} est entièrement conforme au Règlement Général sur la Protection 
                 des Données (RGPD) et s'engage à protéger vos données personnelles.
               </p>
             </div>
@@ -302,7 +302,7 @@ export const PrivacyPage: React.FC<PrivacyPageProps> = ({ onBack, setCurrentView
               </p>
               <div className="bg-green-50 border border-green-200 rounded-lg p-4 mt-4">
                 <p className="text-green-800 font-medium">
-                  Conformément au RGPD, vous pouvez exercer vos droits en écrivant à {LEGAL.CONTACT_EMAIL}.
+                  Conformément au RGPD, vous pouvez exercer vos droits en écrivant à {BRAND.CONTACT_EMAIL}.
                 </p>
               </div>
             </div>

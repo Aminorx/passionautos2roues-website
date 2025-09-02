@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Search, HelpCircle, MessageCircle, Phone, Mail, ChevronDown, ChevronUp } from 'lucide-react';
+import { BRAND } from '../config/legalConfig';
 
 interface HelpPageProps {
   onBack: () => void;
@@ -26,7 +27,7 @@ export const HelpPage: React.FC<HelpPageProps> = ({ onBack, setCurrentView }) =>
   const faqData: FAQItem[] = [
     {
       id: 1,
-      question: "Comment publier une annonce sur Passion Auto2Roues ?",
+      question: `Comment publier une annonce sur ${BRAND.SITE_NAME} ?`,
       answer: "Pour publier une annonce, connectez-vous à votre compte, cliquez sur 'Déposer une annonce' et suivez les étapes guidées. Vous devrez renseigner le type d'annonce, la catégorie, les détails du véhicule, ajouter des photos et définir un prix.",
       category: "annonces"
     },
@@ -69,13 +70,13 @@ export const HelpPage: React.FC<HelpPageProps> = ({ onBack, setCurrentView }) =>
     {
       id: 8,
       question: "Mes données personnelles sont-elles protégées ?",
-      answer: "Absolument. Passion Auto2Roues respecte le RGPD et protège vos données personnelles. Elles ne sont jamais vendues à des tiers et sont utilisées uniquement pour le fonctionnement de la plateforme.",
+      answer: `Absolument. ${BRAND.SITE_NAME} respecte le RGPD et protège vos données personnelles. Elles ne sont jamais vendues à des tiers et sont utilisées uniquement pour le fonctionnement de la plateforme.`,
       category: "securite"
     },
     {
       id: 9,
       question: "Comment signaler une annonce suspecte ?",
-      answer: "Chaque annonce dispose d'un bouton 'Signaler' en bas de page. Vous pouvez également nous contacter directement à support@passion-auto2roues.fr pour signaler tout contenu inapproprié.",
+      answer: `Chaque annonce dispose d'un bouton 'Signaler' en bas de page. Vous pouvez également nous contacter directement à ${BRAND.CONTACT_EMAIL} pour signaler tout contenu inapproprié.`,
       category: "securite"
     },
     {
@@ -184,7 +185,7 @@ export const HelpPage: React.FC<HelpPageProps> = ({ onBack, setCurrentView }) =>
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Besoin d'aide ?</h3>
               <div className="space-y-3">
                 <a
-                  href="mailto:support@auto2roues.fr"
+                  href={`mailto:${BRAND.CONTACT_EMAIL}`}
                   className="flex items-center space-x-3 p-3 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
                 >
                   <Mail className="h-5 w-5 text-blue-500" />
@@ -261,7 +262,7 @@ export const HelpPage: React.FC<HelpPageProps> = ({ onBack, setCurrentView }) =>
             </div>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">Tutoriels Vidéo</h3>
             <p className="text-gray-600 mb-4">
-              Apprenez à utiliser Auto2Roues avec nos tutoriels vidéo détaillés
+              Apprenez à utiliser {BRAND.SITE_NAME} avec nos tutoriels vidéo détaillés
             </p>
             <button className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors">
               Voir les tutoriels
