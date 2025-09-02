@@ -1,0 +1,80 @@
+👉 Tu as déjà 3 tables en base :
+
+subscription_plans
+
+subscriptions
+
+professional_account
+
+C’est exactement ce qu’il faut si tu pars sur Stripe Billing ✅
+
+🔹 Analyse table par table
+
+subscription_plans
+
+Tu pourrais même ne pas l’avoir si tu relies tes plans directement à Stripe Price IDs.
+
+Mais la garder est utile si tu veux afficher les features dans ton app (ex: “10 annonces / mois, badge Pro”) → car Stripe ne stocke pas ces features métier.
+👉 Donc utile de la garder, mais pas absolument obligatoire.
+
+subscriptions
+
+Indispensable ⚡
+
+Tu dois stocker au minimum :
+
+stripe_subscription_id
+
+user_id ou professional_account_id
+
+status (active, canceled, past_due, etc.)
+
+current_period_end (pour calculer la limite mensuelle d’annonces).
+👉 C’est ton source of truth locale pour synchroniser avec les webhooks Stripe.
+
+professional_account
+
+Indispensable ⚡
+
+C’est là que tu stockes les infos artisan (nom entreprise, SIRET, etc.).
+
+Il doit avoir une référence à sa subscription (via subscription_id ou user_id).
+👉 C’est ton lien entre utilisateur et abonnement Stripe.
+
+professional_verifications
+
+Pas besoin maintenant 🚫
+
+Tu pourras l’ajouter plus tard si tu fais un badge vérifié via KBIS.
+
+🔹 Donc :
+
+👉 Pour un MVP avec Stripe Billing :
+
+Tu gardes 3 tables (plans, subscriptions, professional_account).
+
+Tu relies subscriptions aux webhooks Stripe.
+
+Tu relies professional_account.subscription_id → subscriptions.id.
+
+Tu comptes les annonces postées par mois en fonction du plan (depuis subscription_plans).
+
+🔹 Ce que Stripe te donne déjà (pas besoin de recoder)
+
+Gestion paiements récurrents
+
+Prorata (si changement de plan)
+
+Annulation / suspension
+
+Emails automatiques de facturation
+
+👉 Toi, tu ne codes que :
+
+Activation/désactivation du compte Pro quand Stripe envoie un webhook.
+
+Limite d’annonces (logique métier).
+
+Donc pour répondre simplement à ta question :
+✅ Oui, tu as besoin de ces 3 tables.
+❌ Non, tu n’as pas besoin de plus pour l’instant (surtout pas professional_verifications).
