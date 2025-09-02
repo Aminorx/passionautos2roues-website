@@ -1,15 +1,9 @@
-import React, { useState, useRef } from 'react';
-import { User, Building, MapPin, Camera, CheckCircle, ArrowRight, Upload, X, FileCheck } from 'lucide-react';
-import { useApp } from '../../client/src/contexts/AppContext';
+import React, { useState } from 'react';
+import { User, Building, MapPin, Camera, CheckCircle, ArrowRight } from 'lucide-react';
+import { useApp } from '../contexts/AppContext';
 
 interface AccountSetupProps {
   onComplete: () => void;
-}
-
-interface DocumentUpload {
-  file: File | null;
-  preview: string | null;
-  status: "idle" | "uploading" | "uploaded" | "error";
 }
 
 export const AccountSetup: React.FC<AccountSetupProps> = ({ onComplete }) => {
@@ -26,14 +20,6 @@ export const AccountSetup: React.FC<AccountSetupProps> = ({ onComplete }) => {
     specialties: [] as string[],
   });
 
-  const [kbisDocument, setKbisDocument] = useState<DocumentUpload>({
-    file: null,
-    preview: null,
-    status: "idle",
-  });
-
-  const kbisInputRef = useRef<HTMLInputElement>(null);
-
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setProfileData({ ...profileData, [e.target.name]: e.target.value });
   };
@@ -45,114 +31,15 @@ export const AccountSetup: React.FC<AccountSetupProps> = ({ onComplete }) => {
     setProfileData({ ...profileData, specialties: newSpecialties });
   };
 
-  // Gestion upload document KBIS
-  const handleKbisUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    // Vérifications
-    const maxSize = 5 * 1024 * 1024; // 5MB
-    const allowedTypes = [
-      "application/pdf",
-      "image/jpeg",
-      "image/jpg", 
-      "image/png",
-    ];
-
-    if (file.size > maxSize) {
-      alert("Le fichier est trop volumineux. Maximum 5MB.");
-      return;
+  const handleComplete = () => {
+    // Update user profile with additional data
+    if (currentUser) {
+      setCurrentUser({
+        ...currentUser,
+        ...profileData,
+      });
     }
-
-    if (!allowedTypes.includes(file.type)) {
-      alert("Format non supporté. Utilisez PDF, JPG ou PNG.");
-      return;
-    }
-
-    // Créer aperçu si c'est une image
-    let preview = null;
-    if (file.type.startsWith("image/")) {
-      preview = URL.createObjectURL(file);
-    }
-
-    setKbisDocument({
-      file,
-      preview,
-      status: "uploaded",
-    });
-  };
-
-  const removeKbisDocument = () => {
-    if (kbisDocument.preview) {
-      URL.revokeObjectURL(kbisDocument.preview);
-    }
-    setKbisDocument({
-      file: null,
-      preview: null,
-      status: "idle",
-    });
-    if (kbisInputRef.current) {
-      kbisInputRef.current.value = "";
-    }
-  };
-
-  const handleComplete = async () => {
-    try {
-      // Pour les comptes professionnels, appeler le nouvel endpoint avec les données complètes
-      if (currentUser?.type === 'professional') {
-        const formData = new FormData();
-        
-        // Ajouter les données du profil
-        Object.entries(profileData).forEach(([key, value]) => {
-          if (key === 'specialties') {
-            formData.append(key, JSON.stringify(value));
-          } else if (value) {
-            formData.append(key, value as string);
-          }
-        });
-
-        // Ajouter le document KBIS si présent
-        if (kbisDocument.file) {
-          formData.append("kbisDocument", kbisDocument.file);
-        }
-
-        const response = await fetch('/api/profile/complete-profile', {
-          method: 'POST',
-          headers: {
-            'x-user-id': currentUser.id || '',
-          },
-          body: formData,
-        });
-
-        if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.error || 'Erreur lors de la finalisation du profil');
-        }
-
-        const result = await response.json();
-        
-        // Mettre à jour l'utilisateur avec les nouvelles données
-        if (currentUser) {
-          setCurrentUser({
-            ...currentUser,
-            ...profileData,
-          });
-        }
-      } else {
-        // Pour les comptes individuels, mise à jour simple
-        if (currentUser) {
-          setCurrentUser({
-            ...currentUser,
-            ...profileData,
-          });
-        }
-      }
-      
-      onComplete();
-    } catch (error) {
-      console.error('Erreur lors de la finalisation:', error);
-      alert('Erreur lors de la finalisation du profil. Veuillez réessayer.');
-    }
+    onComplete();
   };
 
   const specialtyOptions = [
@@ -168,21 +55,18 @@ export const AccountSetup: React.FC<AccountSetupProps> = ({ onComplete }) => {
     'Électronique auto',
   ];
 
-  // Calcul du nombre total d'étapes selon le type de compte
-  const totalSteps = currentUser?.type === 'professional' ? 4 : 3;
-
   return (
     <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-xl p-8">
       {/* Progress Bar */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-4">
-          <span className="text-sm font-medium text-gray-600">Étape {step} sur {totalSteps}</span>
-          <span className="text-sm font-medium text-[#0CBFDE]">{Math.round((step / totalSteps) * 100)}%</span>
+          <span className="text-sm font-medium text-gray-600">Étape {step} sur 3</span>
+          <span className="text-sm font-medium text-[#0CBFDE]">{Math.round((step / 3) * 100)}%</span>
         </div>
         <div className="w-full bg-gray-200 rounded-full h-2">
           <div 
             className="bg-gradient-to-r from-primary-bolt-500 to-primary-bolt-600 h-2 rounded-full transition-all duration-300"
-            style={{ width: `${(step / totalSteps) * 100}%` }}
+            style={{ width: `${(step / 3) * 100}%` }}
           ></div>
         </div>
       </div>
@@ -412,150 +296,12 @@ export const AccountSetup: React.FC<AccountSetupProps> = ({ onComplete }) => {
               Retour
             </button>
             <button
-              onClick={() => {
-                // Les pros vont à l'étape 4 (KBIS), les individuels terminent
-                if (currentUser?.type === 'professional') {
-                  setStep(4);
-                } else {
-                  handleComplete();
-                }
-              }}
+              onClick={handleComplete}
               className="flex-1 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white py-3 px-6 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center space-x-2"
             >
-              {currentUser?.type === 'professional' ? (
-                <>
-                  <span>Continuer</span>
-                  <ArrowRight className="h-5 w-5" />
-                </>
-              ) : (
-                <>
-                  <CheckCircle className="h-5 w-5" />
-                  <span>Terminer</span>
-                </>
-              )}
+              <CheckCircle className="h-5 w-5" />
+              <span>Terminer</span>
             </button>
-          </div>
-        </div>
-      )}
-
-      {/* Step 4: KBIS Upload (for professionals only) */}
-      {step === 4 && currentUser?.type === 'professional' && (
-        <div className="space-y-6">
-          <div className="text-center mb-8">
-            <FileCheck className="h-12 w-12 text-primary-bolt-500 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
-              Vérification professionnelle (optionnel)
-            </h2>
-            <p className="text-gray-600">
-              Ajoutez votre document KBIS pour obtenir le badge "Vérifié"
-            </p>
-          </div>
-
-          {/* Document KBIS Upload */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Document KBIS/SIRET (optionnel)
-            </label>
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-primary-bolt-400 transition-colors relative">
-              <input
-                ref={kbisInputRef}
-                type="file"
-                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                accept=".pdf,.jpg,.jpeg,.png"
-                onChange={handleKbisUpload}
-              />
-
-              {kbisDocument.status === "uploaded" && kbisDocument.file ? (
-                <div className="space-y-3">
-                  <CheckCircle className="h-12 w-12 text-green-600 mx-auto" />
-                  <div>
-                    <h3 className="font-medium text-gray-900">
-                      {kbisDocument.file.name}
-                    </h3>
-                    <p className="text-sm text-gray-500">
-                      {(kbisDocument.file.size / 1024 / 1024).toFixed(2)} MB
-                    </p>
-                  </div>
-                  {kbisDocument.preview && (
-                    <div className="mt-4">
-                      <img 
-                        src={kbisDocument.preview}
-                        alt="Aperçu KBIS"
-                        className="max-w-full h-32 object-contain mx-auto border rounded"
-                      />
-                    </div>
-                  )}
-                  <button
-                    type="button"
-                    onClick={removeKbisDocument}
-                    className="inline-flex items-center space-x-2 text-red-600 hover:text-red-700"
-                  >
-                    <X className="h-4 w-4" />
-                    <span>Supprimer</span>
-                  </button>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  <Upload className="h-12 w-12 text-gray-400 mx-auto" />
-                  <div>
-                    <h3 className="font-medium text-gray-900 mb-1">
-                      Glissez votre document KBIS ici
-                    </h3>
-                    <p className="text-sm text-gray-600">
-                      ou <span className="text-primary-bolt-600 font-medium">cliquez pour parcourir</span>
-                    </p>
-                  </div>
-                  <div className="text-xs text-gray-500">
-                    PDF, JPG, PNG • Maximum 5MB
-                  </div>
-                </div>
-              )}
-            </div>
-            <p className="text-sm text-gray-500 mt-2">
-              Le document KBIS permet de vérifier votre entreprise et d'obtenir le badge "Vérifié".
-              Vous pourrez l'ajouter plus tard si vous préférez.
-            </p>
-          </div>
-
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <div className="flex">
-              <FileCheck className="h-5 w-5 text-blue-500 mt-0.5 mr-3 flex-shrink-0" />
-              <div>
-                <h3 className="font-medium text-blue-900 mb-1">
-                  Pourquoi ajouter votre KBIS ?
-                </h3>
-                <ul className="text-sm text-blue-800 space-y-1">
-                  <li>• Badge "Vérifié" visible sur vos annonces</li>
-                  <li>• Augmente la confiance des acheteurs</li>
-                  <li>• Accès prioritaire aux fonctionnalités pro</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex space-x-4">
-            <button
-              onClick={() => setStep(3)}
-              className="flex-1 py-3 px-6 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors"
-            >
-              Retour
-            </button>
-            <button
-              onClick={handleComplete}
-              className="flex-1 bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white py-3 px-6 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center space-x-2"
-            >
-              <span>Passer cette étape</span>
-              <ArrowRight className="h-5 w-5" />
-            </button>
-            {kbisDocument.file && (
-              <button
-                onClick={handleComplete}
-                className="flex-1 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white py-3 px-6 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center space-x-2"
-              >
-                <CheckCircle className="h-5 w-5" />
-                <span>Terminer avec KBIS</span>
-              </button>
-            )}
           </div>
         </div>
       )}

@@ -1,5 +1,5 @@
-import React, { useState, useRef } from 'react';
-import { X, Building2, MapPin, Phone, Globe, FileText, Briefcase, Upload, FileCheck } from 'lucide-react';
+import React from 'react';
+import { X, Building2, MapPin, Phone, Globe, FileText, Briefcase } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -23,12 +23,6 @@ const professionalProfileSchema = z.object({
 });
 
 type ProfessionalProfileData = z.infer<typeof professionalProfileSchema>;
-
-interface DocumentUpload {
-  file: File | null;
-  preview: string | null;
-  status: "idle" | "uploading" | "uploaded" | "error";
-}
 
 interface ProfessionalProfileFormProps {
   isOpen: boolean;
@@ -63,14 +57,6 @@ export const ProfessionalProfileForm: React.FC<ProfessionalProfileFormProps> = (
 }) => {
   // const { toast } = useToast(); // Hook non disponible
   
-  const [kbisDocument, setKbisDocument] = useState<DocumentUpload>({
-    file: null,
-    preview: null,
-    status: "idle",
-  });
-
-  const kbisInputRef = useRef<HTMLInputElement>(null);
-  
   const form = useForm<ProfessionalProfileData>({
     resolver: zodResolver(professionalProfileSchema),
     defaultValues: {
@@ -100,57 +86,6 @@ export const ProfessionalProfileForm: React.FC<ProfessionalProfileFormProps> = (
     }
   };
 
-  // Gestion upload document KBIS
-  const handleKbisUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    // Vérifications
-    const maxSize = 5 * 1024 * 1024; // 5MB
-    const allowedTypes = [
-      "application/pdf",
-      "image/jpeg",
-      "image/jpg", 
-      "image/png",
-    ];
-
-    if (file.size > maxSize) {
-      alert("Le fichier est trop volumineux. Maximum 5MB.");
-      return;
-    }
-
-    if (!allowedTypes.includes(file.type)) {
-      alert("Format non supporté. Utilisez PDF, JPG ou PNG.");
-      return;
-    }
-
-    // Créer aperçu si c'est une image
-    let preview = null;
-    if (file.type.startsWith("image/")) {
-      preview = URL.createObjectURL(file);
-    }
-
-    setKbisDocument({
-      file,
-      preview,
-      status: "uploaded",
-    });
-  };
-
-  const removeKbisDocument = () => {
-    if (kbisDocument.preview) {
-      URL.revokeObjectURL(kbisDocument.preview);
-    }
-    setKbisDocument({
-      file: null,
-      preview: null,
-      status: "idle",
-    });
-    if (kbisInputRef.current) {
-      kbisInputRef.current.value = "";
-    }
-  };
-
   const onSubmit = async (data: ProfessionalProfileData) => {
     try {
       console.log('🔧 Soumission profil professionnel:', data);
@@ -160,31 +95,18 @@ export const ProfessionalProfileForm: React.FC<ProfessionalProfileFormProps> = (
       if (!session) {
         throw new Error('Session non disponible');
       }
-
-      // Créer FormData pour inclure le fichier KBIS
-      const formData = new FormData();
-      
-      // Ajouter les données du formulaire
-      Object.entries(data).forEach(([key, value]) => {
-        if (key === 'specialties') {
-          formData.append(key, JSON.stringify(value));
-        } else if (value) {
-          formData.append(key, value as string);
-        }
-      });
-
-      // Ajouter le document KBIS si présent
-      if (kbisDocument.file) {
-        formData.append("kbisDocument", kbisDocument.file);
-      }
       
       // Appeler l'API pour finaliser l'onboarding
-      const response = await fetch('/api/profile/complete-profile', {
+      const response = await fetch('/api/profile/complete', {
         method: 'POST',
         headers: { 
+          'Content-Type': 'application/json',
           'Authorization': `Bearer ${session.access_token}`
         },
-        body: formData
+        body: JSON.stringify({
+          ...data,
+          type: 'professional'
+        })
       });
 
       if (!response.ok) throw new Error('Erreur lors de la mise à jour');
@@ -453,79 +375,6 @@ export const ProfessionalProfileForm: React.FC<ProfessionalProfileFormProps> = (
               </div>
               {form.formState.errors.bio && (
                 <p className="mt-1 text-sm text-red-600">{form.formState.errors.bio.message}</p>
-              )}
-            </div>
-          </section>
-
-          {/* Upload KBIS (optionnel) */}
-          <section className="space-y-4">
-            <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">
-              📄 Document KBIS/SIRET (optionnel)
-            </h3>
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-              <div className="flex items-start space-x-3">
-                <FileCheck className="h-5 w-5 text-blue-600 mt-0.5" />
-                <div>
-                  <h4 className="font-medium text-blue-900">Obtenez le badge "Vérifié"</h4>
-                  <p className="text-sm text-blue-700 mt-1">
-                    Uploadez votre document KBIS pour rassurer vos clients et améliorer votre crédibilité.
-                  </p>
-                </div>
-              </div>
-            </div>
-            
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-green-400 transition-colors relative">
-              <input
-                ref={kbisInputRef}
-                type="file"
-                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                accept=".pdf,.jpg,.jpeg,.png"
-                onChange={handleKbisUpload}
-              />
-
-              {kbisDocument.status === "uploaded" && kbisDocument.file ? (
-                <div className="space-y-3">
-                  <FileCheck className="h-12 w-12 text-green-600 mx-auto" />
-                  <div>
-                    <h3 className="font-medium text-gray-900">
-                      {kbisDocument.file.name}
-                    </h3>
-                    <p className="text-sm text-gray-500">
-                      {(kbisDocument.file.size / 1024 / 1024).toFixed(2)} MB
-                    </p>
-                  </div>
-                  {kbisDocument.preview && (
-                    <div className="mt-4">
-                      <img 
-                        src={kbisDocument.preview}
-                        alt="Aperçu KBIS"
-                        className="max-w-full h-32 object-contain mx-auto border rounded"
-                      />
-                    </div>
-                  )}
-                  <button
-                    type="button"
-                    onClick={removeKbisDocument}
-                    className="inline-flex items-center space-x-2 text-red-600 hover:text-red-700"
-                  >
-                    <X className="h-4 w-4" />
-                    <span>Supprimer</span>
-                  </button>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  <Upload className="h-12 w-12 text-gray-400 mx-auto" />
-                  <div>
-                    <h3 className="font-medium text-gray-900">Téléchargez votre document</h3>
-                    <p className="text-sm text-gray-500">
-                      Glissez votre extrait KBIS ou SIRET ici<br />
-                      PDF, JPG ou PNG • Max 5 MB
-                    </p>
-                  </div>
-                  <p className="text-xs text-gray-400">
-                    Le document KBIS accélère le processus de validation de votre compte professionnel.
-                  </p>
-                </div>
               )}
             </div>
           </section>
