@@ -57,18 +57,16 @@ export const LegalPage: React.FC<LegalPageProps> = ({ onBack, setCurrentView }) 
             </h2>
             <div className="space-y-4 text-gray-700">
               <div className="bg-gray-50 rounded-lg p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Passion Auto2Roues SAS</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">SOS MON GARAGE</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <p><strong>Forme juridique :</strong> Société par Actions Simplifiée</p>
-                    <p><strong>Capital social :</strong> 100 000 €</p>
-                    <p><strong>SIRET :</strong> 123 456 789 00012</p>
-                    <p><strong>Code APE :</strong> 6312Z</p>
+                    <p><strong>Forme juridique :</strong> Société par actions simplifiée (Société à associé unique)</p>
+                    <p><strong>Capital social :</strong> 1 000,00 €</p>
+                    <p><strong>RCS :</strong> 940 510 381 RCS Paris</p>
                   </div>
                   <div>
-                    <p><strong>RCS :</strong> Paris B 123 456 789</p>
-                    <p><strong>TVA intracommunautaire :</strong> FR12345678900</p>
-                    <p><strong>Date de création :</strong> 15/03/2023</p>
+                    <p><strong>Siège social :</strong> 229 rue Saint-Honoré, 75001 Paris</p>
+                    <p><strong>Représentant légal :</strong> Belmeskine Said (Président)</p>
                   </div>
                 </div>
               </div>
@@ -84,7 +82,7 @@ export const LegalPage: React.FC<LegalPageProps> = ({ onBack, setCurrentView }) 
                   <Building className="h-6 w-6 text-gray-500 mt-1" />
                   <div>
                     <p className="font-semibold text-gray-900">Adresse du siège social :</p>
-                    <p>123 Rue de l'Automobile</p>
+                    <p>229 rue Saint-Honoré</p>
                     <p>75001 Paris</p>
                     <p>France</p>
                   </div>
@@ -103,7 +101,7 @@ export const LegalPage: React.FC<LegalPageProps> = ({ onBack, setCurrentView }) 
                     <Mail className="h-6 w-6 text-blue-500 mt-1" />
                     <div>
                       <p className="font-semibold text-gray-900 mb-2">Email</p>
-                      <p>contact@auto2roues.fr</p>
+                      <p>contact@passionauto2roues.com</p>
                       <p className="text-sm text-gray-600">Support technique et commercial</p>
                     </div>
                   </div>
@@ -127,9 +125,9 @@ export const LegalPage: React.FC<LegalPageProps> = ({ onBack, setCurrentView }) 
             <h2 className="text-2xl font-bold text-gray-900 mb-6">4. Directeur de la Publication</h2>
             <div className="space-y-4 text-gray-700">
               <div className="bg-gray-50 rounded-lg p-6">
-                <p><strong>Nom :</strong> Jean Dupont</p>
-                <p><strong>Fonction :</strong> Président de Auto2Roues SAS</p>
-                <p><strong>Email :</strong> direction@auto2roues.fr</p>
+                <p><strong>Nom :</strong> Belmeskine Said</p>
+                <p><strong>Fonction :</strong> Président de SOS MON GARAGE</p>
+                <p><strong>Email :</strong> contact@passionauto2roues.com</p>
               </div>
             </div>
           </div>
@@ -142,18 +140,12 @@ export const LegalPage: React.FC<LegalPageProps> = ({ onBack, setCurrentView }) 
             </h2>
             <div className="space-y-4 text-gray-700">
               <div className="bg-gray-50 rounded-lg p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">OVH SAS</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <p><strong>Adresse :</strong></p>
-                    <p>2 rue Kellermann</p>
-                    <p>59100 Roubaix</p>
-                    <p>France</p>
-                  </div>
-                  <div>
-                    <p><strong>Téléphone :</strong> +33 9 72 10 10 07</p>
-                    <p><strong>Site web :</strong> www.ovh.com</p>
-                  </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Hébergement du site</h3>
+                <p className="mb-4">Le site PassionAuto2Roues.com est hébergé et opéré via plusieurs prestataires :</p>
+                <div className="space-y-2">
+                  <p><strong>• Netlify</strong> – hébergement du front-end (https://www.netlify.com)</p>
+                  <p><strong>• Render</strong> – hébergement du back-end (https://render.com)</p>
+                  <p><strong>• Supabase</strong> – hébergement et gestion de la base de données (https://supabase.com)</p>
                 </div>
               </div>
             </div>
@@ -164,19 +156,17 @@ export const LegalPage: React.FC<LegalPageProps> = ({ onBack, setCurrentView }) 
             <h2 className="text-2xl font-bold text-gray-900 mb-6">6. Propriété Intellectuelle</h2>
             <div className="space-y-4 text-gray-700">
               <p>
-                Le site Auto2Roues et l'ensemble de son contenu (textes, images, graphismes, logo, 
-                icônes, sons, logiciels, etc.) sont protégés par le droit d'auteur et constituent 
-                la propriété exclusive de Auto2Roues SAS.
+                PassionAuto2Roues et l'ensemble de ses contenus (textes, images, logos) sont la propriété de SOS MON GARAGE.
               </p>
               <p>
                 Toute reproduction, représentation, modification, publication, adaptation de tout 
                 ou partie des éléments du site, quel que soit le moyen ou le procédé utilisé, 
-                est interdite, sauf autorisation écrite préalable de Auto2Roues SAS.
+                est interdite, sauf autorisation écrite préalable de SOS MON GARAGE.
               </p>
               <p>
-                Les marques Auto2Roues et les logos figurant sur le site sont des marques déposées 
-                de Auto2Roues SAS. Toute reproduction totale ou partielle de ces marques ou logos 
-                effectuée à partir des éléments du site sans l'autorisation expresse de Auto2Roues SAS 
+                Les marques PassionAuto2Roues et les logos figurant sur le site sont des marques 
+                de SOS MON GARAGE. Toute reproduction totale ou partielle de ces marques ou logos 
+                effectuée à partir des éléments du site sans l'autorisation expresse de SOS MON GARAGE 
                 est donc prohibée.
               </p>
             </div>
@@ -260,7 +250,7 @@ export const LegalPage: React.FC<LegalPageProps> = ({ onBack, setCurrentView }) 
             <h2 className="text-2xl font-bold text-gray-900 mb-6">Contact Légal</h2>
             <p className="text-gray-700">
               Pour toute question concernant ces mentions légales, contactez-nous à : 
-              <span className="text-primary-bolt-500 font-semibold"> legal@auto2roues.fr</span>
+              <span className="text-primary-bolt-500 font-semibold"> contact@passionauto2roues.com</span>
             </p>
           </div>
         </div>

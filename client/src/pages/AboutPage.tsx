@@ -54,11 +54,16 @@ export const AboutPage: React.FC<AboutPageProps> = ({ onBack, setCurrentView }) 
             <Target className="h-8 w-8 text-primary-bolt-500 mr-3" />
             <h2 className="text-2xl font-bold text-gray-900">Notre Mission</h2>
           </div>
-          <p className="text-gray-700 text-lg leading-relaxed">
+          <p className="text-gray-700 text-lg leading-relaxed mb-6">
             Nous nous engageons à faciliter l'achat et la vente de véhicules en France en proposant 
             une plateforme moderne, sécurisée et intuitive. Notre objectif est de connecter acheteurs 
             et vendeurs tout en garantissant transparence et confiance dans chaque transaction.
           </p>
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+            <p className="text-blue-900 font-medium">
+              PassionAuto2Roues est édité par SOS MON GARAGE, société par actions simplifiée à associé unique au capital de 1 000,00 €, immatriculée au RCS Paris sous le numéro 940 510 381, dont le siège social est situé au 229 rue Saint-Honoré, 75001 Paris. Le représentant légal est M. Belmeskine Said, Président.
+            </p>
+          </div>
         </div>
 
         {/* Nos Valeurs */}
@@ -148,13 +153,13 @@ export const AboutPage: React.FC<AboutPageProps> = ({ onBack, setCurrentView }) 
           <h2 className="text-2xl font-bold text-gray-900 mb-6">Nous Contacter</h2>
           <div className="space-y-4">
             <p className="text-gray-700">
-              <strong>Email :</strong> contact@auto2roues.fr
+              <strong>Email :</strong> contact@passionauto2roues.com
             </p>
             <p className="text-gray-700">
               <strong>Téléphone :</strong> +33 1 23 45 67 89
             </p>
             <p className="text-gray-700">
-              <strong>Adresse :</strong> 123 Rue de l'Automobile, 75001 Paris, France
+              <strong>Adresse :</strong> 229 rue Saint-Honoré, 75001 Paris, France
             </p>
             <p className="text-gray-700">
               <strong>Horaires :</strong> Lundi à Vendredi, 9h-18h

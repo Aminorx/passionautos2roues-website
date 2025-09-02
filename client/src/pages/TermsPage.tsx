@@ -91,7 +91,7 @@ export const TermsPage: React.FC<TermsPageProps> = ({ onBack, setCurrentView }) 
             <h2 className="text-2xl font-bold text-gray-900 mb-6">2. Inscription et Compte Utilisateur</h2>
             <div className="space-y-4 text-gray-700">
               <p>
-                <strong>2.1 Inscription :</strong> L'inscription sur Auto2Roues est gratuite. 
+                <strong>2.1 Inscription :</strong> L'inscription sur PassionAuto2Roues est gratuite. 
                 Elle nécessite de fournir des informations exactes et à jour.
               </p>
               <p>
@@ -195,7 +195,7 @@ export const TermsPage: React.FC<TermsPageProps> = ({ onBack, setCurrentView }) 
             <h2 className="text-2xl font-bold text-gray-900 mb-6">7. Responsabilité</h2>
             <div className="space-y-4 text-gray-700">
               <p>
-                Auto2Roues ne peut être tenu responsable des transactions effectuées entre 
+                PassionAuto2Roues ne peut être tenu responsable des transactions effectuées entre 
                 utilisateurs, de la qualité des biens ou services proposés, ou des litiges 
                 pouvant survenir.
               </p>
@@ -211,7 +211,7 @@ export const TermsPage: React.FC<TermsPageProps> = ({ onBack, setCurrentView }) 
             <h2 className="text-2xl font-bold text-gray-900 mb-6">8. Modification et Résiliation</h2>
             <div className="space-y-4 text-gray-700">
               <p>
-                Auto2Roues se réserve le droit de modifier les présentes CGU à tout moment. 
+                PassionAuto2Roues se réserve le droit de modifier les présentes CGU à tout moment. 
                 Les utilisateurs seront informés des modifications importantes.
               </p>
               <p>
@@ -237,7 +237,7 @@ export const TermsPage: React.FC<TermsPageProps> = ({ onBack, setCurrentView }) 
             <h2 className="text-2xl font-bold text-gray-900 mb-6">Contact</h2>
             <p className="text-gray-700">
               Pour toute question concernant ces conditions générales d'utilisation, 
-              contactez-nous à : <span className="text-primary-bolt-500 font-semibold">legal@auto2roues.fr</span>
+              contactez-nous à : <span className="text-primary-bolt-500 font-semibold">contact@passionauto2roues.com</span>
             </p>
           </div>
         </div>

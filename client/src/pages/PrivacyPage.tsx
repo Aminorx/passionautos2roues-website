@@ -168,7 +168,7 @@ export const PrivacyPage: React.FC<PrivacyPageProps> = ({ onBack, setCurrentView
               <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                 <h4 className="font-semibold text-yellow-900 mb-2">Prestataires de services</h4>
                 <p className="text-yellow-800">
-                  Hébergement (OVH), paiement (Stripe), support client - sous contrat de confidentialité
+                  Hébergement (Netlify, Render, Supabase), paiement (Stripe), support client - sous contrat de confidentialité
                 </p>
               </div>
               
@@ -293,8 +293,11 @@ export const PrivacyPage: React.FC<PrivacyPageProps> = ({ onBack, setCurrentView
             <h2 className="text-2xl font-bold text-gray-900 mb-6">Contact et Réclamations</h2>
             <div className="space-y-4 text-gray-700">
               <p>
-                <strong>Délégué à la Protection des Données :</strong> 
-                <span className="text-primary-bolt-500 font-semibold"> privacy@auto2roues.fr</span>
+                <strong>Responsable du traitement :</strong> SOS MON GARAGE, 229 rue Saint-Honoré, 75001 Paris
+              </p>
+              <p>
+                <strong>Contact :</strong> 
+                <span className="text-primary-bolt-500 font-semibold"> contact@passionauto2roues.com</span>
               </p>
               <p>
                 <strong>Autorité de contrôle :</strong> En cas de litige, vous pouvez saisir la 
@@ -303,6 +306,11 @@ export const PrivacyPage: React.FC<PrivacyPageProps> = ({ onBack, setCurrentView
               <p>
                 <strong>Adresse CNIL :</strong> 3 Place de Fontenoy, 75007 Paris - www.cnil.fr
               </p>
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4 mt-4">
+                <p className="text-green-800 font-medium">
+                  Conformément au RGPD, vous pouvez exercer vos droits en écrivant à contact@passionauto2roues.com.
+                </p>
+              </div>
             </div>
           </div>
         </div>
