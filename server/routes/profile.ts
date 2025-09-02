@@ -298,8 +298,7 @@ router.post('/complete-profile', upload.single('kbisDocument'), async (req, res)
 
     // Préparer les données de mise à jour utilisateur
     const userUpdateData: any = {
-      profile_completed: true,
-      updated_at: new Date().toISOString()
+      profile_completed: true
     };
 
     // Ajouter les champs du profil s'ils existent
@@ -348,8 +347,7 @@ router.post('/complete-profile', upload.single('kbisDocument'), async (req, res)
         email: currentUser.email || null,
         website: data.website || currentUser.website || null,
         verification_status: req.file ? 'pending' : 'none', // 'pending' si KBIS, 'none' sinon
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        created_at: new Date().toISOString()
       };
 
       // Vérifier si un compte professionnel existe déjà
