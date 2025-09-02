@@ -244,7 +244,27 @@ const completeProfileSchema = z.object({
 router.post('/complete-profile', upload.single('kbisDocument'), async (req, res) => {
   console.log('🚀 API /complete-profile appelée');
   try {
-    const userId = req.headers['x-user-id'] as string;
+    // Support double authentification : x-user-id OU Bearer token
+    let userId = req.headers['x-user-id'] as string;
+    
+    // Si pas de x-user-id, essayer avec Bearer token (Supabase Auth)
+    if (!userId) {
+      const authHeader = req.headers.authorization;
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        const token = authHeader.substring(7);
+        try {
+          // Vérifier le token avec Supabase
+          const { data: { user }, error } = await supabaseServer.auth.getUser(token);
+          if (error || !user) {
+            return res.status(401).json({ error: 'Token invalide' });
+          }
+          userId = user.id;
+        } catch (e) {
+          return res.status(401).json({ error: 'Erreur vérification token' });
+        }
+      }
+    }
+    
     if (!userId) {
       return res.status(401).json({ error: 'Non authentifié' });
     }
@@ -314,7 +334,7 @@ router.post('/complete-profile', upload.single('kbisDocument'), async (req, res)
       return res.status(500).json({ error: 'Erreur mise à jour profil' });
     }
 
-    let professionalAccount = null;
+    let professionalAccount: any = null;
 
     // Si c'est un compte professionnel, gérer le compte professionnel et le KBIS
     if (currentUser.type === 'professional') {
@@ -374,10 +394,11 @@ router.post('/complete-profile', upload.single('kbisDocument'), async (req, res)
       }
 
       // Upload du document KBIS si présent
-      if (req.file && professionalAccount) {
+      if (req.file && professionalAccount?.id) {
         console.log('📤 Upload document KBIS...');
         try {
-          const fileName = `kbis-${professionalAccount!.id}-${Date.now()}.${req.file.originalname.split('.').pop()}`;
+          const proAccountId = professionalAccount.id; // TypeScript safety
+          const fileName = `kbis-${proAccountId}-${Date.now()}.${req.file.originalname.split('.').pop()}`;
           console.log('📁 Nom fichier:', fileName);
 
           const { data: uploadData, error: uploadError } = await supabaseServer
@@ -397,7 +418,7 @@ router.post('/complete-profile', upload.single('kbisDocument'), async (req, res)
             const { error: docError } = await supabaseServer
               .from('verification_documents')
               .insert({
-                professional_account_id: professionalAccount!.id,
+                professional_account_id: proAccountId,
                 document_type: 'kbis',
                 file_url: uploadData.path,
                 file_name: req.file.originalname,
