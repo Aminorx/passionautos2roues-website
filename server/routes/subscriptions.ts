@@ -490,9 +490,46 @@ router.post('/handle-success', async (req, res) => {
       .eq('status', 'active')
       .single();
     
-    // ✅ Stripe valide le paiement avec succès - abonnement actif côté Stripe
-    // Note: L'abonnement existe en base, cache Supabase temporairement désynchronisé
-    console.log('✅ Paiement Stripe confirmé - Abonnement actif');
+    // Créer ou mettre à jour l'abonnement en base
+    const subscriptionData = {
+      user_id: user!.id,
+      plan_id: plan.id,
+      plan_name: plan.name,
+      price: amount,
+      max_listings: plan.maxListings || plan.max_listings,
+      stripe_subscription_id: fullSubscription.id,
+      status: 'active' as const,
+      // Les dates Stripe seront mises à jour par webhook plus tard
+      current_period_start: null,
+      current_period_end: null,
+    };
+
+    if (existingSubscription) {
+      console.log('⚠️ Mise à jour abonnement existant...');
+      const { error: updateError } = await supabaseServer
+        .from('subscriptions')
+        .update(subscriptionData)
+        .eq('id', existingSubscription.id);
+        
+      if (updateError) {
+        console.error('⚠️ Erreur mise à jour abonnement (non critique):', updateError);
+      } else {
+        console.log('✅ Abonnement mis à jour');
+      }
+    } else {
+      console.log('🆕 Création nouvel abonnement...');
+      const { error: insertError } = await supabaseServer
+        .from('subscriptions')
+        .insert(subscriptionData);
+        
+      if (insertError) {
+        console.error('⚠️ Erreur création abonnement (non critique):', insertError);
+      } else {
+        console.log('✅ Nouvel abonnement créé');
+      }
+    }
+    
+    console.log('✅ Paiement Stripe confirmé - Abonnement traité');
     
     console.log('✅ Abonnement traité avec succès');
     
