@@ -175,7 +175,7 @@ export const professionalAccounts = pgTable("professional_accounts", {
   email: text("email"),
   website: text("website"),
   isVerified: boolean("is_verified").default(false),
-  verificationStatus: text("verification_status").$type<'pending' | 'approved' | 'rejected'>().default('pending'),
+  verificationStatus: text("verification_status").$type<'not_verified' | 'pending' | 'approved' | 'rejected'>().default('not_verified'),
   verifiedAt: timestamp("verified_at"),
   rejectedReason: text("rejected_reason"),
   // Champs de personnalisation pour la boutique

@@ -375,4 +375,153 @@ router.post('/webhook', async (req, res) => {
   res.json({ received: true });
 });
 
+// POST /api/subscriptions/handle-success - Traiter le retour de succès Stripe
+router.post('/handle-success', async (req, res) => {
+  try {
+    const { sessionId } = req.body;
+    
+    if (!sessionId) {
+      return res.status(400).json({ error: 'Session ID manquant' });
+    }
+    
+    console.log('🔄 Traitement du succès Stripe, session:', sessionId);
+    
+    // Récupérer les détails de la session Stripe
+    const session = await stripe.checkout.sessions.retrieve(sessionId, {
+      expand: ['subscription', 'subscription.items.data.price.product']
+    });
+    
+    if (!session.subscription) {
+      return res.status(400).json({ error: 'Pas d\'abonnement trouvé dans la session' });
+    }
+    
+    const subscription = session.subscription as any;
+    const customerEmail = session.customer_details?.email;
+    
+    if (!customerEmail) {
+      return res.status(400).json({ error: 'Email client manquant' });
+    }
+    
+    console.log('📧 Email client:', customerEmail);
+    console.log('💳 Abonnement Stripe:', subscription.id);
+    
+    // Trouver l'utilisateur par email
+    const { data: user, error: userError } = await supabaseServer
+      .from('users')
+      .select('id, email, name')
+      .eq('email', customerEmail)
+      .single();
+      
+    if (userError || !user) {
+      console.error('❌ Utilisateur introuvable:', userError);
+      return res.status(404).json({ error: 'Utilisateur introuvable' });
+    }
+    
+    // Récupérer les détails du plan depuis le produit Stripe
+    const priceId = subscription.items.data[0].price.id;
+    const productId = subscription.items.data[0].price.product.id;
+    const amount = subscription.items.data[0].price.unit_amount / 100; // Convertir de centimes
+    
+    console.log('🎯 Détails produit - Prix:', priceId, 'Montant:', amount);
+    
+    // Trouver le plan d'abonnement correspondant
+    const { data: plan, error: planError } = await supabaseServer
+      .from('subscription_plans')
+      .select('*')
+      .eq('stripe_price_id', priceId)
+      .single();
+      
+    if (planError || !plan) {
+      console.error('❌ Plan introuvable:', planError);
+      return res.status(404).json({ error: 'Plan d\'abonnement introuvable' });
+    }
+    
+    console.log('📋 Plan trouvé:', plan.name);
+    
+    // Vérifier si un abonnement existe déjà pour cet utilisateur
+    const { data: existingSubscription } = await supabaseServer
+      .from('subscriptions')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('status', 'active')
+      .single();
+    
+    if (existingSubscription) {
+      console.log('⚠️ Abonnement existant trouvé, mise à jour...');
+      
+      // Mettre à jour l'abonnement existant
+      const { data: updatedSub, error: updateError } = await supabaseServer
+        .from('subscriptions')
+        .update({
+          plan_id: plan.id,
+          stripe_subscription_id: subscription.id,
+          stripe_customer_id: session.customer,
+          current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
+          current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+          status: 'active',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', existingSubscription.id)
+        .select()
+        .single();
+        
+      if (updateError) {
+        console.error('❌ Erreur mise à jour abonnement:', updateError);
+        return res.status(500).json({ error: 'Erreur mise à jour abonnement' });
+      }
+      
+      console.log('✅ Abonnement mis à jour:', updatedSub.id);
+    } else {
+      // Créer un nouvel abonnement
+      const { data: newSubscription, error: createError } = await supabaseServer
+        .from('subscriptions')
+        .insert({
+          user_id: user.id,
+          plan_id: plan.id,
+          stripe_subscription_id: subscription.id,
+          stripe_customer_id: session.customer,
+          current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
+          current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+          status: 'active',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+        .select()
+        .single();
+        
+      if (createError) {
+        console.error('❌ Erreur création abonnement:', createError);
+        return res.status(500).json({ error: 'Erreur création abonnement' });
+      }
+      
+      console.log('✅ Nouvel abonnement créé:', newSubscription.id);
+    }
+    
+    // Marquer le profil utilisateur comme complété s'il ne l'est pas
+    await supabaseServer
+      .from('users')
+      .update({ profile_completed: true, updated_at: new Date().toISOString() })
+      .eq('id', user.id);
+    
+    console.log('✅ Profil utilisateur marqué comme complété');
+    
+    // Réponse avec les détails pour l'interface
+    res.json({
+      success: true,
+      planName: plan.name,
+      amount: amount,
+      period: 'mensuel',
+      userId: user.id,
+      subscriptionId: subscription.id
+    });
+    
+  } catch (error) {
+    console.error('❌ Erreur traitement succès Stripe:', error);
+    res.status(500).json({ 
+      error: 'Erreur lors du traitement du paiement',
+      details: error instanceof Error ? error.message : 'Erreur inconnue'
+    });
+  }
+});
+
 export { router as subscriptionsRouter };

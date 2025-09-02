@@ -12,6 +12,7 @@ import { UnifiedAuthModal } from './components/UnifiedAuthModal';
 import { ProfileSetupModal } from './components/ProfileSetupModal';
 import { PersonalProfileForm } from './components/PersonalProfileForm';
 import { ProfessionalProfileForm } from './components/ProfessionalProfileForm';
+import StripeSuccess from './pages/StripeSuccess';
 import { Dashboard } from './components/Dashboard';
 import { CreateListingForm } from './components/CreateListingForm';
 import { DraggableModal } from './components/DraggableModal';
@@ -269,6 +270,9 @@ function AppContent() {
                   <AdminDashboardClean onBack={() => setLocation('/')} /> : 
                   <AdminLogin onLoginSuccess={() => setLocation('/admin')} onBack={() => setLocation('/')} />;
               }}
+            </Route>
+            <Route path="/success">
+              <StripeSuccess />
             </Route>
             <Route path="/admin-login">
               <AdminLogin 
