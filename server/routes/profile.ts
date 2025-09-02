@@ -173,8 +173,7 @@ router.post('/complete', requireAuth, async (req: any, res) => {
         website: website || '',
         description: bio || '',
         specialties: specialties || [],
-        verification_status: 'pending',
-        updated_at: new Date().toISOString()
+        verification_status: 'pending'
       };
       
       if (existingProAccount) {
