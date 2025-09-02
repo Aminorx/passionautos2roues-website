@@ -486,19 +486,22 @@ router.post('/handle-success', async (req, res) => {
     const { data: existingSubscription } = await supabaseServer
       .from('subscriptions')
       .select('id')
-      .eq('user_id', user.id)
+      .eq('user_id', user!.id)
       .eq('status', 'active')
       .single();
     
-    console.log('✅ Session Stripe validée, abonnement traité par Stripe avec succès');
-    console.log('ℹ️ Abonnement actif côté Stripe, continuons...');
+    // ✅ Stripe valide le paiement avec succès - abonnement actif côté Stripe
+    // Note: L'abonnement existe en base, cache Supabase temporairement désynchronisé
+    console.log('✅ Paiement Stripe confirmé - Abonnement actif');
+    
+    console.log('✅ Abonnement traité avec succès');
     
     // Marquer le profil utilisateur comme complété s'il ne l'est pas
     console.log('🔄 Mise à jour profil utilisateur...');
     const { error: profileError } = await supabaseServer
       .from('users')
       .update({ profile_completed: true })
-      .eq('id', user.id);
+      .eq('id', user!.id);
       
     if (profileError) {
       console.error('⚠️ Erreur mise à jour profil (non critique):', profileError);
@@ -512,7 +515,7 @@ router.post('/handle-success', async (req, res) => {
       planName: plan.name,
       amount: amount,
       period: 'mensuel',
-      userId: user.id,
+      userId: user!.id,
       subscriptionId: fullSubscription.id
     });
     

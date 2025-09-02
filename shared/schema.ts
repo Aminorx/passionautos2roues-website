@@ -191,19 +191,19 @@ export const professionalAccounts = pgTable("professional_accounts", {
 
 export const subscriptions = pgTable("subscriptions", {
   id: serial("id").primaryKey(),
-  userId: text("user_id").references(() => users.id).notNull(),
-  planId: text("plan_id").notNull(),
-  planName: text("plan_name").notNull(),
+  user_id: text("user_id").references(() => users.id).notNull(),
+  plan_id: text("plan_id").notNull(),
+  plan_name: text("plan_name").notNull(),
   price: real("price").notNull(),
-  maxListings: integer("max_listings"),
-  stripeSubscriptionId: text("stripe_subscription_id").unique(),
+  max_listings: integer("max_listings"),
+  stripe_subscription_id: text("stripe_subscription_id").unique(),
   status: text("status").$type<'active' | 'cancelled' | 'expired' | 'pending'>().default('pending'),
-  currentPeriodStart: timestamp("current_period_start"),
-  currentPeriodEnd: timestamp("current_period_end"),
-  activatedAt: timestamp("activated_at"),
-  cancelledAt: timestamp("cancelled_at"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  current_period_start: timestamp("current_period_start"),
+  current_period_end: timestamp("current_period_end"),
+  activated_at: timestamp("activated_at"),
+  cancelled_at: timestamp("cancelled_at"),
+  created_at: timestamp("created_at").defaultNow().notNull(),
+  updated_at: timestamp("updated_at").defaultNow().notNull(),
 });
 
 export const stripeEventsProcessed = pgTable("stripe_events_processed", {
