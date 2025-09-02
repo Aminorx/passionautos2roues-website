@@ -159,6 +159,8 @@ export const subscriptionPlans = pgTable("subscription_plans", {
   priceYearly: real("price_yearly"),
   maxListings: integer("max_listings"),
   features: json("features").$type<Record<string, boolean>>().default({}),
+  stripeProductId: text("stripe_product_id"),
+  stripePriceId: text("stripe_price_id"),
   isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });

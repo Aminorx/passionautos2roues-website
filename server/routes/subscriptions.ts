@@ -11,6 +11,95 @@ if (!process.env.STRIPE_SECRET_KEY) {
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
+// GET /api/subscription-plans - Récupérer tous les plans disponibles  
+router.get('/plans', async (req, res) => {
+  try {
+    const { data: plans, error } = await supabaseServer
+      .from('subscription_plans')
+      .select('*')
+      .eq('is_active', true)
+      .order('price_monthly', { ascending: true });
+
+    if (error) {
+      console.error('❌ Erreur récupération plans:', error);
+      return res.status(500).json({ error: 'Erreur serveur' });
+    }
+
+    res.json(plans || []);
+  } catch (error) {
+    console.error('❌ Erreur récupération plans:', error);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// POST /api/create-checkout-session - Créer session Stripe Checkout
+router.post('/create-checkout-session', async (req, res) => {
+  try {
+    const { planId, userEmail } = req.body;
+
+    // Validation des paramètres
+    if (!planId || !userEmail) {
+      return res.status(400).json({ 
+        error: 'planId et userEmail sont requis' 
+      });
+    }
+
+    console.log(`🔄 Création session checkout pour plan ${planId}, user ${userEmail}`);
+
+    // Récupérer le plan depuis la base de données
+    const { data: plan, error: planError } = await supabaseServer
+      .from('subscription_plans')
+      .select('*')
+      .eq('id', planId)
+      .eq('is_active', true)
+      .single();
+
+    if (planError || !plan) {
+      console.error('❌ Plan non trouvé:', planError);
+      return res.status(400).json({ 
+        error: 'Plan d\'abonnement invalide ou inactif' 
+      });
+    }
+
+    if (!plan.stripe_price_id) {
+      console.error('❌ Plan sans Price ID Stripe:', plan);
+      return res.status(500).json({ 
+        error: 'Configuration Stripe manquante pour ce plan' 
+      });
+    }
+
+    // Créer la session Stripe Checkout
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      mode: 'subscription',
+      line_items: [
+        {
+          price: plan.stripe_price_id,
+          quantity: 1,
+        },
+      ],
+      customer_email: userEmail,
+      success_url: `${process.env.FRONTEND_URL || 'https://' + req.get('host')}/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.FRONTEND_URL || 'https://' + req.get('host')}/plans`,
+      metadata: {
+        planId: planId.toString(),
+        userEmail: userEmail,
+        planName: plan.name
+      }
+    });
+
+    console.log(`✅ Session checkout créée: ${session.id}`);
+
+    res.json({
+      sessionUrl: session.url
+    });
+
+  } catch (error) {
+    console.error('❌ Erreur création session checkout:', error);
+    res.status(500).json({ error: 'Erreur création session de paiement' });
+  }
+});
+
 // Plans d'abonnements avec tarifs serveur (sécurisé)
 const SUBSCRIPTION_PLANS = {
   'starter-monthly': {
