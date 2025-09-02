@@ -7,7 +7,10 @@ const router = Router();
 const requireAdmin = async (req: any, res: any, next: any) => {
   const userEmail = req.headers['x-user-email'];
   
+  console.log('🔐 Vérification admin pour:', userEmail);
+  
   if (!userEmail) {
+    console.log('❌ Pas d\'email dans headers');
     return res.status(401).json({ error: 'Non authentifié' });
   }
 
@@ -19,20 +22,27 @@ const requireAdmin = async (req: any, res: any, next: any) => {
       .eq('email', userEmail)
       .single();
 
+    console.log('👤 User trouvé:', user?.id);
+
     if (!user) {
+      console.log('❌ Utilisateur non trouvé dans DB');
       return res.status(404).json({ error: 'Utilisateur non trouvé' });
     }
 
-    const { data: admin } = await supabase
+    const { data: admin, error: adminError } = await supabase
       .from('admins')
       .select('*')
       .eq('user_id', user.id)
       .single();
 
+    console.log('🛡️ Admin trouvé:', admin?.id, 'erreur:', adminError);
+
     if (!admin) {
+      console.log('❌ Pas de droits admin pour:', userEmail);
       return res.status(403).json({ error: 'Accès refusé - Droits administrateur requis' });
     }
 
+    console.log('✅ Admin vérifié:', admin.role);
     (req as any).admin = admin;
     (req as any).userId = user.id;
     next();
@@ -179,6 +189,46 @@ router.patch('/annonces/:id', requireAdmin, async (req, res) => {
   } catch (error) {
     console.error('Erreur action annonce:', error);
     res.status(500).json({ error: 'Erreur lors de l\'action sur l\'annonce' });
+  }
+});
+
+// GET /api/admin/subscriptions - Lister tous les abonnements (VERSION DEBUG ULTRA SIMPLE)
+router.get('/subscriptions', async (req, res) => {
+  try {
+    console.log('🔍 [DEBUG] Test basique table subscriptions...');
+    
+    // Test super basique : compter les lignes
+    const { count, error: countError } = await supabase
+      .from('subscriptions')
+      .select('*', { count: 'exact', head: true });
+
+    if (countError) {
+      console.error('❌ Erreur comptage:', countError);
+      return res.status(500).json({ error: 'Erreur table subscriptions', details: countError });
+    }
+
+    console.log(`📊 ${count} abonnements trouvés dans la table`);
+    
+    // Si comptage OK, essayons de récupérer les données
+    const { data: subscriptions, error } = await supabase
+      .from('subscriptions')
+      .select('*')
+      .limit(10);
+
+    if (error) {
+      console.error('❌ Erreur récupération données:', error);
+      return res.status(500).json({ error: 'Erreur récupération données', details: error });
+    }
+
+    console.log(`✅ Données récupérées:`, subscriptions);
+    res.json({ 
+      count, 
+      subscriptions: subscriptions || [],
+      message: "Route admin subscriptions fonctionnelle !" 
+    });
+  } catch (error) {
+    console.error('❌ Erreur générale:', error);
+    res.status(500).json({ error: 'Erreur serveur', details: error.message });
   }
 });
 
