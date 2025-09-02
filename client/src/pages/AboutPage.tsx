@@ -157,7 +157,7 @@ export const AboutPage: React.FC<AboutPageProps> = ({ onBack, setCurrentView }) 
               <strong>Email :</strong> {LEGAL.CONTACT_EMAIL}
             </p>
             <p className="text-gray-700">
-              <strong>Téléphone :</strong> +33 1 23 45 67 89
+              <strong>Téléphone :</strong> {BRAND.PHONE_NUMBER}
             </p>
             <p className="text-gray-700">
               <strong>Adresse :</strong> {LEGAL.COMPANY_ADDRESS}, France

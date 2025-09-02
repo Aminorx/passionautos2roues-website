@@ -20,4 +20,5 @@ export const BRAND = {
   SITE_NAME: "Passion Auto2Roues",
   SITE_DOMAIN: "passionauto2roues.com",
   CONTACT_EMAIL: "contact@passionauto2roues.com",
+  PHONE_NUMBER: "+33 1 23 45 67 89",
 } as const;

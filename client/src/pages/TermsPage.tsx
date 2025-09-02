@@ -238,7 +238,7 @@ export const TermsPage: React.FC<TermsPageProps> = ({ onBack, setCurrentView }) 
             <h2 className="text-2xl font-bold text-gray-900 mb-6">Contact</h2>
             <p className="text-gray-700">
               Pour toute question concernant ces conditions générales d'utilisation, 
-              contactez-nous à : <span className="text-primary-bolt-500 font-semibold">{BRAND.CONTACT_EMAIL}</span>
+              contactez-nous à : <span className="text-primary-bolt-500 font-semibold">{BRAND.CONTACT_EMAIL}</span> ou au {BRAND.PHONE_NUMBER}
             </p>
           </div>
         </div>
