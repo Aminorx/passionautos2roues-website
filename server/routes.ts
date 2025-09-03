@@ -1203,6 +1203,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Route pour récupérer les informations d'abonnement d'un utilisateur
+  app.get('/api/subscriptions/status/:userId', async (req, res) => {
+    try {
+      const { userId } = req.params;
+      console.log(`💳 Vérification abonnement pour user ${userId}...`);
+      
+      // Pour l'instant, retourner des données simulées en attendant la vraie implémentation Stripe
+      const mockSubscription = {
+        isActive: false,
+        planName: null,
+        planType: 'free',
+        expiresAt: null,
+        features: []
+      };
+      
+      console.log('💳 Abonnement (simulé):', mockSubscription);
+      res.json(mockSubscription);
+    } catch (error) {
+      console.error('❌ Erreur récupération abonnement:', error);
+      res.status(500).json({ error: 'Erreur serveur' });
+    }
+  });
+
   // Route pour récupérer un compte professionnel par ID
   app.get('/api/professional-accounts/:id', async (req, res) => {
     try {

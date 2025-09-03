@@ -84,6 +84,20 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'overview', o
   const [savingProfile, setSavingProfile] = useState(false);
   const [profileSuccess, setProfileSuccess] = useState(false);
   
+  // Hook pour récupérer les informations du compte professionnel
+  const { data: professionalAccount } = useQuery({
+    queryKey: [`/api/professional-accounts/status/${dbUser?.id}`],
+    enabled: !!dbUser?.id && dbUser?.type === 'professional',
+    staleTime: 30000, // 30 secondes
+  });
+  
+  // Hook pour récupérer les informations d'abonnement
+  const { data: subscriptionInfo } = useQuery({
+    queryKey: [`/api/subscriptions/status/${dbUser?.id}`],
+    enabled: !!dbUser?.id && dbUser?.type === 'professional',
+    staleTime: 30000, // 30 secondes
+  });
+  
   // Ces états sont déjà définis plus haut, pas besoin de les redéfinir
 
   // Hook pour la redirection - DOIT être appelé avant tout return conditionnel
@@ -502,6 +516,21 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'overview', o
               <h1 className="text-4xl font-bold mb-2">
                 Bonjour, {dbUser?.name || user?.email?.split('@')[0]} ! 👋
               </h1>
+              {/* Affichage du nom de société pour les comptes professionnels */}
+              {dbUser?.type === 'professional' && professionalAccount?.company_name && (
+                <div className="flex items-center space-x-2 mb-2">
+                  <Building2 className="h-5 w-5 text-cyan-200" />
+                  <p className="text-cyan-100 text-xl font-semibold">
+                    {professionalAccount.company_name}
+                  </p>
+                  {professionalAccount.is_verified && (
+                    <div className="bg-green-500/30 text-green-100 px-2 py-1 rounded-full text-xs font-semibold flex items-center space-x-1">
+                      <Star className="h-3 w-3" />
+                      <span>Vérifié</span>
+                    </div>
+                  )}
+                </div>
+              )}
               <p className="text-cyan-100 text-lg font-medium">
                 {dbUser?.type === 'professional' 
                   ? 'Gérez votre activité professionnelle depuis votre tableau de bord'
@@ -516,19 +545,77 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'overview', o
             </div>
           </div>
           
-          <div className="flex items-center space-x-4">
-            <div className="bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2">
-              <span className="text-sm font-medium">Membre depuis</span>
-              <p className="text-lg font-bold">
+          {/* Section d'informations enrichie */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Membre depuis */}
+            <div className="bg-white/20 backdrop-blur-sm rounded-lg px-4 py-3">
+              <div className="flex items-center space-x-2 mb-1">
+                <Calendar className="h-4 w-4 text-cyan-200" />
+                <span className="text-sm font-medium text-cyan-100">Membre depuis</span>
+              </div>
+              <p className="text-lg font-bold text-white">
                 {dbUser?.created_at ? new Date(dbUser.created_at).toLocaleDateString('fr-FR', { 
                   month: 'long', 
                   year: 'numeric' 
                 }) : 'Récemment'}
               </p>
             </div>
-            {(dbUser as any)?.verified && (
-              <div className="bg-green-500/20 backdrop-blur-sm rounded-lg px-4 py-2 border border-green-400/30">
-                <span className="text-sm font-medium text-green-100">✓ Compte vérifié</span>
+
+            {/* Type de compte */}
+            <div className="bg-white/20 backdrop-blur-sm rounded-lg px-4 py-3">
+              <div className="flex items-center space-x-2 mb-1">
+                <User className="h-4 w-4 text-cyan-200" />
+                <span className="text-sm font-medium text-cyan-100">Type de compte</span>
+              </div>
+              <p className="text-lg font-bold text-white">
+                {dbUser?.type === 'professional' ? 'Professionnel' : 'Particulier'}
+              </p>
+            </div>
+
+            {/* Statut de vérification (pour les pros) */}
+            {dbUser?.type === 'professional' && (
+              <div className="bg-white/20 backdrop-blur-sm rounded-lg px-4 py-3">
+                <div className="flex items-center space-x-2 mb-1">
+                  <Building2 className="h-4 w-4 text-cyan-200" />
+                  <span className="text-sm font-medium text-cyan-100">Statut</span>
+                </div>
+                <p className="text-lg font-bold text-white">
+                  {professionalAccount?.is_verified ? (
+                    <span className="text-green-200">✓ Vérifié</span>
+                  ) : professionalAccount?.verification_status === 'pending' ? (
+                    <span className="text-yellow-200">⏳ En cours</span>
+                  ) : (
+                    <span className="text-orange-200">⚠ Non vérifié</span>
+                  )}
+                </p>
+              </div>
+            )}
+
+            {/* Abonnement (pour les pros) */}
+            {dbUser?.type === 'professional' && (
+              <div className="bg-white/20 backdrop-blur-sm rounded-lg px-4 py-3">
+                <div className="flex items-center space-x-2 mb-1">
+                  <Crown className="h-4 w-4 text-cyan-200" />
+                  <span className="text-sm font-medium text-cyan-100">Abonnement</span>
+                </div>
+                <p className="text-lg font-bold text-white">
+                  {subscriptionInfo?.isActive ? (
+                    <span className="text-yellow-200">{subscriptionInfo.planName || 'Pro Actif'}</span>
+                  ) : (
+                    <span className="text-gray-300">Gratuit</span>
+                  )}
+                </p>
+              </div>
+            )}
+
+            {/* Compte vérifié (pour les particuliers) */}
+            {dbUser?.type !== 'professional' && (dbUser as any)?.verified && (
+              <div className="bg-green-500/20 backdrop-blur-sm rounded-lg px-4 py-3 border border-green-400/30">
+                <div className="flex items-center space-x-2 mb-1">
+                  <Star className="h-4 w-4 text-green-200" />
+                  <span className="text-sm font-medium text-green-100">Statut</span>
+                </div>
+                <p className="text-lg font-bold text-green-100">✓ Compte vérifié</p>
               </div>
             )}
           </div>
