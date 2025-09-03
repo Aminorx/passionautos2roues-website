@@ -115,7 +115,7 @@ router.post('/start', async (req, res) => {
     const newAccount = {
       user_id: userId,
       company_name: '',
-      verification_status: 'pending' as const,
+      verification_status: 'not_verified' as const,
       is_verified: false,
     };
 
@@ -198,7 +198,7 @@ router.post('/submit', upload.single('kbisDocument'), async (req, res) => {
         phone: data.phone,
         email: data.email,
         website: data.website,
-        verification_status: 'pending',
+        verification_status: 'not_verified',
         updated_at: new Date().toISOString(),
       })
       .eq('id', existingAccount.id)

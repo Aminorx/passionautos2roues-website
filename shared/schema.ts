@@ -191,17 +191,13 @@ export const professionalAccounts = pgTable("professional_accounts", {
 
 export const subscriptions = pgTable("subscriptions", {
   id: serial("id").primaryKey(),
-  user_id: text("user_id").references(() => users.id).notNull(),
+  professional_account_id: integer("professional_account_id"),
   plan_id: text("plan_id").notNull(),
-  plan_name: text("plan_name").notNull(),
-  price: real("price").notNull(),
-  max_listings: integer("max_listings"),
   stripe_subscription_id: text("stripe_subscription_id").unique(),
   status: text("status").$type<'active' | 'cancelled' | 'expired' | 'pending'>().default('pending'),
   current_period_start: timestamp("current_period_start"),
   current_period_end: timestamp("current_period_end"),
-  activated_at: timestamp("activated_at"),
-  cancelled_at: timestamp("cancelled_at"),
+  cancel_at_period_end: boolean("cancel_at_period_end"),
   created_at: timestamp("created_at").defaultNow().notNull(),
   updated_at: timestamp("updated_at").defaultNow().notNull(),
 });

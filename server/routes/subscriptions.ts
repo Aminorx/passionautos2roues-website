@@ -482,21 +482,16 @@ router.post('/handle-success', async (req, res) => {
     
     console.log('📋 Plan trouvé:', plan.name);
     
-    // Vérifier si un abonnement existe déjà pour cet utilisateur
+    // Vérifier si un abonnement existe déjà avec ce stripe_subscription_id
     const { data: existingSubscription } = await supabaseServer
       .from('subscriptions')
       .select('id')
-      .eq('user_id', user!.id)
-      .eq('status', 'active')
+      .eq('stripe_subscription_id', fullSubscription.id)
       .single();
     
-    // Créer ou mettre à jour l'abonnement en base
+    // Créer ou mettre à jour l'abonnement en base (colonnes qui existent vraiment)
     const subscriptionData = {
-      user_id: user!.id,
-      plan_id: plan.id,
-      plan_name: plan.name,
-      price: amount,
-      max_listings: plan.maxListings || plan.max_listings,
+      plan_id: plan.id.toString(),
       stripe_subscription_id: fullSubscription.id,
       status: 'active' as const,
       // Les dates Stripe seront mises à jour par webhook plus tard
