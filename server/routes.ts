@@ -558,17 +558,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Routes professionnelles
   
-  // Route pour créer un compte professionnel
-  app.post('/api/professional-accounts', upload.single('kbisDocument'), async (req, res) => {
+  // Route pour créer un compte professionnel (MISE À JOUR avec nouveaux champs)
+  app.post('/api/professional-accounts', upload.single('kbis_document'), async (req, res) => {
     try {
       console.log('🏢 Création compte professionnel...');
       console.log('📄 Données reçues:', req.body);
       console.log('📎 Fichier reçu:', req.file ? req.file.originalname : 'Aucun');
       
       const {
-        companyName,
+        company_name,
         siret,
-        companyAddress,
+        company_address,
         phone,
         email,
         website,
@@ -576,7 +576,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } = req.body;
       
       // Validation des champs obligatoires
-      if (!companyName || !siret || !companyAddress || !phone || !email) {
+      if (!company_name || !siret || !company_address || !phone || !email) {
         return res.status(400).json({ error: 'Champs obligatoires manquants' });
       }
       
@@ -625,15 +625,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .from('professional_accounts')
         .insert({
           user_id: user.id,
-          company_name: companyName,
+          company_name: company_name,
           siret: siret,
-          company_address: companyAddress,
+          company_address: company_address,
           phone: phone,
           email: email,
           website: website || null,
-          // verification_status et membership utilisent les valeurs par défaut du schéma
-          // verification_status: 'not_verified' (par défaut)
-          // membership: 'free' (par défaut)
+          // verification_process_status sera mis à 'in_progress' après upload de document
+          verification_process_status: req.file ? 'in_progress' : 'not_started',
+          membership: 'free',
           is_verified: false
         })
         .select()

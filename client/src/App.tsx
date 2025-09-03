@@ -35,6 +35,7 @@ import ProShop from './pages/ProShop';
 import ProCustomization from './pages/ProCustomization';
 import SubscriptionPurchase from './pages/SubscriptionPurchase';
 import { AuthCallback } from './pages/AuthCallback';
+import { ProfessionalVerification } from './pages/ProfessionalVerification';
 import { useAuth } from './hooks/useAuth';
 // import CreateProAccount from './pages/CreateProAccount';
 
@@ -261,6 +262,9 @@ function AppContent() {
             </Route>
             <Route path="/messages">
               <Messages />
+            </Route>
+            <Route path="/professional-verification">
+              <ProfessionalVerification />
             </Route>
             <Route path="/admin">
               {() => {

@@ -13,7 +13,7 @@ import {
   Loader
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useLocation } from 'wouter';
 
 interface FormData {
   company_name: string;
@@ -30,7 +30,7 @@ interface FormErrors {
 
 export const ProfessionalVerification: React.FC = () => {
   const { profile } = useAuth();
-  const navigate = useNavigate();
+  const [, setLocation] = useLocation();
   const [formData, setFormData] = useState<FormData>({
     company_name: '',
     siret: '',
@@ -184,7 +184,7 @@ export const ProfessionalVerification: React.FC = () => {
       if (response.ok) {
         const result = await response.json();
         alert('✅ Demande de vérification envoyée avec succès ! Vous recevrez une confirmation par email une fois votre compte validé.');
-        navigate('/dashboard');
+        setLocation('/dashboard');
       } else {
         const errorData = await response.json();
         alert(`❌ Erreur : ${errorData.error || 'Une erreur est survenue'}`);
