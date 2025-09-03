@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { 
   Upload, X, Save, Eye, Settings, PaintBucket, 
   Image as ImageIcon, Camera, Palette, Building2,
-  Check, AlertCircle, ArrowLeft
+  Check, AlertCircle, ArrowLeft, Lock, Phone,
+  Mail, Globe, FileText, MapPin
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { useQuery } from '@tanstack/react-query';
@@ -18,6 +19,13 @@ interface CustomizationData {
   description?: string;
   specialties?: string[];
   certifications?: string[];
+  // Nouvelles données pour infos légales et contact
+  company_name?: string;
+  siret?: string;
+  company_address?: string;
+  email?: string;
+  phone?: string;
+  website?: string;
 }
 
 interface ProCustomizationProps {
@@ -44,7 +52,7 @@ export default function ProCustomization({ onBack }: ProCustomizationProps) {
   const [uploadMessage, setUploadMessage] = useState('');
   const [uploadError, setUploadError] = useState('');
   const [savedMessage, setSavedMessage] = useState('');
-  const [activeTab, setActiveTab] = useState('branding');
+  const [isVerified, setIsVerified] = useState(false);
 
   // Charger les données existantes
   useEffect(() => {
@@ -55,20 +63,41 @@ export default function ProCustomization({ onBack }: ProCustomizationProps) {
 
   const loadCustomizationData = async () => {
     try {
-      const response = await fetch(`/api/professional-accounts/customization/${user?.id}`);
-      if (response.ok) {
-        const data = await response.json();
-        setCustomization({
-          company_logo: data.company_logo,
-          banner_image: data.banner_image,
-          brand_colors: data.brand_colors || { primary: '#3B82F6', secondary: '#1E40AF' },
-          description: data.description,
-          specialties: data.specialties || [],
-          certifications: data.certifications || []
-        });
+      // Charger la personnalisation
+      const custResponse = await fetch(`/api/professional-accounts/customization/${user?.id}`);
+      let custData: any = {};
+      if (custResponse.ok) {
+        custData = await custResponse.json();
       }
+      
+      // Charger les données du compte professionnel
+      const accountsResponse = await fetch('/api/admin/professional-accounts');
+      let accountData: any = {};
+      if (accountsResponse.ok) {
+        const allAccounts = await accountsResponse.json();
+        const myAccount = allAccounts.find((acc: any) => acc.user_id === user?.id);
+        if (myAccount) {
+          accountData = myAccount;
+          setIsVerified(myAccount.verification_status === 'approved');
+        }
+      }
+      
+      setCustomization({
+        company_logo: custData.company_logo || '',
+        banner_image: custData.banner_image || '',
+        brand_colors: custData.brand_colors || { primary: '#3B82F6', secondary: '#1E40AF' },
+        description: custData.description || '',
+        specialties: custData.specialties || [],
+        certifications: custData.certifications || [],
+        company_name: accountData.company_name || '',
+        siret: accountData.siret || '',
+        company_address: accountData.company_address || '',
+        email: accountData.email || '',
+        phone: accountData.phone || '',
+        website: accountData.website || ''
+      });
     } catch (error) {
-      console.error('Erreur chargement personnalisation:', error);
+      console.error('Erreur chargement données:', error);
     } finally {
       setLoading(false);
     }
@@ -233,8 +262,8 @@ export default function ProCustomization({ onBack }: ProCustomizationProps) {
                 <span>Retour</span>
               </button>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">Personnalisation de la boutique</h1>
-                <p className="text-gray-600">Configurez l'apparence de votre page professionnelle</p>
+                <h1 className="text-2xl font-bold text-gray-900">Gestion de ma boutique</h1>
+                <p className="text-gray-600">Gérez toutes les informations de votre boutique professionnelle</p>
               </div>
             </div>
             
@@ -258,6 +287,32 @@ export default function ProCustomization({ onBack }: ProCustomizationProps) {
                 </div>
               )}
               <button
+                onClick={async () => {
+                  try {
+                    // Récupérer l'ID du compte professionnel
+                    const accountsResponse = await fetch('/api/admin/professional-accounts');
+                    if (accountsResponse.ok) {
+                      const allAccounts = await accountsResponse.json();
+                      const myAccount = allAccounts.find((acc: any) => acc.user_id === user?.id);
+                      if (myAccount?.id) {
+                        window.open(`/pro/${myAccount.id}`, '_blank');
+                      } else {
+                        alert('Aucun compte professionnel trouvé');
+                      }
+                    } else {
+                      alert('Erreur lors de la récupération du compte');
+                    }
+                  } catch (error) {
+                    console.error('Erreur:', error);
+                    alert('Erreur lors de l\'ouverture de la boutique');
+                  }
+                }}
+                className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-2 rounded-xl font-semibold transition-colors flex items-center space-x-2"
+              >
+                <Eye className="h-4 w-4" />
+                <span>Voir ma boutique</span>
+              </button>
+              <button
                 onClick={handleSave}
                 disabled={saving}
                 className="bg-primary-bolt-500 hover:bg-primary-bolt-600 disabled:opacity-50 text-white px-6 py-2 rounded-xl font-semibold transition-colors flex items-center space-x-2"
@@ -270,328 +325,310 @@ export default function ProCustomization({ onBack }: ProCustomizationProps) {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Navigation */}
-          <div className="lg:col-span-1">
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-              <h2 className="text-lg font-bold text-gray-900 mb-4">Configuration</h2>
-              <nav className="space-y-2">
-                <button
-                  onClick={() => setActiveTab('branding')}
-                  className={`w-full text-left px-4 py-3 rounded-xl transition-all ${
-                    activeTab === 'branding' 
-                      ? 'bg-primary-bolt-50 text-primary-bolt-700 border border-primary-bolt-200' 
-                      : 'text-gray-600 hover:bg-gray-50'
-                  }`}
-                >
-                  <div className="flex items-center space-x-3">
-                    <PaintBucket className="h-5 w-5" />
-                    <span>Image de marque</span>
-                  </div>
-                </button>
-                
-                <button
-                  onClick={() => setActiveTab('content')}
-                  className={`w-full text-left px-4 py-3 rounded-xl transition-all ${
-                    activeTab === 'content' 
-                      ? 'bg-primary-bolt-50 text-primary-bolt-700 border border-primary-bolt-200' 
-                      : 'text-gray-600 hover:bg-gray-50'
-                  }`}
-                >
-                  <div className="flex items-center space-x-3">
-                    <Building2 className="h-5 w-5" />
-                    <span>Contenu</span>
-                  </div>
-                </button>
-                
-                <button
-                  onClick={() => setActiveTab('preview')}
-                  className={`w-full text-left px-4 py-3 rounded-xl transition-all ${
-                    activeTab === 'preview' 
-                      ? 'bg-primary-bolt-50 text-primary-bolt-700 border border-primary-bolt-200' 
-                      : 'text-gray-600 hover:bg-gray-50'
-                  }`}
-                >
-                  <div className="flex items-center space-x-3">
-                    <Eye className="h-5 w-5" />
-                    <span>Aperçu</span>
-                  </div>
-                </button>
-              </nav>
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="space-y-8">
+          
+          {/* Section 1: Informations légales */}
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center space-x-3">
+                <FileText className="h-6 w-6 text-gray-700" />
+                <h2 className="text-2xl font-bold text-gray-900">Informations légales</h2>
+              </div>
+              {isVerified && (
+                <div className="flex items-center space-x-2 px-3 py-1 bg-orange-50 text-orange-700 rounded-full text-sm">
+                  <Lock className="h-4 w-4" />
+                  <span>Protégé (compte vérifié)</span>
+                </div>
+              )}
+            </div>
+            
+            {isVerified && (
+              <div className="mb-4 p-4 bg-blue-50 rounded-xl border border-blue-200">
+                <p className="text-blue-800 text-sm">
+                  🔒 Ces informations sont protégées car votre compte a été vérifié. 
+                  Contactez le support pour toute modification nécessaire.
+                </p>
+              </div>
+            )}
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Nom de l'entreprise
+                </label>
+                <input
+                  type="text"
+                  value={customization.company_name || ''}
+                  onChange={(e) => setCustomization(prev => ({ ...prev, company_name: e.target.value }))}
+                  disabled={isVerified}
+                  className={`w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-bolt-500 focus:border-primary-bolt-500 ${isVerified ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                  placeholder="Nom officiel de votre entreprise"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  SIRET
+                </label>
+                <input
+                  type="text"
+                  value={customization.siret || ''}
+                  onChange={(e) => setCustomization(prev => ({ ...prev, siret: e.target.value }))}
+                  disabled={isVerified}
+                  className={`w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-bolt-500 focus:border-primary-bolt-500 ${isVerified ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                  placeholder="Numéro SIRET"
+                />
+              </div>
+              
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Adresse de l'entreprise
+                </label>
+                <input
+                  type="text"
+                  value={customization.company_address || ''}
+                  onChange={(e) => setCustomization(prev => ({ ...prev, company_address: e.target.value }))}
+                  disabled={isVerified}
+                  className={`w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-bolt-500 focus:border-primary-bolt-500 ${isVerified ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                  placeholder="Adresse complète de l'entreprise"
+                />
+              </div>
             </div>
           </div>
 
-          {/* Contenu principal */}
-          <div className="lg:col-span-3">
-            {activeTab === 'branding' && (
-              <div className="space-y-6">
-                {/* Logo */}
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                  <h3 className="text-xl font-bold text-gray-900 mb-4">Logo de l'entreprise</h3>
-                  <div className="flex items-center space-x-6">
-                    <div className="w-32 h-32 bg-gray-100 rounded-2xl flex items-center justify-center overflow-hidden">
-                      {customization.company_logo ? (
-                        <img 
-                          src={customization.company_logo} 
-                          alt="Logo"
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <Building2 className="h-16 w-16 text-gray-400" />
-                      )}
-                    </div>
-                    <div>
-                      <label className="block">
-                        <span className="sr-only">Choisir un logo</span>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={(e) => {
-                            if (e.target.files?.[0]) {
-                              handleImageUpload(e.target.files[0], 'logo');
-                            }
-                          }}
-                          className="hidden"
-                        />
-                        <div className={`${uploadingLogo ? 'bg-gray-400 cursor-not-allowed' : 'bg-primary-bolt-500 hover:bg-primary-bolt-600 cursor-pointer'} text-white px-4 py-2 rounded-xl inline-flex items-center space-x-2 transition-colors`}>
-                          {uploadingLogo ? (
-                            <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
-                          ) : (
-                            <Upload className="h-4 w-4" />
-                          )}
-                          <span>{uploadingLogo ? 'Téléchargement...' : 'Télécharger un logo'}</span>
-                        </div>
-                      </label>
-                      <p className="text-sm text-gray-500 mt-2">PNG, JPG jusqu'à 2MB</p>
-                    </div>
-                  </div>
-                </div>
+          {/* Section 2: Informations de contact */}
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <div className="flex items-center space-x-3 mb-6">
+              <Phone className="h-6 w-6 text-gray-700" />
+              <h2 className="text-2xl font-bold text-gray-900">Informations de contact</h2>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <Mail className="h-4 w-4 inline mr-2" />
+                  Email de contact
+                </label>
+                <input
+                  type="email"
+                  value={customization.email || ''}
+                  onChange={(e) => setCustomization(prev => ({ ...prev, email: e.target.value }))}
+                  className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-bolt-500 focus:border-primary-bolt-500"
+                  placeholder="contact@monentreprise.com"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <Phone className="h-4 w-4 inline mr-2" />
+                  Téléphone
+                </label>
+                <input
+                  type="tel"
+                  value={customization.phone || ''}
+                  onChange={(e) => setCustomization(prev => ({ ...prev, phone: e.target.value }))}
+                  className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-bolt-500 focus:border-primary-bolt-500"
+                  placeholder="01 23 45 67 89"
+                />
+              </div>
+              
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <Globe className="h-4 w-4 inline mr-2" />
+                  Site web
+                </label>
+                <input
+                  type="url"
+                  value={customization.website || ''}
+                  onChange={(e) => setCustomization(prev => ({ ...prev, website: e.target.value }))}
+                  className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-bolt-500 focus:border-primary-bolt-500"
+                  placeholder="https://www.monentreprise.com"
+                />
+              </div>
+            </div>
+          </div>
 
-                {/* Bannière */}
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                  <h3 className="text-xl font-bold text-gray-900 mb-4">Image de bannière</h3>
-                  <div className="space-y-4">
-                    <div className="h-48 bg-gray-100 rounded-2xl overflow-hidden">
-                      {customization.banner_image ? (
-                        <img 
-                          src={customization.banner_image} 
-                          alt="Bannière"
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <ImageIcon className="h-16 w-16 text-gray-400" />
-                        </div>
-                      )}
-                    </div>
+          {/* Section 3: Image de marque */}
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <div className="flex items-center space-x-3 mb-6">
+              <PaintBucket className="h-6 w-6 text-gray-700" />
+              <h2 className="text-2xl font-bold text-gray-900">Image de marque</h2>
+            </div>
+            
+            <div className="space-y-6">
+              {/* Logo */}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Logo de l'entreprise</h3>
+                <div className="flex items-center space-x-6">
+                  <div className="w-32 h-32 bg-gray-100 rounded-2xl flex items-center justify-center overflow-hidden">
+                    {customization.company_logo ? (
+                      <img 
+                        src={customization.company_logo} 
+                        alt="Logo"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <Building2 className="h-16 w-16 text-gray-400" />
+                    )}
+                  </div>
+                  <div>
                     <label className="block">
-                      <span className="sr-only">Choisir une bannière</span>
+                      <span className="sr-only">Choisir un logo</span>
                       <input
                         type="file"
                         accept="image/*"
                         onChange={(e) => {
                           if (e.target.files?.[0]) {
-                            handleImageUpload(e.target.files[0], 'banner');
+                            handleImageUpload(e.target.files[0], 'logo');
                           }
                         }}
                         className="hidden"
                       />
-                      <div className={`${uploadingBanner ? 'bg-gray-400 cursor-not-allowed' : 'bg-primary-bolt-500 hover:bg-primary-bolt-600 cursor-pointer'} text-white px-4 py-2 rounded-xl inline-flex items-center space-x-2 transition-colors`}>
-                        {uploadingBanner ? (
+                      <div className={`${uploadingLogo ? 'bg-gray-400 cursor-not-allowed' : 'bg-primary-bolt-500 hover:bg-primary-bolt-600 cursor-pointer'} text-white px-4 py-2 rounded-xl inline-flex items-center space-x-2 transition-colors`}>
+                        {uploadingLogo ? (
                           <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
                         ) : (
-                          <Camera className="h-4 w-4" />
+                          <Upload className="h-4 w-4" />
                         )}
-                        <span>{uploadingBanner ? 'Téléchargement...' : 'Télécharger une bannière'}</span>
+                        <span>{uploadingLogo ? 'Téléchargement...' : 'Télécharger un logo'}</span>
                       </div>
                     </label>
-                  </div>
-                </div>
-
-                {/* Couleurs */}
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                  <h3 className="text-xl font-bold text-gray-900 mb-4">Couleurs de marque</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Couleur principale
-                      </label>
-                      <div className="flex items-center space-x-3">
-                        <input
-                          type="color"
-                          value={customization.brand_colors?.primary || '#3B82F6'}
-                          onChange={(e) => setCustomization(prev => ({
-                            ...prev,
-                            brand_colors: {
-                              ...prev.brand_colors,
-                              primary: e.target.value
-                            }
-                          }))}
-                          className="w-16 h-12 rounded-lg border border-gray-300 cursor-pointer"
-                        />
-                        <input
-                          type="text"
-                          value={customization.brand_colors?.primary || '#3B82F6'}
-                          onChange={(e) => setCustomization(prev => ({
-                            ...prev,
-                            brand_colors: {
-                              ...prev.brand_colors,
-                              primary: e.target.value
-                            }
-                          }))}
-                          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg"
-                        />
-                      </div>
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Couleur secondaire
-                      </label>
-                      <div className="flex items-center space-x-3">
-                        <input
-                          type="color"
-                          value={customization.brand_colors?.secondary || '#1E40AF'}
-                          onChange={(e) => setCustomization(prev => ({
-                            ...prev,
-                            brand_colors: {
-                              ...prev.brand_colors,
-                              secondary: e.target.value
-                            }
-                          }))}
-                          className="w-16 h-12 rounded-lg border border-gray-300 cursor-pointer"
-                        />
-                        <input
-                          type="text"
-                          value={customization.brand_colors?.secondary || '#1E40AF'}
-                          onChange={(e) => setCustomization(prev => ({
-                            ...prev,
-                            brand_colors: {
-                              ...prev.brand_colors,
-                              secondary: e.target.value
-                            }
-                          }))}
-                          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg"
-                        />
-                      </div>
-                    </div>
+                    <p className="text-sm text-gray-500 mt-2">PNG, JPG jusqu'à 2MB</p>
                   </div>
                 </div>
               </div>
-            )}
 
-            {activeTab === 'content' && (
-              <div className="space-y-6">
-                {/* Description */}
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                  <h3 className="text-xl font-bold text-gray-900 mb-4">Description de l'entreprise</h3>
-                  <textarea
-                    value={customization.description || ''}
-                    onChange={(e) => setCustomization(prev => ({
-                      ...prev,
-                      description: e.target.value
-                    }))}
-                    rows={6}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-bolt-500 focus:border-primary-bolt-500"
-                    placeholder="Décrivez votre entreprise, vos services, votre expertise..."
-                  />
-                </div>
-
-                {/* Spécialités */}
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-xl font-bold text-gray-900">Spécialités</h3>
-                    <button
-                      onClick={addSpecialty}
-                      className="bg-primary-bolt-500 hover:bg-primary-bolt-600 text-white px-4 py-2 rounded-xl font-semibold transition-colors"
-                    >
-                      Ajouter
-                    </button>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {customization.specialties?.map((specialty, index) => (
-                      <div
-                        key={index}
-                        className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm flex items-center space-x-2"
-                      >
-                        <span>{specialty}</span>
-                        <button
-                          onClick={() => removeSpecialty(index)}
-                          className="text-gray-400 hover:text-gray-600"
-                        >
-                          <X className="h-3 w-3" />
-                        </button>
+              {/* Bannière */}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Image de bannière</h3>
+                <div className="space-y-4">
+                  <div className="h-48 bg-gray-100 rounded-2xl overflow-hidden">
+                    {customization.banner_image ? (
+                      <img 
+                        src={customization.banner_image} 
+                        alt="Bannière"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <ImageIcon className="h-16 w-16 text-gray-400" />
                       </div>
-                    ))}
-                    {(!customization.specialties || customization.specialties.length === 0) && (
-                      <p className="text-gray-500 text-sm">Aucune spécialité ajoutée</p>
                     )}
                   </div>
-                </div>
-
-                {/* Certifications */}
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-xl font-bold text-gray-900">Certifications</h3>
-                    <button
-                      onClick={addCertification}
-                      className="bg-primary-bolt-500 hover:bg-primary-bolt-600 text-white px-4 py-2 rounded-xl font-semibold transition-colors"
-                    >
-                      Ajouter
-                    </button>
-                  </div>
-                  <div className="space-y-2">
-                    {customization.certifications?.map((certification, index) => (
-                      <div
-                        key={index}
-                        className="bg-gray-50 p-3 rounded-xl flex items-center justify-between"
-                      >
-                        <span className="text-gray-700">{certification}</span>
-                        <button
-                          onClick={() => removeCertification(index)}
-                          className="text-red-500 hover:text-red-700"
-                        >
-                          <X className="h-4 w-4" />
-                        </button>
-                      </div>
-                    ))}
-                    {(!customization.certifications || customization.certifications.length === 0) && (
-                      <p className="text-gray-500 text-sm">Aucune certification ajoutée</p>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {activeTab === 'preview' && (
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                <h3 className="text-xl font-bold text-gray-900 mb-4">Aperçu de votre boutique</h3>
-                <div className="bg-gray-100 p-4 rounded-xl">
-                  <button
-                    onClick={() => {
-                      try {
-                        // Utiliser la même logique que le Dashboard
-                        if (conversionStatus?.professionalAccount?.id) {
-                          // Ouvrir dans un nouvel onglet
-                          window.open(`/pro/${conversionStatus.professionalAccount.id}`, '_blank');
-                        } else {
-                          alert('Aucun compte professionnel trouvé');
+                  <label className="block">
+                    <span className="sr-only">Choisir une bannière</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        if (e.target.files?.[0]) {
+                          handleImageUpload(e.target.files[0], 'banner');
                         }
-                      } catch (error) {
-                        console.error('Erreur:', error);
-                        alert('Erreur lors de l\'ouverture de la boutique');
-                      }
-                    }}
-                    className="w-full text-gray-600 hover:text-blue-600 transition-colors"
-                  >
-                    <Eye className="h-8 w-8 mx-auto mb-2" />
-                    <span className="block">Aperçu de ma boutique</span>
-                    <span className="text-sm text-gray-500">(Ouvre dans un nouvel onglet)</span>
-                  </button>
+                      }}
+                      className="hidden"
+                    />
+                    <div className={`${uploadingBanner ? 'bg-gray-400 cursor-not-allowed' : 'bg-primary-bolt-500 hover:bg-primary-bolt-600 cursor-pointer'} text-white px-4 py-2 rounded-xl inline-flex items-center space-x-2 transition-colors`}>
+                      {uploadingBanner ? (
+                        <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
+                      ) : (
+                        <Upload className="h-4 w-4" />
+                      )}
+                      <span>{uploadingBanner ? 'Téléchargement...' : 'Télécharger une bannière'}</span>
+                    </div>
+                  </label>
+                  <p className="text-sm text-gray-500">PNG, JPG jusqu'à 5MB - Recommandé: 1200x400px</p>
                 </div>
               </div>
-            )}
+            </div>
+          </div>
+
+          {/* Section 4: Contenu et présentation */}
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <div className="flex items-center space-x-3 mb-6">
+              <Building2 className="h-6 w-6 text-gray-700" />
+              <h2 className="text-2xl font-bold text-gray-900">Contenu et présentation</h2>
+            </div>
+            
+            <div className="space-y-6">
+              {/* Description */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Description de l'entreprise
+                </label>
+                <textarea
+                  value={customization.description || ''}
+                  onChange={(e) => setCustomization(prev => ({ ...prev, description: e.target.value }))}
+                  rows={4}
+                  className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-bolt-500 focus:border-primary-bolt-500"
+                  placeholder="Décrivez votre entreprise, vos services, votre expertise..."
+                />
+              </div>
+
+              {/* Spécialités */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Spécialités
+                </label>
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {customization.specialties?.map((specialty, index) => (
+                    <div
+                      key={index}
+                      className="bg-primary-bolt-50 text-primary-bolt-700 px-3 py-1 rounded-full text-sm flex items-center space-x-2"
+                    >
+                      <span>{specialty}</span>
+                      <button
+                        onClick={() => removeSpecialty(index)}
+                        className="text-primary-bolt-500 hover:text-primary-bolt-700"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ))}
+                  {(!customization.specialties || customization.specialties.length === 0) && (
+                    <p className="text-gray-500 text-sm">Aucune spécialité ajoutée</p>
+                  )}
+                </div>
+                <button
+                  onClick={addSpecialty}
+                  className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-xl text-sm font-medium transition-colors"
+                >
+                  + Ajouter une spécialité
+                </button>
+              </div>
+
+              {/* Certifications */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Certifications
+                </label>
+                <div className="space-y-2 mb-3">
+                  {customization.certifications?.map((certification, index) => (
+                    <div
+                      key={index}
+                      className="bg-gray-50 p-3 rounded-xl flex items-center justify-between"
+                    >
+                      <span className="text-gray-700">{certification}</span>
+                      <button
+                        onClick={() => removeCertification(index)}
+                        className="text-red-500 hover:text-red-700"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ))}
+                  {(!customization.certifications || customization.certifications.length === 0) && (
+                    <p className="text-gray-500 text-sm">Aucune certification ajoutée</p>
+                  )}
+                </div>
+                <button
+                  onClick={addCertification}
+                  className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-xl text-sm font-medium transition-colors"
+                >
+                  + Ajouter une certification
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
