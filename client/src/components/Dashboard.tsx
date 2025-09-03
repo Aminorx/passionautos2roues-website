@@ -42,6 +42,7 @@ const dashboardTabs: DashboardTab[] = [
   { id: 'profile', label: 'Mon profil', icon: <User className="h-5 w-5" /> },
   { id: 'subscription', label: 'Abonnement Pro', icon: <Building2 className="h-5 w-5" /> },
   { id: 'premium', label: 'Premium', icon: <Crown className="h-5 w-5" /> },
+  { id: 'manage-subscription', label: 'Gérer mon abonnement', icon: <Settings className="h-5 w-5" /> },
 ];
 
 interface DashboardProps {
@@ -600,7 +601,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'overview', o
                 </div>
                 <p className="text-lg font-bold text-white">
                   {subscriptionInfo?.isActive ? (
-                    <span className="text-yellow-200">{subscriptionInfo.planName || 'Pro Actif'}</span>
+                    <span className="text-yellow-200">
+                      {subscriptionInfo.planName === 'starter' ? 'Starter' :
+                       subscriptionInfo.planName === 'pro' ? 'Pro' :
+                       subscriptionInfo.planName === 'premium' ? 'Premium' :
+                       subscriptionInfo.planName || 'Pro Actif'}
+                    </span>
                   ) : (
                     <span className="text-gray-300">Gratuit</span>
                   )}
@@ -1238,6 +1244,17 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'overview', o
             <p className="text-gray-600 text-lg mt-1">{user?.email || dbUser?.email}</p>
             <div className="flex items-center space-x-3 mt-4">
               <ProfessionalVerificationBadge dbUser={dbUser} />
+              {dbUser?.type === 'professional' && (
+                <button
+                  onClick={() => {
+                    if (setCurrentView) setCurrentView('pro-customization');
+                  }}
+                  className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-4 py-2 rounded-full text-sm font-semibold flex items-center space-x-2 shadow-md hover:shadow-lg transition-all duration-200 transform hover:-translate-y-0.5"
+                >
+                  <Settings className="h-4 w-4" />
+                  <span>Personnaliser ma boutique</span>
+                </button>
+              )}
               <span className="px-4 py-2 bg-primary-bolt-100 text-primary-bolt-500 rounded-full text-sm font-semibold border border-primary-bolt-200">
                 {dbUser?.type === 'professional' ? '🏢 Professionnel' : '👤 Particulier'}
               </span>
@@ -2203,8 +2220,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'overview', o
               <nav className="p-4">
                 {dashboardTabs
                   .filter(tab => {
-                    // Masquer l'onglet "Abonnement Pro" pour les utilisateurs individuels
-                    if (tab.id === 'subscription' && dbUser?.type !== 'professional') {
+                    // Masquer les onglets pros pour les utilisateurs individuels
+                    if ((tab.id === 'subscription' || tab.id === 'manage-subscription') && dbUser?.type !== 'professional') {
                       return false;
                     }
                     return true;
@@ -2250,6 +2267,60 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'overview', o
             {activeTab === 'messages' && renderMessages()}
             {activeTab === 'profile' && renderProfile()}
             {activeTab === 'subscription' && renderSubscription()}
+            {activeTab === 'manage-subscription' && (
+              <div className="space-y-8">
+                {/* Header Section */}
+                <div className="text-center mb-12">
+                  <div className="w-24 h-24 bg-gradient-to-r from-green-600 to-green-700 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+                    <Settings className="h-12 w-12 text-white" />
+                  </div>
+                  <h1 className="text-4xl font-bold text-gray-900 mb-4">Gérer mon abonnement</h1>
+                  <p className="text-gray-600 mt-2 text-lg">Modifiez, suspendez ou annulez votre abonnement</p>
+                </div>
+
+                {/* Informations d'abonnement actuelles */}
+                <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
+                  <h2 className="text-2xl font-bold text-gray-900 mb-6">Abonnement actuel</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">Plan actuel</label>
+                      <p className="text-lg font-bold text-primary-bolt-500">
+                        {subscriptionInfo?.isActive ? (
+                          subscriptionInfo.planName === 'starter' ? 'Starter (9€/mois)' :
+                          subscriptionInfo.planName === 'pro' ? 'Pro (19€/mois)' :
+                          subscriptionInfo.planName === 'premium' ? 'Premium (39€/mois)' :
+                          'Plan Pro'
+                        ) : 'Aucun abonnement actif'}
+                      </p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">Statut</label>
+                      <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                        subscriptionInfo?.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                      }`}>
+                        {subscriptionInfo?.isActive ? 'Actif' : 'Inactif'}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  {subscriptionInfo?.isActive && (
+                    <div className="mt-6 pt-6 border-t border-gray-200">
+                      <div className="flex flex-col sm:flex-row gap-4">
+                        <button className="bg-primary-bolt-500 hover:bg-primary-bolt-600 text-white px-6 py-3 rounded-xl font-semibold transition-colors">
+                          Modifier mon plan
+                        </button>
+                        <button className="bg-yellow-500 hover:bg-yellow-600 text-white px-6 py-3 rounded-xl font-semibold transition-colors">
+                          Suspendre temporairement
+                        </button>
+                        <button className="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-xl font-semibold transition-colors">
+                          Résilier l'abonnement
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
             {activeTab === 'premium' && (
               <div className="space-y-8">
                 {/* Header Section */}

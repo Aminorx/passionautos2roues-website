@@ -1209,17 +1209,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { userId } = req.params;
       console.log(`💳 Vérification abonnement pour user ${userId}...`);
       
-      // Pour l'instant, retourner des données simulées en attendant la vraie implémentation Stripe
-      const mockSubscription = {
-        isActive: false,
-        planName: null,
-        planType: 'free',
-        expiresAt: null,
-        features: []
+      // Récupérer l'abonnement actif depuis la base de données
+      const { data: subscription, error } = await supabaseServer
+        .from('subscriptions')
+        .select(`
+          *,
+          professional_accounts!inner(user_id)
+        `)
+        .eq('professional_accounts.user_id', userId)
+        .eq('status', 'active')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (error && error.code !== 'PGRST116') { // PGRST116 = pas de résultat trouvé
+        console.error('❌ Erreur récupération abonnement:', error);
+        return res.status(500).json({ error: 'Erreur lors de la récupération de l\'abonnement' });
+      }
+
+      const subscriptionInfo = {
+        isActive: !!subscription,
+        planName: subscription?.plan_id || null,
+        planType: subscription?.plan_id || 'free',
+        expiresAt: subscription?.current_period_end || null,
+        status: subscription?.status || 'inactive',
+        cancelAtPeriodEnd: subscription?.cancel_at_period_end || false
       };
       
-      console.log('💳 Abonnement (simulé):', mockSubscription);
-      res.json(mockSubscription);
+      console.log('💳 Abonnement récupéré:', subscriptionInfo);
+      res.json(subscriptionInfo);
     } catch (error) {
       console.error('❌ Erreur récupération abonnement:', error);
       res.status(500).json({ error: 'Erreur serveur' });
