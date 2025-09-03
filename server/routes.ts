@@ -648,10 +648,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         const fileName = `kbis-${proAccount.id}-${Date.now()}.${req.file.originalname.split('.').pop()}`;
         
-        // Upload vers Supabase Storage (bucket verifications-documents)
+        // Upload vers Supabase Storage (bucket vehicle-images/documents)
         const { data: uploadData, error: uploadError } = await supabaseServer.storage
-          .from('verifications-documents')
-          .upload(fileName, req.file.buffer, {
+          .from('vehicle-images')
+          .upload(`documents/${fileName}`, req.file.buffer, {
             contentType: req.file.mimetype,
             upsert: false
           });
