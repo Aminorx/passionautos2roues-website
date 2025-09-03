@@ -602,10 +602,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'overview', o
                 <p className="text-lg font-bold text-white">
                   {subscriptionInfo?.isActive ? (
                     <span className="text-yellow-200">
-                      {subscriptionInfo.planName === 'starter' ? 'Starter' :
-                       subscriptionInfo.planName === 'pro' ? 'Pro' :
-                       subscriptionInfo.planName === 'premium' ? 'Premium' :
-                       subscriptionInfo.planName || 'Pro Actif'}
+                      {subscriptionInfo.planName === 'starter' || subscriptionInfo.planName === 1 ? 'Starter' :
+                       subscriptionInfo.planName === 'pro' || subscriptionInfo.planName === 2 ? 'Pro' :
+                       subscriptionInfo.planName === 'premium' || subscriptionInfo.planName === 3 ? 'Premium' :
+                       'Pro Actif'}
                     </span>
                   ) : (
                     <span className="text-gray-300">Gratuit</span>
@@ -1389,15 +1389,23 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'overview', o
           </button>
           
           <button
-            onClick={() => {
-              // TODO: Implémenter avec nouvelle logique professional_accounts après Stripe
-              console.log('Boutique publique - à implémenter avec nouvelle logique');
+            onClick={async () => {
+              try {
+                const response = await fetch(`/api/professional-accounts/by-user/${dbUser?.id}`);
+                if (response.ok) {
+                  const account = await response.json();
+                  window.open(`/pro/${account.id}`, '_blank');
+                } else {
+                  console.error('Compte professionnel non trouvé');
+                }
+              } catch (error) {
+                console.error('Erreur navigation boutique pro:', error);
+              }
             }}
-            className="flex items-center justify-center space-x-3 bg-gray-400 hover:bg-gray-500 text-white px-6 py-4 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-1 opacity-75 cursor-not-allowed"
-            disabled
+            className="flex items-center justify-center space-x-3 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-6 py-4 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-1"
           >
             <Eye className="h-5 w-5" />
-            <span>Voir ma boutique publique (bientôt)</span>
+            <span>Voir ma boutique publique</span>
           </button>
           
           <button
@@ -2286,9 +2294,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'overview', o
                       <label className="block text-sm font-semibold text-gray-700 mb-2">Plan actuel</label>
                       <p className="text-lg font-bold text-primary-bolt-500">
                         {subscriptionInfo?.isActive ? (
-                          subscriptionInfo.planName === 'starter' ? 'Starter (9€/mois)' :
-                          subscriptionInfo.planName === 'pro' ? 'Pro (19€/mois)' :
-                          subscriptionInfo.planName === 'premium' ? 'Premium (39€/mois)' :
+                          subscriptionInfo.planName === 'starter' || subscriptionInfo.planName === 1 ? 'Starter (9€/mois)' :
+                          subscriptionInfo.planName === 'pro' || subscriptionInfo.planName === 2 ? 'Pro (19€/mois)' :
+                          subscriptionInfo.planName === 'premium' || subscriptionInfo.planName === 3 ? 'Premium (39€/mois)' :
                           'Plan Pro'
                         ) : 'Aucun abonnement actif'}
                       </p>

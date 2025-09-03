@@ -1244,6 +1244,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Route pour récupérer un compte professionnel par user ID
+  app.get('/api/professional-accounts/by-user/:userId', async (req, res) => {
+    try {
+      const { userId } = req.params;
+      console.log(`🏢 Recherche compte professionnel pour user ${userId}...`);
+      
+      const { data: account, error } = await supabaseServer
+        .from('professional_accounts')
+        .select('*')
+        .eq('user_id', userId)
+        .single();
+
+      if (error || !account) {
+        console.error('❌ Compte professionnel non trouvé:', error);
+        return res.status(404).json({ error: 'Compte professionnel non trouvé' });
+      }
+
+      console.log('✅ Compte professionnel trouvé:', account.id);
+      res.json(account);
+    } catch (error) {
+      console.error('❌ Erreur récupération compte professionnel:', error);
+      res.status(500).json({ error: 'Erreur serveur' });
+    }
+  });
+
   // Route pour récupérer un compte professionnel par ID
   app.get('/api/professional-accounts/:id', async (req, res) => {
     try {

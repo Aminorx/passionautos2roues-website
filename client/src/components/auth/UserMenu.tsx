@@ -136,16 +136,25 @@ export function UserMenu({ onNavigate, onDashboardNavigate }: UserMenuProps) {
               <>
                 <div className="border-t border-gray-100 my-1"></div>
                 <button
-                  onClick={() => {
-                    // TODO: Implémenter avec nouvelle logique professional_accounts après Stripe
-                    alert('Boutique pro bientôt disponible avec la nouvelle logique !');
+                  onClick={async () => {
+                    try {
+                      // Récupérer l'ID du compte professionnel
+                      const response = await fetch(`/api/professional-accounts/by-user/${dbUser.id}`);
+                      if (response.ok) {
+                        const account = await response.json();
+                        onNavigate?.(`/pro/${account.id}`);
+                      } else {
+                        console.error('Compte professionnel non trouvé');
+                      }
+                    } catch (error) {
+                      console.error('Erreur navigation boutique pro:', error);
+                    }
                     setIsOpen(false);
                   }}
-                  className="flex items-center w-full px-3 py-2 text-sm text-gray-400 hover:bg-gray-50 opacity-75 cursor-not-allowed"
-                  disabled
+                  className="flex items-center w-full px-3 py-2 text-sm text-blue-600 hover:bg-blue-50"
                 >
                   <Shield className="mr-2 h-4 w-4" />
-                  <span>Ma Boutique Pro (bientôt)</span>
+                  <span>Ma Boutique Pro</span>
                 </button>
               </>
             )}
