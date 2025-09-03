@@ -1203,6 +1203,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Route pour récupérer un compte professionnel par ID
+  app.get('/api/professional-accounts/:id', async (req, res) => {
+    try {
+      const accountId = parseInt(req.params.id);
+      if (isNaN(accountId)) {
+        return res.status(400).json({ error: 'ID invalide' });
+      }
+
+      const { data: account, error } = await supabaseServer
+        .from('professional_accounts')
+        .select('*')
+        .eq('id', accountId)
+        .single();
+
+      if (error || !account) {
+        console.error('Erreur récupération compte professionnel:', error);
+        return res.status(404).json({ error: 'Compte professionnel non trouvé' });
+      }
+
+      res.json(account);
+    } catch (error) {
+      console.error('Erreur serveur récupération compte pro:', error);
+      res.status(500).json({ error: 'Erreur serveur' });
+    }
+  });
+
   // Route pour vérifier le statut de vérification d'un utilisateur professionnel
   app.get('/api/professional-accounts/status/:userId', async (req, res) => {
     try {

@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 
 interface ProfessionalAccount {
   id: number;
-  verification_status: 'pending' | 'approved' | 'not_verified';
+  verification_status: 'pending' | 'approved' | 'not_verified' | 'not_started';
   is_verified: boolean;
   rejected_reason?: string;
   created_at: string;

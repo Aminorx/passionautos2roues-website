@@ -36,6 +36,7 @@ import ProCustomization from './pages/ProCustomization';
 import SubscriptionPurchase from './pages/SubscriptionPurchase';
 import { AuthCallback } from './pages/AuthCallback';
 import { ProfessionalVerification } from './pages/ProfessionalVerification';
+import ProfessionalProfile from './pages/ProfessionalProfile';
 import { useAuth } from './hooks/useAuth';
 // import CreateProAccount from './pages/CreateProAccount';
 
@@ -194,6 +195,9 @@ function AppContent() {
           <Switch>
             <Route path="/pro/:shopId">
               {(params) => <ProShop />}
+            </Route>
+            <Route path="/professional/:id">
+              <ProfessionalProfile />
             </Route>
             <Route path="/listings">
               <VehicleListings />
