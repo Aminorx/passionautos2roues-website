@@ -558,10 +558,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Routes professionnelles
   
-  // Route pour créer un compte professionnel (MISE À JOUR avec nouveaux champs)
-  app.post('/api/professional-accounts', upload.single('kbis_document'), async (req, res) => {
+  // Route pour vérifier un compte professionnel existant (upload document KBIS)
+  app.post('/api/professional-accounts/verify', upload.single('kbis_document'), async (req, res) => {
     try {
-      console.log('🏢 Création compte professionnel...');
+      console.log('🏢 Vérification compte professionnel...');
       console.log('📄 Données reçues:', req.body);
       console.log('📎 Fichier reçu:', req.file ? req.file.originalname : 'Aucun');
       
@@ -598,53 +598,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ error: 'Token invalide' });
       }
       
-      // Vérifier si l'utilisateur a déjà un compte professionnel
+      // Récupérer le compte professionnel existant
       const { data: existingAccount } = await supabaseServer
         .from('professional_accounts')
-        .select('id')
+        .select('id, company_name, siret, company_address')
         .eq('user_id', user.id)
         .single();
       
-      if (existingAccount) {
-        return res.status(400).json({ error: 'Vous avez déjà un compte professionnel' });
+      if (!existingAccount) {
+        return res.status(400).json({ error: 'Aucun compte professionnel trouvé. Créez d\'abord votre compte professionnel.' });
       }
       
-      // Vérifier l'unicité du SIRET
+      // Vérifier l'unicité du SIRET (exclure le compte actuel)
       const { data: existingSiret } = await supabaseServer
         .from('professional_accounts')
         .select('id')
         .eq('siret', siret)
+        .neq('id', existingAccount.id)
         .single();
       
       if (existingSiret) {
-        return res.status(400).json({ error: 'Ce numéro SIRET est déjà utilisé' });
+        return res.status(400).json({ error: 'Ce numéro SIRET est déjà utilisé par un autre compte' });
       }
       
-      // Créer le compte professionnel
+      // Mettre à jour les informations du compte professionnel
       const { data: proAccount, error: proError } = await supabaseServer
         .from('professional_accounts')
-        .insert({
-          user_id: user.id,
+        .update({
           company_name: company_name,
           siret: siret,
           company_address: company_address,
-          phone: phone,
-          email: email,
-          website: website || null,
           // verification_status sera mis à 'pending' après upload de document
-          verification_status: req.file ? 'pending' : 'not_verified',
-          membership: 'free',
-          is_verified: false
+          verification_status: req.file ? 'pending' : 'not_verified'
         })
+        .eq('id', existingAccount.id)
         .select()
         .single();
       
       if (proError) {
-        console.error('❌ Erreur création compte pro:', proError);
-        return res.status(500).json({ error: 'Erreur lors de la création du compte professionnel' });
+        console.error('❌ Erreur mise à jour compte pro:', proError);
+        return res.status(500).json({ error: 'Erreur lors de la mise à jour du compte professionnel' });
       }
       
-      console.log('✅ Compte professionnel créé:', proAccount.id);
+      console.log('✅ Compte professionnel mis à jour:', proAccount.id);
       
       // Upload du document Kbis si présent
       if (req.file) {

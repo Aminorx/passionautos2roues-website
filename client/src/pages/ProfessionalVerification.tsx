@@ -145,7 +145,7 @@ export const ProfessionalVerification: React.FC = () => {
         formDataToSend.append('kbis_document', uploadedFile);
       }
 
-      const response = await fetch('/api/professional-accounts', {
+      const response = await fetch('/api/professional-accounts/verify', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${session?.access_token}`
@@ -192,8 +192,7 @@ export const ProfessionalVerification: React.FC = () => {
               Vérification de compte professionnel
             </h1>
             <p className="text-gray-600 max-w-2xl mx-auto">
-              Complétez votre profil professionnel pour accéder aux fonctionnalités avancées et 
-              augmenter la confiance de vos clients avec un badge de vérification.
+              Uploadez votre document KBIS pour vérifier votre compte professionnel et obtenir un badge de confiance.
             </p>
           </div>
         </div>
@@ -307,89 +306,6 @@ export const ProfessionalVerification: React.FC = () => {
               </div>
             </div>
 
-            {/* Informations de contact */}
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Informations de contact
-              </h3>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Téléphone *
-                  </label>
-                  <div className="relative">
-                    <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                    <input
-                      type="tel"
-                      name="phone"
-                      value={formData.phone}
-                      onChange={handleInputChange}
-                      className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all ${
-                        errors.phone ? 'border-red-500' : 'border-gray-300'
-                      }`}
-                      placeholder="+33 1 23 45 67 89"
-                    />
-                  </div>
-                  {errors.phone && (
-                    <p className="mt-1 text-sm text-red-600 flex items-center">
-                      <AlertCircle className="h-4 w-4 mr-1" />
-                      {errors.phone}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Email professionnel *
-                  </label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                    <input
-                      type="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all ${
-                        errors.email ? 'border-red-500' : 'border-gray-300'
-                      }`}
-                      placeholder="contact@mongarage.com"
-                    />
-                  </div>
-                  {errors.email && (
-                    <p className="mt-1 text-sm text-red-600 flex items-center">
-                      <AlertCircle className="h-4 w-4 mr-1" />
-                      {errors.email}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              <div className="mt-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Site web (optionnel)
-                </label>
-                <div className="relative">
-                  <Globe className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                  <input
-                    type="url"
-                    name="website"
-                    value={formData.website}
-                    onChange={handleInputChange}
-                    className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all ${
-                      errors.website ? 'border-red-500' : 'border-gray-300'
-                    }`}
-                    placeholder="https://www.mongarage.com"
-                  />
-                </div>
-                {errors.website && (
-                  <p className="mt-1 text-sm text-red-600 flex items-center">
-                    <AlertCircle className="h-4 w-4 mr-1" />
-                    {errors.website}
-                  </p>
-                )}
-              </div>
-            </div>
 
             {/* Upload de document */}
             <div>
