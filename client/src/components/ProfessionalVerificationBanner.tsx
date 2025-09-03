@@ -128,11 +128,11 @@ export const ProfessionalVerificationBanner: React.FC = () => {
               ⏳ Vérification en cours...
             </h3>
             <p className="text-sm text-orange-800 mt-1">
-              Votre demande de vérification a été envoyée il y a {daysSinceSubmission} jour{daysSinceSubmission > 1 ? 's' : ''}. 
-              Nos équipes l'examinent sous 2-3 jours ouvrés.
+              Votre demande de vérification a bien été envoyée. 
+              Nos équipes l'examinent dans les 24-48 heures.
             </p>
             <p className="text-xs text-orange-700 mt-2">
-              📧 Vous recevrez un email de confirmation dès que votre compte sera validé.
+              📧 Vous recevrez ensuite un badge "compte vérifié".
             </p>
           </div>
           <button
