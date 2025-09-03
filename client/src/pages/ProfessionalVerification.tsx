@@ -19,6 +19,9 @@ interface FormData {
   company_name: string;
   siret: string;
   company_address: string;
+  phone: string;
+  email: string;
+  website: string;
 }
 
 interface FormErrors {
@@ -31,7 +34,10 @@ export const ProfessionalVerification: React.FC = () => {
   const [formData, setFormData] = useState<FormData>({
     company_name: '',
     siret: '',
-    company_address: ''
+    company_address: '',
+    phone: '',
+    email: '',
+    website: ''
   });
   const [errors, setErrors] = useState<FormErrors>({});
   const [isLoading, setIsLoading] = useState(false);
@@ -55,6 +61,20 @@ export const ProfessionalVerification: React.FC = () => {
 
     if (!formData.company_address.trim()) {
       newErrors.company_address = 'L\'adresse de l\'entreprise est requise';
+    }
+    
+    if (!formData.phone.trim()) {
+      newErrors.phone = 'Le téléphone est obligatoire';
+    }
+    
+    if (!formData.email.trim()) {
+      newErrors.email = 'L\'email est obligatoire';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = 'Format d\'email invalide';
+    }
+    
+    if (formData.website && !/^https?:\/\/.+/.test(formData.website)) {
+      newErrors.website = 'L\'URL doit commencer par http:// ou https://';
     }
 
     if (!uploadedFile) {
@@ -306,6 +326,89 @@ export const ProfessionalVerification: React.FC = () => {
               </div>
             </div>
 
+            {/* Informations de contact */}
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                Informations de contact
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Téléphone *
+                  </label>
+                  <div className="relative">
+                    <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                    <input
+                      type="tel"
+                      name="phone"
+                      value={formData.phone}
+                      onChange={handleInputChange}
+                      className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all ${
+                        errors.phone ? 'border-red-500' : 'border-gray-300'
+                      }`}
+                      placeholder="+33 1 23 45 67 89"
+                    />
+                  </div>
+                  {errors.phone && (
+                    <p className="mt-1 text-sm text-red-600 flex items-center">
+                      <AlertCircle className="h-4 w-4 mr-1" />
+                      {errors.phone}
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Email professionnel *
+                  </label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                    <input
+                      type="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleInputChange}
+                      className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all ${
+                        errors.email ? 'border-red-500' : 'border-gray-300'
+                      }`}
+                      placeholder="contact@mongarage.com"
+                    />
+                  </div>
+                  {errors.email && (
+                    <p className="mt-1 text-sm text-red-600 flex items-center">
+                      <AlertCircle className="h-4 w-4 mr-1" />
+                      {errors.email}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <div className="mt-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Site web (optionnel)
+                </label>
+                <div className="relative">
+                  <Globe className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                  <input
+                    type="url"
+                    name="website"
+                    value={formData.website}
+                    onChange={handleInputChange}
+                    className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all ${
+                      errors.website ? 'border-red-500' : 'border-gray-300'
+                    }`}
+                    placeholder="https://www.mongarage.com"
+                  />
+                </div>
+                {errors.website && (
+                  <p className="mt-1 text-sm text-red-600 flex items-center">
+                    <AlertCircle className="h-4 w-4 mr-1" />
+                    {errors.website}
+                  </p>
+                )}
+              </div>
+            </div>
 
             {/* Upload de document */}
             <div>
