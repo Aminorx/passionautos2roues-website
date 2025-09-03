@@ -174,6 +174,7 @@ export const professionalAccounts = pgTable("professional_accounts", {
   phone: text("phone"),
   email: text("email"),
   website: text("website"),
+  membership: text("membership").$type<'free' | 'paid' | 'canceled'>().default('free'),
   isVerified: boolean("is_verified").default(false),
   verificationStatus: text("verification_status").$type<'not_verified' | 'pending' | 'approved' | 'rejected'>().default('not_verified'),
   verifiedAt: timestamp("verified_at"),

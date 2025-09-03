@@ -221,10 +221,21 @@ router.get('/current', requireAuth, async (req, res) => {
   try {
     const userId = req.user!.id;
 
+    // Récupérer le professional_account_id de l'utilisateur
+    const { data: professionalAccount, error: proAccountError } = await supabaseServer
+      .from('professional_accounts')
+      .select('id')
+      .eq('user_id', userId)
+      .single();
+
+    if (proAccountError || !professionalAccount) {
+      return res.json(null); // Pas de compte professionnel = pas d'abonnement
+    }
+
     const { data: subscription, error } = await supabaseServer
       .from('subscriptions')
       .select('*')
-      .eq('user_id', userId)
+      .eq('professional_account_id', professionalAccount.id)
       .eq('status', 'active')
       .order('created_at', { ascending: false })
       .limit(1)
@@ -248,11 +259,22 @@ router.post('/cancel', requireAuth, async (req, res) => {
   try {
     const userId = req.user!.id;
 
+    // Récupérer le professional_account_id de l'utilisateur
+    const { data: professionalAccount, error: proAccountError } = await supabaseServer
+      .from('professional_accounts')
+      .select('id')
+      .eq('user_id', userId)
+      .single();
+
+    if (proAccountError || !professionalAccount) {
+      return res.status(404).json({ error: 'Compte professionnel introuvable' });
+    }
+
     // Récupérer l'abonnement actif
     const { data: subscription, error: subError } = await supabaseServer
       .from('subscriptions')
       .select('*')
-      .eq('user_id', userId)
+      .eq('professional_account_id', professionalAccount.id)
       .eq('status', 'active')
       .single();
 
@@ -279,6 +301,20 @@ router.post('/cancel', requireAuth, async (req, res) => {
     if (updateError) {
       console.error('❌ Erreur annulation abonnement:', updateError);
       return res.status(500).json({ error: 'Erreur annulation' });
+    }
+
+    // Mettre à jour le membership à 'canceled'
+    if (subscription.professional_account_id) {
+      const { error: membershipError } = await supabaseServer
+        .from('professional_accounts')
+        .update({ membership: 'canceled' })
+        .eq('id', subscription.professional_account_id);
+        
+      if (membershipError) {
+        console.error('⚠️ Erreur mise à jour membership (non critique):', membershipError);
+      } else {
+        console.log('✅ Membership mis à jour: canceled');
+      }
     }
 
     res.json({ message: 'Abonnement annulé avec succès. Il restera actif jusqu\'à la fin de la période en cours.' });
@@ -334,6 +370,13 @@ router.post('/webhook', async (req, res) => {
       case 'customer.subscription.deleted':
         const deletedSub = event.data.object as any;
         
+        // Récupérer la subscription pour avoir le professional_account_id
+        const { data: deletedSubscription } = await supabaseServer
+          .from('subscriptions')
+          .select('professional_account_id')
+          .eq('stripe_subscription_id', deletedSub.id)
+          .single();
+        
         await supabaseServer
           .from('subscriptions')
           .update({
@@ -341,6 +384,16 @@ router.post('/webhook', async (req, res) => {
             cancelled_at: new Date().toISOString()
           })
           .eq('stripe_subscription_id', deletedSub.id);
+        
+        // Mettre à jour le membership à 'canceled' si on a trouvé le compte professionnel
+        if (deletedSubscription?.professional_account_id) {
+          await supabaseServer
+            .from('professional_accounts')
+            .update({ membership: 'canceled' })
+            .eq('id', deletedSubscription.professional_account_id);
+          
+          console.log('✅ Membership mis à jour: canceled pour compte pro', deletedSubscription.professional_account_id);
+        }
         
         console.log('✅ Subscription expired:', deletedSub.id);
         break;
@@ -482,6 +535,20 @@ router.post('/handle-success', async (req, res) => {
     
     console.log('📋 Plan trouvé:', plan.name);
     
+    // Récupérer le professional_account de l'utilisateur
+    const { data: professionalAccount, error: proAccountError } = await supabaseServer
+      .from('professional_accounts')
+      .select('id')
+      .eq('user_id', user!.id)
+      .single();
+      
+    if (proAccountError || !professionalAccount) {
+      console.error('❌ Compte professionnel introuvable pour l\'utilisateur:', user!.id);
+      return res.status(404).json({ error: 'Compte professionnel introuvable' });
+    }
+    
+    console.log('🏢 Compte professionnel trouvé:', professionalAccount.id);
+    
     // Vérifier si un abonnement existe déjà avec ce stripe_subscription_id
     const { data: existingSubscription } = await supabaseServer
       .from('subscriptions')
@@ -489,8 +556,9 @@ router.post('/handle-success', async (req, res) => {
       .eq('stripe_subscription_id', fullSubscription.id)
       .single();
     
-    // Créer ou mettre à jour l'abonnement en base (colonnes qui existent vraiment)
+    // Créer ou mettre à jour l'abonnement en base avec professional_account_id
     const subscriptionData = {
+      professional_account_id: professionalAccount.id,
       plan_id: plan.id.toString(),
       stripe_subscription_id: fullSubscription.id,
       status: 'active' as const,
@@ -522,6 +590,19 @@ router.post('/handle-success', async (req, res) => {
       } else {
         console.log('✅ Nouvel abonnement créé');
       }
+    }
+    
+    // Mettre à jour le membership du compte professionnel
+    console.log('🔄 Mise à jour membership -> paid...');
+    const { error: membershipError } = await supabaseServer
+      .from('professional_accounts')
+      .update({ membership: 'paid' })
+      .eq('id', professionalAccount.id);
+      
+    if (membershipError) {
+      console.error('⚠️ Erreur mise à jour membership (non critique):', membershipError);
+    } else {
+      console.log('✅ Membership mis à jour: paid');
     }
     
     console.log('✅ Paiement Stripe confirmé - Abonnement traité');

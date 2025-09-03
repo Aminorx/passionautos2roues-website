@@ -171,7 +171,9 @@ router.post('/complete', requireAuth, async (req: any, res) => {
         website: website || '',
         description: bio || '',
         specialties: specialties || [],
-        verification_status: 'pending',
+        // verification_status et membership utilisent les valeurs par défaut du schéma
+        // verification_status: 'not_verified' (par défaut)
+        // membership: 'free' (par défaut)
         updated_at: new Date().toISOString()
       };
       
