@@ -12,16 +12,13 @@ import {
   MapPin,
   Loader
 } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../hooks/useAuth';
 import { useLocation } from 'wouter';
 
 interface FormData {
   company_name: string;
   siret: string;
   company_address: string;
-  phone: string;
-  email: string;
-  website: string;
 }
 
 interface FormErrors {
@@ -29,33 +26,19 @@ interface FormErrors {
 }
 
 export const ProfessionalVerification: React.FC = () => {
-  const { profile } = useAuth();
+  const { user, session } = useAuth();
   const [, setLocation] = useLocation();
   const [formData, setFormData] = useState<FormData>({
     company_name: '',
     siret: '',
-    company_address: '',
-    phone: '',
-    email: '',
-    website: ''
+    company_address: ''
   });
   const [errors, setErrors] = useState<FormErrors>({});
   const [isLoading, setIsLoading] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [dragActive, setDragActive] = useState(false);
 
-  // Charger les données du profil existant si disponibles
-  useEffect(() => {
-    if (profile) {
-      setFormData(prev => ({
-        ...prev,
-        phone: profile.phone || '',
-        email: profile.email || '',
-        website: profile.website || '',
-        company_name: profile.companyName || ''
-      }));
-    }
-  }, [profile]);
+  // Formulaire simplifié - pas besoin de charger des données existantes
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
@@ -72,20 +55,6 @@ export const ProfessionalVerification: React.FC = () => {
 
     if (!formData.company_address.trim()) {
       newErrors.company_address = 'L\'adresse de l\'entreprise est requise';
-    }
-
-    if (!formData.phone.trim()) {
-      newErrors.phone = 'Le numéro de téléphone est requis';
-    }
-
-    if (!formData.email.trim()) {
-      newErrors.email = 'L\'email est requis';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Email invalide';
-    }
-
-    if (formData.website && !/^https?:\/\/.+/.test(formData.website)) {
-      newErrors.website = 'L\'URL doit commencer par http:// ou https://';
     }
 
     if (!uploadedFile) {
