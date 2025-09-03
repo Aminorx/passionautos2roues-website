@@ -88,9 +88,12 @@ export default function ProShop() {
             
             // Récupérer la personnalisation de la boutique
             try {
+              console.log('🎨 Récupération personnalisation pour user_id:', targetAccount.user_id);
               const custResponse = await fetch(`/api/professional-accounts/customization/${targetAccount.user_id}`);
               if (custResponse.ok) {
                 const custData = await custResponse.json();
+                console.log('🎨 DONNÉES PERSONNALISATION REÇUES:', custData);
+                
                 // Fusionner les données de base avec la personnalisation
                 const enrichedAccount = {
                   ...targetAccount,
@@ -99,8 +102,15 @@ export default function ProShop() {
                   description: custData.description,
                   specialties: custData.specialties || []
                 };
+                console.log('🎨 COMPTE ENRICHI:', {
+                  logo: enrichedAccount.company_logo,
+                  banner: enrichedAccount.banner_image,
+                  description: enrichedAccount.description,
+                  specialties: enrichedAccount.specialties
+                });
                 setProAccount(enrichedAccount);
               } else {
+                console.log('⚠️ Réponse personnalisation non OK:', custResponse.status);
                 setProAccount(targetAccount);
               }
             } catch (custError) {
