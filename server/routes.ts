@@ -631,7 +631,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           phone: phone,
           email: email,
           website: website || null,
-          verification_status: 'pending',
+          // verification_status et membership utilisent les valeurs par défaut du schéma
+          // verification_status: 'not_verified' (par défaut)
+          // membership: 'free' (par défaut)
           is_verified: false
         })
         .select()
