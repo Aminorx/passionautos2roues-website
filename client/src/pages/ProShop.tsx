@@ -74,46 +74,53 @@ export default function ProShop() {
   const loadProShopData = async (shopId: string) => {
     try {
       setLoading(true);
+      console.log('🏪 Chargement boutique pro ID:', shopId);
       
-      // Récupérer les annonces du professionnel d'abord (cette API fonctionne)
+      // Approche 1: Essayer de récupérer directement le compte pro avec l'ID de la boutique
+      try {
+        const accountsResponse = await fetch('/api/admin/professional-accounts');
+        if (accountsResponse.ok) {
+          const allAccounts = await accountsResponse.json();
+          const targetAccount = allAccounts.find((acc: any) => acc.id.toString() === shopId.toString());
+          
+          if (targetAccount) {
+            console.log('✅ Compte professionnel trouvé:', targetAccount.company_name);
+            setProAccount(targetAccount);
+            
+            // Récupérer les véhicules de cet utilisateur
+            const vehiclesResponse = await fetch(`/api/professional-accounts/vehicles/${targetAccount.id}`);
+            if (vehiclesResponse.ok) {
+              const vehiclesData = await vehiclesResponse.json();
+              setVehicles(vehiclesData.filter((v: any) => v.is_active && v.status === 'approved'));
+            }
+            setLoading(false);
+            return;
+          }
+        }
+      } catch (e) {
+        console.log('⚠️ Échec récupération directe, essai avec véhicules...');
+      }
+
+      // Approche 2: Récupérer via les véhicules (fallback)
       const vehiclesResponse = await fetch(`/api/professional-accounts/vehicles/${shopId}`);
       if (vehiclesResponse.ok) {
         const vehiclesData = await vehiclesResponse.json();
         setVehicles(vehiclesData.filter((v: any) => v.is_active && v.status === 'approved'));
         
-        // Si on a des véhicules, récupérer l'ID utilisateur du premier véhicule
         if (vehiclesData.length > 0 && vehiclesData[0].userId) {
-          // Récupérer le compte pro via l'API by-user qui fonctionne
           const userResponse = await fetch(`/api/professional-accounts/by-user/${vehiclesData[0].userId}`);
           if (userResponse.ok) {
             const proData = await userResponse.json();
             setProAccount(proData);
+            setLoading(false);
+            return;
           }
-        } else {
-          // Fallback : créer un compte professionnel basique avec l'ID
-          setProAccount({
-            id: shopId,
-            company_name: `Boutique Pro #${shopId}`,
-            email: '',
-            siret: '',
-            verification_process_status: 'approved'
-          } as any);
-        }
-      } else {
-        // Si aucun véhicule, essayer avec l'ID direct
-        try {
-          const directResponse = await fetch(`/api/professional-accounts/by-user/${shopId}`);
-          if (directResponse.ok) {
-            const proData = await directResponse.json();
-            setProAccount(proData);
-          } else {
-            throw new Error('Compte professionnel non trouvé');
-          }
-        } catch {
-          throw new Error('Compte professionnel non trouvé');
         }
       }
 
+      // Si tout échoue, afficher une erreur
+      console.error('❌ Impossible de charger la boutique pro');
+      setProAccount(null);
       setLoading(false);
     } catch (error) {
       console.error('Erreur chargement boutique pro:', error);
@@ -225,7 +232,17 @@ export default function ProShop() {
                   )}
                   <div className="flex items-center space-x-2">
                     <Calendar className="h-5 w-5" />
-                    <span>Membre depuis {new Date(proAccount.created_at).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}</span>
+                    <span>Membre depuis {(() => {
+                      if (proAccount.created_at) {
+                        try {
+                          const date = new Date(proAccount.created_at);
+                          return isNaN(date.getTime()) ? 'N/A' : date.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+                        } catch (e) {
+                          return 'N/A';
+                        }
+                      }
+                      return 'N/A';
+                    })()}</span>
                   </div>
                   <div className="flex items-center space-x-2">
                     <Eye className="h-5 w-5" />

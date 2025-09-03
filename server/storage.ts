@@ -456,10 +456,24 @@ export class SupabaseStorage implements IStorage {
         siret: vehicle.users.siret,
         bio: vehicle.users.bio,
         avatar: vehicle.users.avatar,
-        specialties: vehicle.users.specialties ? JSON.parse(vehicle.users.specialties) : [],
+        specialties: (() => {
+          try {
+            return vehicle.users.specialties ? JSON.parse(vehicle.users.specialties) : [];
+          } catch (e) {
+            console.error('❌ Erreur parsing specialties:', e);
+            return [];
+          }
+        })(),
         verified: vehicle.users.verified,
         emailVerified: vehicle.users.email_verified,
-        contactPreferences: vehicle.users.contact_preferences ? JSON.parse(vehicle.users.contact_preferences) : [],
+        contactPreferences: (() => {
+          try {
+            return vehicle.users.contact_preferences ? JSON.parse(vehicle.users.contact_preferences) : [];
+          } catch (e) {
+            console.error('❌ Erreur parsing contact_preferences:', e);
+            return [];
+          }
+        })(),
         createdAt: new Date(vehicle.users.created_at),
         lastLoginAt: vehicle.users.last_login_at ? new Date(vehicle.users.last_login_at) : undefined
       } : undefined,
