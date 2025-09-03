@@ -68,8 +68,8 @@ export const ProfessionalVerificationBanner: React.FC = () => {
     return null;
   }
 
-  // Bannière pour professionnel non encore vérifié (pas de demande)
-  if (!professionalAccount) {
+  // Bannière pour professionnel non encore vérifié (pas de demande ou statut not_started)
+  if (!professionalAccount || professionalAccount.verification_status === 'not_started') {
     return (
       <div className="bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-200 rounded-lg p-4 mb-6">
         <div className="flex items-start">

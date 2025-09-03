@@ -10,6 +10,7 @@ import brandIcon from '@assets/Brand_1752260033631.png';
 import { DeletionQuestionnaireModal } from './DeletionQuestionnaireModal';
 import { ProfessionalVerificationBanner } from './ProfessionalVerificationBanner';
 import { ProfessionalVerificationBadge } from './ProfessionalVerificationBadge';
+import { CompanyNameDisplay } from './CompanyNameDisplay';
 import { useQuery } from '@tanstack/react-query';
 
 // Helper function to translate deletion reasons from English to French
@@ -1146,6 +1147,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'overview', o
           </div>
           <div>
             <h2 className="text-3xl font-bold text-gray-900">{dbUser?.name || user?.email?.split('@')[0] || 'Utilisateur'}</h2>
+            <CompanyNameDisplay userId={dbUser?.id} userType={dbUser?.type} />
             <p className="text-gray-600 text-lg mt-1">{user?.email || dbUser?.email}</p>
             <div className="flex items-center space-x-3 mt-4">
               <ProfessionalVerificationBadge dbUser={dbUser} />
