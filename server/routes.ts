@@ -1244,47 +1244,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Route de test pour déboguer
-  app.get('/api/test-pro/:id', async (req, res) => {
-    console.log(`🔥 ROUTE TEST APPELÉE - ${req.params.id}`);
-    const accountId = parseInt(req.params.id);
-    const { data: account, error } = await supabaseServer
-      .from('professional_accounts')
-      .select('*')
-      .eq('id', accountId)
-      .single();
-    
-    console.log('🔥 Résultat test:', { account: !!account, error: !!error });
-    res.json({ found: !!account, error: error?.message, accountData: account });
-  });
-
-  // Route plus spécifique pour les boutiques pro
-  app.get('/api/pro-shop-data/:id', async (req, res) => {
-    console.log(`🏪 ROUTE BOUTIQUE APPELÉE - ${req.params.id}`);
-    try {
-      const accountId = parseInt(req.params.id);
-      if (isNaN(accountId)) {
-        return res.status(400).json({ error: 'ID invalide' });
-      }
-
-      const { data: account, error } = await supabaseServer
-        .from('professional_accounts')
-        .select('*')
-        .eq('id', accountId)
-        .single();
-
-      if (error) {
-        console.error('❌ Erreur Supabase:', error);
-        return res.status(404).json({ error: 'Compte professionnel non trouvé' });
-      }
-
-      console.log('✅ Boutique trouvée:', account.company_name);
-      res.json(account);
-    } catch (error) {
-      console.error('❌ Erreur boutique:', error);
-      res.status(500).json({ error: 'Erreur serveur' });
-    }
-  });
 
   // Route pour récupérer un compte professionnel par ID (plus spécifique d'abord)
   app.get('/api/professional-accounts/:id', async (req, res) => {

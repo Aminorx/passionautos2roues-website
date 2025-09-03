@@ -85,7 +85,28 @@ export default function ProShop() {
           
           if (targetAccount) {
             console.log('✅ Compte professionnel trouvé:', targetAccount.company_name);
-            setProAccount(targetAccount);
+            
+            // Récupérer la personnalisation de la boutique
+            try {
+              const custResponse = await fetch(`/api/professional-accounts/customization/${targetAccount.user_id}`);
+              if (custResponse.ok) {
+                const custData = await custResponse.json();
+                // Fusionner les données de base avec la personnalisation
+                const enrichedAccount = {
+                  ...targetAccount,
+                  banner_image: custData.banner_image,
+                  company_logo: custData.company_logo,
+                  description: custData.description,
+                  specialties: custData.specialties || []
+                };
+                setProAccount(enrichedAccount);
+              } else {
+                setProAccount(targetAccount);
+              }
+            } catch (custError) {
+              console.log('⚠️ Personnalisation non récupérée:', custError);
+              setProAccount(targetAccount);
+            }
             
             // Récupérer les véhicules de cet utilisateur
             const vehiclesResponse = await fetch(`/api/professional-accounts/vehicles/${targetAccount.id}`);
