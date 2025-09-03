@@ -4,6 +4,7 @@ import { Vehicle } from '../types';
 import brandIcon from '@assets/Brand_1752260033631.png';
 import { OptimizedImage } from './OptimizedImage';
 import { FavoriteButton } from './FavoriteButton';
+import { VerifiedBadge } from './VerifiedBadge';
 
 interface VehicleCardProps {
   vehicle: Vehicle;
@@ -93,7 +94,13 @@ const VehicleCardComponent: React.FC<VehicleCardProps> = ({ vehicle, onClick }) 
               {formatPrice(vehicle.price)}
             </div>
             {vehicle.user?.type === 'professional' && (
-              <div className="text-xs text-orange-600 font-medium">PRO</div>
+              <div className="flex flex-col items-end space-y-1">
+                <div className="text-xs text-orange-600 font-medium">PRO</div>
+                <VerifiedBadge 
+                  userId={vehicle.userId} 
+                  userType={vehicle.user?.type}
+                />
+              </div>
             )}
           </div>
         </div>

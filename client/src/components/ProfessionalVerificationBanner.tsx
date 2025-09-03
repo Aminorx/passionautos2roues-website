@@ -57,26 +57,14 @@ export const ProfessionalVerificationBanner: React.FC = () => {
     window.location.href = '/professional-verification';
   };
 
-  // Debug logs
-  console.log('🐛 BANNER DEBUG:', {
-    profile: profile?.type,
-    isLoading,
-    isDismissed,
-    professionalAccount,
-    is_verified: professionalAccount?.is_verified,
-    verification_status: professionalAccount?.verification_status
-  });
-
   // Ne pas afficher le banner si :
   // - Pas un utilisateur professionnel
   // - En cours de chargement
   // - Banner fermé
-  // TEMPORAIREMENT DÉSACTIVÉ: - Déjà vérifié
   if (!profile || 
       profile.type !== 'professional' || 
       isLoading || 
       isDismissed) {
-      // professionalAccount?.is_verified) {  // TEMPORAIREMENT COMMENTÉ
     return null;
   }
 
@@ -150,6 +138,42 @@ export const ProfessionalVerificationBanner: React.FC = () => {
           <button
             onClick={handleDismiss}
             className="flex-shrink-0 ml-4 text-orange-400 hover:text-orange-600 transition-colors"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Bannière pour compte vérifié et approuvé (félicitations)
+  if (professionalAccount?.verification_status === 'approved' && professionalAccount?.is_verified) {
+    return (
+      <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-4 mb-6">
+        <div className="flex items-start">
+          <div className="flex-shrink-0">
+            <CheckCircle className="h-6 w-6 text-green-600 mt-1" />
+          </div>
+          <div className="flex-1 ml-3">
+            <h3 className="text-sm font-semibold text-green-900">
+              🎉 Compte professionnel vérifié !
+            </h3>
+            <p className="text-sm text-green-800 mt-1">
+              Félicitations ! Votre compte professionnel a été vérifié avec succès. 
+              Votre badge "Vérifié" est maintenant visible sur votre profil et vos annonces.
+            </p>
+            <div className="flex items-center mt-2 text-xs text-green-700">
+              <CheckCircle className="h-4 w-4 mr-2" />
+              Priorité dans les résultats de recherche
+            </div>
+            <div className="flex items-center mt-1 text-xs text-green-700">
+              <CheckCircle className="h-4 w-4 mr-2" />
+              Badge de confiance visible
+            </div>
+          </div>
+          <button
+            onClick={handleDismiss}
+            className="flex-shrink-0 ml-4 text-green-400 hover:text-green-600 transition-colors"
           >
             <X className="h-5 w-5" />
           </button>

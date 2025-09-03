@@ -1179,6 +1179,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Route pour compter les comptes professionnels en attente (admin)
+  app.get('/api/admin/professional-accounts/pending-count', async (req, res) => {
+    try {
+      console.log('🔢 Comptage des comptes professionnels en attente...');
+      
+      const { count, error } = await supabaseServer
+        .from('professional_accounts')
+        .select('*', { count: 'exact', head: true })
+        .eq('verification_status', 'pending');
+      
+      if (error) {
+        console.error('❌ Erreur comptage comptes en attente:', error);
+        return res.status(500).json({ error: 'Erreur comptage' });
+      }
+      
+      console.log(`✅ Comptes en attente trouvés: ${count}`);
+      res.json({ pendingCount: count || 0 });
+      
+    } catch (error) {
+      console.error('❌ Erreur comptage comptes professionnels:', error);
+      res.status(500).json({ error: 'Erreur serveur' });
+    }
+  });
+
   // Route pour vérifier le statut de vérification d'un utilisateur professionnel
   app.get('/api/professional-accounts/status/:userId', async (req, res) => {
     try {

@@ -9,6 +9,7 @@ import { Vehicle } from '../types';
 import brandIcon from '@assets/Brand_1752260033631.png';
 import { DeletionQuestionnaireModal } from './DeletionQuestionnaireModal';
 import { ProfessionalVerificationBanner } from './ProfessionalVerificationBanner';
+import { ProfessionalVerificationBadge } from './ProfessionalVerificationBadge';
 import { useQuery } from '@tanstack/react-query';
 
 // Helper function to translate deletion reasons from English to French
@@ -1147,13 +1148,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'overview', o
             <h2 className="text-3xl font-bold text-gray-900">{dbUser?.name || user?.email?.split('@')[0] || 'Utilisateur'}</h2>
             <p className="text-gray-600 text-lg mt-1">{user?.email || dbUser?.email}</p>
             <div className="flex items-center space-x-3 mt-4">
-              <span className={`px-4 py-2 rounded-full text-sm font-semibold ${
-                (dbUser as any)?.verified
-                  ? 'bg-green-100 text-green-800 border border-green-200'
-                  : 'bg-yellow-100 text-yellow-800 border border-yellow-200'
-              }`}>
-                {(dbUser as any)?.verified ? '✓ Compte vérifié' : '⏳ En attente de vérification'}
-              </span>
+              <ProfessionalVerificationBadge dbUser={dbUser} />
               <span className="px-4 py-2 bg-primary-bolt-100 text-primary-bolt-500 rounded-full text-sm font-semibold border border-primary-bolt-200">
                 {dbUser?.type === 'professional' ? '🏢 Professionnel' : '👤 Particulier'}
               </span>

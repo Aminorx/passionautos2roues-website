@@ -128,6 +128,7 @@ export const AdminDashboardClean: React.FC<AdminDashboardProps> = ({ onBack }) =
   const [performanceData, setPerformanceData] = useState<any>(null);
   const [professionalAccounts, setProfessionalAccounts] = useState<ProfessionalAccount[]>([]);
   const [selectedProAccount, setSelectedProAccount] = useState<ProfessionalAccount | null>(null);
+  const [pendingProAccountsCount, setPendingProAccountsCount] = useState<number>(0);
   const [proAccountDocuments, setProAccountDocuments] = useState<VerificationDocument[]>([]);
   const [verificationAction, setVerificationAction] = useState<{accountId: number, action: 'approve' | 'reject', reason?: string} | null>(null);
 
@@ -196,6 +197,9 @@ export const AdminDashboardClean: React.FC<AdminDashboardProps> = ({ onBack }) =
 
       setUsers(formattedUsers);
       setAnnonces(allAnnonces);
+      
+      // Charger le count des comptes en attente pour le badge
+      loadPendingProAccountsCount();
       
       // Charger aussi les comptes professionnels si c'est l'onglet actif
       if (activeTab === 'pro-accounts') {
@@ -366,6 +370,20 @@ export const AdminDashboardClean: React.FC<AdminDashboardProps> = ({ onBack }) =
     }
   };
 
+  const loadPendingProAccountsCount = async () => {
+    try {
+      console.log('🔢 Chargement nombre comptes en attente...');
+      const response = await fetch('/api/admin/professional-accounts/pending-count');
+      if (response.ok) {
+        const data = await response.json();
+        console.log(`📊 ${data.pendingCount} comptes en attente trouvés`);
+        setPendingProAccountsCount(data.pendingCount);
+      }
+    } catch (error) {
+      console.error('Erreur chargement count comptes en attente:', error);
+    }
+  };
+
   const loadProAccountDocuments = async (accountId: number) => {
     try {
       console.log(`📄 Chargement documents pour compte ${accountId}...`);
@@ -508,9 +526,9 @@ export const AdminDashboardClean: React.FC<AdminDashboardProps> = ({ onBack }) =
                 >
                   <item.icon className="h-5 w-5" />
                   <span className="font-medium">{item.label}</span>
-                  {item.id === 'pro-accounts' && professionalAccounts.filter(acc => acc.verification_status === 'pending').length > 0 && (
+                  {item.id === 'pro-accounts' && pendingProAccountsCount > 0 && (
                     <span className="bg-red-500 text-white text-xs rounded-full px-2 py-1 ml-auto">
-                      {professionalAccounts.filter(acc => acc.verification_status === 'pending').length}
+                      {pendingProAccountsCount}
                     </span>
                   )}
                 </button>
