@@ -57,7 +57,7 @@ interface ProfessionalAccount {
   email: string;
   website?: string;
   is_verified: boolean;
-  verification_status: 'pending' | 'approved' | 'rejected';
+  verification_process_status: 'not_started' | 'in_progress' | 'completed';
   verified_at?: string;
   rejected_reason?: string;
   created_at: string;
@@ -508,9 +508,9 @@ export const AdminDashboardClean: React.FC<AdminDashboardProps> = ({ onBack }) =
                 >
                   <item.icon className="h-5 w-5" />
                   <span className="font-medium">{item.label}</span>
-                  {item.id === 'pro-accounts' && professionalAccounts.filter(acc => acc.verification_status === 'pending').length > 0 && (
+                  {item.id === 'pro-accounts' && professionalAccounts.filter(acc => acc.verification_process_status === 'pending').length > 0 && (
                     <span className="bg-red-500 text-white text-xs rounded-full px-2 py-1 ml-auto">
-                      {professionalAccounts.filter(acc => acc.verification_status === 'pending').length}
+                      {professionalAccounts.filter(acc => acc.verification_process_status === 'pending').length}
                     </span>
                   )}
                 </button>
@@ -908,7 +908,7 @@ export const AdminDashboardClean: React.FC<AdminDashboardProps> = ({ onBack }) =
                   <p className="text-gray-600">Gestion et validation des comptes professionnels</p>
                 </div>
                 <div className="text-sm text-gray-500">
-                  {professionalAccounts.length} comptes • {professionalAccounts.filter(acc => acc.verification_status === 'pending').length} en attente
+                  {professionalAccounts.length} comptes • {professionalAccounts.filter(acc => acc.verification_process_status === 'pending').length} en attente
                 </div>
               </div>
 
@@ -919,7 +919,7 @@ export const AdminDashboardClean: React.FC<AdminDashboardProps> = ({ onBack }) =
                     <div>
                       <p className="text-sm font-medium text-gray-600">En attente</p>
                       <p className="text-3xl font-bold text-orange-600">
-                        {professionalAccounts.filter(acc => acc.verification_status === 'pending').length}
+                        {professionalAccounts.filter(acc => acc.verification_process_status === 'pending').length}
                       </p>
                     </div>
                     <div className="p-3 bg-orange-100 rounded-lg">
@@ -933,7 +933,7 @@ export const AdminDashboardClean: React.FC<AdminDashboardProps> = ({ onBack }) =
                     <div>
                       <p className="text-sm font-medium text-gray-600">Approuvés</p>
                       <p className="text-3xl font-bold text-green-600">
-                        {professionalAccounts.filter(acc => acc.verification_status === 'approved').length}
+                        {professionalAccounts.filter(acc => acc.verification_process_status === 'approved').length}
                       </p>
                     </div>
                     <div className="p-3 bg-green-100 rounded-lg">
@@ -947,7 +947,7 @@ export const AdminDashboardClean: React.FC<AdminDashboardProps> = ({ onBack }) =
                     <div>
                       <p className="text-sm font-medium text-gray-600">Rejetés</p>
                       <p className="text-3xl font-bold text-red-600">
-                        {professionalAccounts.filter(acc => acc.verification_status === 'rejected').length}
+                        {professionalAccounts.filter(acc => acc.verification_process_status === 'rejected').length}
                       </p>
                     </div>
                     <div className="p-3 bg-red-100 rounded-lg">
@@ -1019,15 +1019,15 @@ export const AdminDashboardClean: React.FC<AdminDashboardProps> = ({ onBack }) =
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                              account.verification_status === 'pending'
+                              account.verification_process_status === 'in_progress'
                                 ? 'bg-orange-100 text-orange-800'
-                                : account.verification_status === 'approved'
+                                : account.verification_process_status === 'completed'
                                 ? 'bg-green-100 text-green-800'
                                 : 'bg-red-100 text-red-800'
                             }`}>
-                              {account.verification_status === 'pending' && '⏳ En attente'}
-                              {account.verification_status === 'approved' && '✅ Approuvé'}
-                              {account.verification_status === 'rejected' && '❌ Rejeté'}
+                              {account.verification_process_status === 'in_progress' && '⏳ En attente'}
+                              {account.verification_process_status === 'completed' && '✅ Approuvé'}
+                              {account.verification_process_status === 'not_started' && '❌ Non vérifié'}
                             </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">

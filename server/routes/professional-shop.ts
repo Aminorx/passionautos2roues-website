@@ -20,7 +20,7 @@ router.get('/:id', async (req, res) => {
         website,
         company_address,
         siret,
-        verification_status,
+        verification_process_status,
         created_at,
         updated_at,
         company_logo,

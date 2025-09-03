@@ -725,7 +725,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           email,
           website,
           is_verified,
-          verification_status,
+          verification_process_status,
           verified_at,
           rejected_reason,
           created_at,
@@ -790,7 +790,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const { data: updatedAccount, error } = await supabaseServer
           .from('professional_accounts')
           .update({
-            verification_status: 'approved',
+            verification_process_status: 'completed',
             is_verified: true,
             verified_at: new Date().toISOString(),
             rejected_reason: null
@@ -819,7 +819,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Mettre à jour le statut des documents
         await supabaseServer
           .from('verification_documents')
-          .update({ verification_status: 'approved' })
+          .update({ verification_process_status: 'completed' })
           .eq('professional_account_id', id);
         
         console.log('✅ Compte professionnel approuvé');
@@ -833,7 +833,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const { data: updatedAccount, error } = await supabaseServer
           .from('professional_accounts')
           .update({
-            verification_status: 'rejected',
+            verification_process_status: 'not_started',
             is_verified: false,
             rejected_reason: reason,
             verified_at: null
@@ -850,7 +850,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Mettre à jour le statut des documents
         await supabaseServer
           .from('verification_documents')
-          .update({ verification_status: 'rejected' })
+          .update({ verification_process_status: 'not_started' })
           .eq('professional_account_id', id);
         
         console.log('✅ Compte professionnel rejeté');
@@ -1191,7 +1191,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const { data: proAccount, error } = await supabaseServer
         .from('professional_accounts')
-        .select('id, verification_status, is_verified, rejected_reason, created_at')
+        .select('id, verification_process_status, is_verified, rejected_reason, created_at')
         .eq('user_id', userId)
         .single();
       
@@ -1206,7 +1206,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: 'Aucun compte professionnel trouvé' });
       }
       
-      console.log(`✅ Statut professionnel récupéré: ${proAccount.verification_status}`);
+      console.log(`✅ Statut professionnel récupéré: ${proAccount.verification_process_status}`);
       res.json(proAccount);
       
     } catch (error) {
@@ -1242,7 +1242,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Récupérer tous les comptes professionnels pour déterminer qui est pro
       const { data: professionalAccounts, error: proError } = await supabaseServer
         .from('professional_accounts')
-        .select('user_id, company_name, verification_status');
+        .select('user_id, company_name, verification_process_status');
       
       if (proError) {
         console.error('❌ Erreur récupération comptes pro:', proError);
@@ -1273,7 +1273,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           phone: authUser.phone,
           // Informations professionnelles si disponibles
           company_name: professionalAccount?.company_name,
-          professional_status: professionalAccount?.verification_status,
+          professional_status: professionalAccount?.verification_process_status,
           // Debug info
           auth_confirmed_at: authUser.email_confirmed_at,
           provider: authUser.app_metadata?.provider // gmail, email, etc.

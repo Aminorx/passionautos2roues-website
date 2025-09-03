@@ -176,7 +176,7 @@ export const professionalAccounts = pgTable("professional_accounts", {
   website: text("website"),
   membership: text("membership").$type<'free' | 'paid' | 'canceled'>().default('free'),
   isVerified: boolean("is_verified").default(false),
-  verificationStatus: text("verification_status").$type<'not_verified' | 'pending' | 'approved' | 'rejected'>().default('not_verified'),
+  verificationProcessStatus: text("verification_process_status").$type<'not_started' | 'in_progress' | 'completed'>().default('not_started'),
   verifiedAt: timestamp("verified_at"),
   rejectedReason: text("rejected_reason"),
   // Champs de personnalisation pour la boutique

@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 
 interface ProfessionalAccount {
   id: number;
-  verification_status: 'pending' | 'approved' | 'rejected';
+  verification_process_status: 'not_started' | 'in_progress' | 'completed';
   is_verified: boolean;
   rejected_reason?: string;
   created_at: string;
@@ -114,7 +114,7 @@ export const ProfessionalVerificationBanner: React.FC = () => {
   }
 
   // Bannière pour demande en cours de traitement
-  if (professionalAccount.verification_status === 'pending') {
+  if (professionalAccount.verification_process_status === 'in_progress') {
     const daysSinceSubmission = Math.floor(
       (new Date().getTime() - new Date(professionalAccount.created_at).getTime()) / (1000 * 60 * 60 * 24)
     );
@@ -149,7 +149,7 @@ export const ProfessionalVerificationBanner: React.FC = () => {
   }
 
   // Bannière pour demande rejetée
-  if (professionalAccount.verification_status === 'rejected') {
+  if (professionalAccount.verification_process_status === 'not_started') {
     return (
       <div className="bg-gradient-to-r from-red-50 to-pink-50 border border-red-200 rounded-lg p-4 mb-6">
         <div className="flex items-start">

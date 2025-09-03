@@ -229,7 +229,7 @@ export class SupabaseStorage implements IStorage {
           website: annonce.users.professional_accounts[0].website,
           description: annonce.users.professional_accounts[0].description,
           isVerified: annonce.users.professional_accounts[0].is_verified,
-          verificationStatus: annonce.users.professional_accounts[0].verification_status,
+          verificationStatus: annonce.users.professional_accounts[0].verification_process_status,
           companyLogo: annonce.users.professional_accounts[0].company_logo,
           bannerImage: annonce.users.professional_accounts[0].banner_image
         } : undefined

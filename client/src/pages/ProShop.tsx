@@ -16,7 +16,7 @@ interface ProAccount {
   website?: string;
   company_address?: string;
   siret: string;
-  verification_status: string;
+  verification_process_status: string;
   created_at: string;
   users?: {
     id: string;
