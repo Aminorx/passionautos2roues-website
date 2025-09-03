@@ -147,6 +147,9 @@ export const ProfessionalVerification: React.FC = () => {
 
       const response = await fetch('/api/professional-accounts', {
         method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session?.access_token}`
+        },
         body: formDataToSend
       });
 
