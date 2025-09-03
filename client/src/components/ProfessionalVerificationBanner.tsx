@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 
 interface ProfessionalAccount {
   id: number;
-  verification_status: 'not_started' | 'in_progress' | 'completed';
+  verification_status: 'pending' | 'approved' | 'not_verified';
   is_verified: boolean;
   rejected_reason?: string;
   created_at: string;
@@ -57,16 +57,26 @@ export const ProfessionalVerificationBanner: React.FC = () => {
     window.location.href = '/professional-verification';
   };
 
+  // Debug logs
+  console.log('🐛 BANNER DEBUG:', {
+    profile: profile?.type,
+    isLoading,
+    isDismissed,
+    professionalAccount,
+    is_verified: professionalAccount?.is_verified,
+    verification_status: professionalAccount?.verification_status
+  });
+
   // Ne pas afficher le banner si :
   // - Pas un utilisateur professionnel
   // - En cours de chargement
   // - Banner fermé
-  // - Déjà vérifié
+  // TEMPORAIREMENT DÉSACTIVÉ: - Déjà vérifié
   if (!profile || 
       profile.type !== 'professional' || 
       isLoading || 
-      isDismissed || 
-      professionalAccount?.is_verified) {
+      isDismissed) {
+      // professionalAccount?.is_verified) {  // TEMPORAIREMENT COMMENTÉ
     return null;
   }
 
