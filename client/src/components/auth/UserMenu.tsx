@@ -14,12 +14,7 @@ export function UserMenu({ onNavigate, onDashboardNavigate }: UserMenuProps) {
   const [isSigningOut, setIsSigningOut] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
 
-  // Récupérer le statut de conversion pour récupérer l'ID du compte professionnel
-  const { data: conversionStatus } = useQuery({
-    queryKey: ['/api/account/conversion/status', user?.id],
-    enabled: !!user?.id && !!dbUser?.id && dbUser?.type === 'professional',
-    retry: 1,
-  })
+  // La boutique pro sera implémentée avec la nouvelle logique Stripe
 
   const handleSignOut = async () => {
     setIsSigningOut(true)
@@ -142,24 +137,15 @@ export function UserMenu({ onNavigate, onDashboardNavigate }: UserMenuProps) {
                 <div className="border-t border-gray-100 my-1"></div>
                 <button
                   onClick={() => {
-                    try {
-                      // Utiliser la même logique que le Dashboard
-                      if (conversionStatus?.professionalAccount?.id) {
-                        // Ouvrir dans un nouvel onglet
-                        window.open(`/pro/${conversionStatus.professionalAccount.id}`, '_blank');
-                      } else {
-                        alert('Aucun compte professionnel trouvé');
-                      }
-                    } catch (error) {
-                      console.error('Erreur:', error);
-                      alert('Erreur lors de l\'ouverture de la boutique');
-                    }
-                    setIsOpen(false)
+                    // TODO: Implémenter avec nouvelle logique professional_accounts après Stripe
+                    alert('Boutique pro bientôt disponible avec la nouvelle logique !');
+                    setIsOpen(false);
                   }}
-                  className="flex items-center w-full px-3 py-2 text-sm text-blue-600 hover:bg-blue-50"
+                  className="flex items-center w-full px-3 py-2 text-sm text-gray-400 hover:bg-gray-50 opacity-75 cursor-not-allowed"
+                  disabled
                 >
                   <Shield className="mr-2 h-4 w-4" />
-                  <span>Ma Boutique Pro</span>
+                  <span>Ma Boutique Pro (bientôt)</span>
                 </button>
               </>
             )}

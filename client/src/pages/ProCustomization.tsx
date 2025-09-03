@@ -27,12 +27,7 @@ interface ProCustomizationProps {
 export default function ProCustomization({ onBack }: ProCustomizationProps) {
   const { user, dbUser } = useAuth();
   
-  // Récupérer le statut de conversion pour récupérer l'ID du compte professionnel
-  const { data: conversionStatus } = useQuery({
-    queryKey: ['/api/account/conversion/status', user?.id],
-    enabled: !!user?.id && !!dbUser?.id,
-    retry: 1,
-  });
+  // La personnalisation est gérée directement via professional_accounts
 
   const [customization, setCustomization] = useState<CustomizationData>({
     brand_colors: {

@@ -35,7 +35,6 @@ import ProShop from './pages/ProShop';
 import ProCustomization from './pages/ProCustomization';
 import SubscriptionPurchase from './pages/SubscriptionPurchase';
 import { AuthCallback } from './pages/AuthCallback';
-import { AccountConversion } from './pages/AccountConversion';
 import { useAuth } from './hooks/useAuth';
 // import CreateProAccount from './pages/CreateProAccount';
 
@@ -291,9 +290,6 @@ function AppContent() {
             </Route>
             <Route path="/auth-callback">
               <AuthCallback />
-            </Route>
-            <Route path="/account-conversion">
-              <AccountConversion onBack={() => setLocation('/dashboard')} />
             </Route>
             <Route path="/pro-customization">
               <ProCustomization onBack={() => setLocation('/dashboard')} />

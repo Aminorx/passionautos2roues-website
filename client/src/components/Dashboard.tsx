@@ -9,7 +9,6 @@ import { Vehicle } from '../types';
 import brandIcon from '@assets/Brand_1752260033631.png';
 import { DeletionQuestionnaireModal } from './DeletionQuestionnaireModal';
 import { ProfessionalVerificationBanner } from './ProfessionalVerificationBanner';
-import { ConversionBanner } from './ConversionBanner';
 import { useQuery } from '@tanstack/react-query';
 
 // Helper function to translate deletion reasons from English to French
@@ -56,27 +55,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'overview', o
   const { vehicles, setVehicles, setSelectedVehicle, setSearchFilters: contextSetSearchFilters } = useApp();
   const { user, dbUser, isLoading, refreshDbUser } = useAuth();
 
-  // Récupérer le statut de conversion seulement pour l'utilisateur connecté
-  const { data: conversionStatus } = useQuery({
-    queryKey: ['/api/account/conversion/status', user?.id],
-    enabled: !!user?.id && !!dbUser?.id,
-    retry: 1,
-    queryFn: async () => {
-      console.log('🔍 Récupération statut conversion pour utilisateur:', user?.id);
-      const response = await fetch('/api/account/conversion/status', {
-        headers: {
-          'x-user-id': user?.id || '',
-        },
-      });
-      if (!response.ok) {
-        console.error('❌ Erreur API statut conversion:', response.status);
-        throw new Error('Erreur lors de la récupération du statut');
-      }
-      const result = await response.json();
-      console.log('✅ Statut conversion récupéré:', result);
-      return result;
-    },
-  });
   const [userVehiclesWithInactive, setUserVehiclesWithInactive] = useState<Vehicle[]>([]);
   const [deletedVehicles, setDeletedVehicles] = useState<Vehicle[]>([]);
   const [vehicleToDelete, setVehicleToDelete] = useState<{id: string; title: string} | null>(null);
@@ -103,7 +81,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'overview', o
   });
   const [savingProfile, setSavingProfile] = useState(false);
   const [profileSuccess, setProfileSuccess] = useState(false);
-  const [conversionBannerDismissed, setConversionBannerDismissed] = useState(false);
   
   // Ces états sont déjà définis plus haut, pas besoin de les redéfinir
 
@@ -507,26 +484,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'overview', o
     }).format(price);
   };
 
-  const handleConversionClick = () => {
-    if (setCurrentView) {
-      setCurrentView('account-conversion');
-    }
-  };
 
   const renderOverview = () => (
     <div className="space-y-8">
-      {/* Conversion Banner - Affiché uniquement pour les utilisateurs individuels sans demande */}
-      {conversionStatus && conversionStatus.currentType === 'individual' && 
-       !conversionStatus.conversionInProgress && 
-       !conversionStatus.conversionRejected && 
-       !conversionStatus.professionalAccount && 
-       !conversionBannerDismissed && (
-        <ConversionBanner 
-          onConvert={handleConversionClick} 
-          conversionStatus={conversionStatus}
-          onDismiss={() => setConversionBannerDismissed(true)}
-        />
-      )}
       
       {/* Welcome Section */}
       <div className="relative bg-gradient-to-r from-primary-bolt-500 via-primary-bolt-600 to-primary-bolt-700 rounded-2xl p-8 text-white overflow-hidden">
@@ -1270,76 +1230,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'overview', o
 
 
 
-          {dbUser?.type === 'professional' && (
-            <div className="md:col-span-2 space-y-6">
-              <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 mb-6">
-                <h3 className="text-lg font-semibold text-blue-800 mb-3">🏢 Informations professionnelles</h3>
-                <p className="text-blue-700 text-sm">Ces informations sont issues de votre demande de conversion professionnelle et ne sont pas modifiables depuis cette page.</p>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-3">Nom de l'entreprise</label>
-                  <input
-                    type="text"
-                    value={(conversionStatus as any)?.professionalAccount?.company_name || ''}
-                    disabled={true}
-                    className="w-full px-4 py-4 border border-gray-300 rounded-xl bg-gray-100 text-gray-700 text-lg cursor-not-allowed"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-3">Email professionnel</label>
-                  <input
-                    type="email"
-                    value={(conversionStatus as any)?.professionalAccount?.email || ''}
-                    disabled={true}
-                    className="w-full px-4 py-4 border border-gray-300 rounded-xl bg-gray-100 text-gray-700 text-lg cursor-not-allowed"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-3">Téléphone professionnel</label>
-                  <input
-                    type="tel"
-                    value={(conversionStatus as any)?.professionalAccount?.phone || ''}
-                    disabled={true}
-                    className="w-full px-4 py-4 border border-gray-300 rounded-xl bg-gray-100 text-gray-700 text-lg cursor-not-allowed"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-3">Site web</label>
-                  <input
-                    type="url"
-                    value={(conversionStatus as any)?.professionalAccount?.website || ''}
-                    disabled={true}
-                    className="w-full px-4 py-4 border border-gray-300 rounded-xl bg-gray-100 text-gray-700 text-lg cursor-not-allowed"
-                  />
-                </div>
-
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-semibold text-gray-700 mb-3">Adresse de l'entreprise</label>
-                  <textarea
-                    value={(conversionStatus as any)?.professionalAccount?.company_address || ''}
-                    disabled={true}
-                    rows={3}
-                    className="w-full px-4 py-4 border border-gray-300 rounded-xl bg-gray-100 text-gray-700 text-lg cursor-not-allowed"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-3">SIRET</label>
-                  <input
-                    type="text"
-                    value={(conversionStatus as any)?.professionalAccount?.siret || ''}
-                    disabled={true}
-                    className="w-full px-4 py-4 border border-gray-300 rounded-xl bg-gray-100 text-gray-700 text-lg cursor-not-allowed"
-                  />
-                </div>
-              </div>
-            </div>
-          )}
+          {/* Section professionnelle supprimée - désormais gérée via nouvelle logique Stripe */}
         </div>
 
         {editingProfile && (
@@ -1398,16 +1289,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'overview', o
           
           <button
             onClick={() => {
-              // Récupérer l'ID du compte professionnel pour ouvrir la boutique publique dans un nouvel onglet
-              if (conversionStatus?.professionalAccount?.id) {
-                // Ouvrir dans un nouvel onglet
-                window.open(`/pro/${conversionStatus.professionalAccount.id}`, '_blank');
-              }
+              // TODO: Implémenter avec nouvelle logique professional_accounts après Stripe
+              console.log('Boutique publique - à implémenter avec nouvelle logique');
             }}
-            className="flex items-center justify-center space-x-3 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-6 py-4 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-1"
+            className="flex items-center justify-center space-x-3 bg-gray-400 hover:bg-gray-500 text-white px-6 py-4 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-1 opacity-75 cursor-not-allowed"
+            disabled
           >
             <Eye className="h-5 w-5" />
-            <span>Voir ma boutique publique</span>
+            <span>Voir ma boutique publique (bientôt)</span>
           </button>
           
           <button
